@@ -30,7 +30,7 @@ the decisions — and to check its work.
 |---|-----------|-----------|------|
 | 0 | [Meet Your AI Copilot](00-setup/CHALLENGE.md) | Set up your workshop, build your first page in 10 minutes | 30 min |
 | 1 | [The Git Time Machine](01-git-time-machine/CHALLENGE.md) | Never lose your work — undo anything | 60 min |
-| 2 | [Secrets: Don't Get Hacked](02-secrets-and-env/CHALLENGE.md) | Keep passwords and API keys out of danger | 45 min |
+| 2 | [Secrets: Don't Get Hacked](02-secrets-and-env/CHALLENGE.md) | Keep passwords and API keys out of danger | 60 min |
 | 3 | [Prompt Like a Pro](03-prompt-like-a-pro/CHALLENGE.md) | Get the AI to build what's actually in your head | 45 min |
 | 4 | [The Red Text](04-debug-red-text/CHALLENGE.md) | Fix errors without panicking | 45 min |
 | 5 | [Trust, But Verify](05-review-the-diff/CHALLENGE.md) | Review what the AI changed before accepting it | 45 min |

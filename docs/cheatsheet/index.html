@@ -53,13 +53,22 @@ git diff        what exactly changed (red = removed, green = added)
 tokens, passwords. Long + gibberish-looking + unlocks something = secret.</li>
 <li>Secrets live in <strong><code>.env</code></strong>, never in code, never in chats, screenshots,
 emails, or group chats.</li>
+<li><strong>The no-peek trick:</strong> the AI needs to <em>use</em> secrets, never <em>see</em> them.
+Have it create the empty <code>.env</code> lines and the reading code — you paste the
+real values yourself.</li>
 <li><strong><code>.gitignore</code></strong> is the do-not-pack list. It must contain <code>.env</code>.</li>
+<li><strong>Secret in a commit? Two branches:</strong>
+<em>unpushed = erasable</em> (take the commit back, move secret to <code>.env</code>,
+re-save clean) · <em>pushed = rotate</em> — history is forever, bots are fast.</li>
 <li><strong>Look before you push:</strong> after <code>git add .</code>, run <code>git status</code> and read every
 filename. Something shouldn&#39;t be there? <code>git restore --staged &lt;file&gt;</code>.</li>
 <li><strong>Leaked? Revoke first, panic second.</strong> (Rotation = change the locks.)</li>
 <li>The AI never needs your real password or key. If it asks: red flag.</li>
 <li>Bots scan GitHub for keys within minutes. This is not paranoia; it&#39;s weather.</li>
 </ul>
+<p><strong>Real app? Rate-limit per visitor (per IP/user), set spend caps on every
+paid service the day you create the key, build with sandbox keys, and use
+your host&#39;s DDoS shield.</strong></p>
 <p><strong>Before you deploy, view your live page source and search for <code>key</code>, <code>sk-</code>,
 <code>token</code>. Nothing there = ship clean.</strong></p>
 <hr>

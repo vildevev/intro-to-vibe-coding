@@ -37,12 +37,22 @@ git diff        what exactly changed (red = removed, green = added)
   tokens, passwords. Long + gibberish-looking + unlocks something = secret.
 - Secrets live in **`.env`**, never in code, never in chats, screenshots,
   emails, or group chats.
+- **The no-peek trick:** the AI needs to *use* secrets, never *see* them.
+  Have it create the empty `.env` lines and the reading code — you paste the
+  real values yourself.
 - **`.gitignore`** is the do-not-pack list. It must contain `.env`.
+- **Secret in a commit? Two branches:**
+  *unpushed = erasable* (take the commit back, move secret to `.env`,
+  re-save clean) · *pushed = rotate* — history is forever, bots are fast.
 - **Look before you push:** after `git add .`, run `git status` and read every
   filename. Something shouldn't be there? `git restore --staged <file>`.
 - **Leaked? Revoke first, panic second.** (Rotation = change the locks.)
 - The AI never needs your real password or key. If it asks: red flag.
 - Bots scan GitHub for keys within minutes. This is not paranoia; it's weather.
+
+**Real app? Rate-limit per visitor (per IP/user), set spend caps on every
+paid service the day you create the key, build with sandbox keys, and use
+your host's DDoS shield.**
 
 **Before you deploy, view your live page source and search for `key`, `sk-`,
 `token`. Nothing there = ship clean.**

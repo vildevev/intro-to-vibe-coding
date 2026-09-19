@@ -24,7 +24,7 @@
 <div class="level-head gridbg">
   <div class="level-num" aria-hidden="true">02</div>
   <div class="level-meta">
-    <p class="level-chips"><span class="chip">Challenge 02</span><span class="chip">about 45 minutes</span></p>
+    <p class="level-chips"><span class="chip">Challenge 02</span><span class="chip">about 60 minutes</span></p>
     <h1>Secrets: Don't Get Hacked</h1>
     <p class="mission"><strong>Mission.</strong> Learn where passwords and API keys live, and build the habit that separates safe vibe coders from cautionary tales on the evening news.</p>
   </div>
@@ -41,14 +41,17 @@ his weather-service account around the clock. His bill: thousands of dollars.
 The service eventually forgave him. Some companies don&#39;t.</p>
 <p>None of this requires a genius hacker. It&#39;s an automated vacuum cleaner that
 sucks up passwords people leave on the floor. Today you learn to never leave
-passwords on the floor.</p>
+passwords on the floor — and what to do about the vacuum&#39;s cousins that come
+knocking once your app is public.</p>
 </section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
 <ul>
 <li>What a <strong>secret</strong> is (API keys, tokens, passwords — passwords for <em>programs</em>)</li>
 <li>The <strong><code>.env</code> file</strong> — the drawer where secrets live</li>
-<li>How <strong><code>.gitignore</code></strong> keeps the drawer out of your save points</li>
+<li>The <strong>no-peek trick</strong> — how to add a real secret the AI builds everything
+for <em>except</em> seeing the value</li>
+<li>The <strong>git history rule</strong> — unpushed = erasable, pushed = rotate</li>
 <li><strong>Rotation</strong> — what to do the day a secret leaks (change the locks)</li>
-<li>The rules for secrets and AI chats</li>
+<li><strong>Rate limits &amp; spend caps</strong> — protecting your app once strangers arrive</li>
 </ul>
 </section><section class="sec sec-before"><h2>📋 Before you start</h2>
 <ul>
@@ -102,9 +105,8 @@ git status no longer shows .env.
 </code></pre>
 </li>
 <li><p>Run <code>git status</code> again yourself. <code>.env</code> gone from the list? That silence
-is the sound of safety. (Your scaffold&#39;s <code>.gitignore</code> already ignored
-<code>.env</code> — make sure you can <em>see</em> the line in the <code>.gitignore</code> file and
-understand what it does: it&#39;s the <strong>do-not-pack list</strong> for your suitcase.)</p>
+is the sound of safety. Open the <code>.gitignore</code> file and find the <code>.env</code>
+line — that&#39;s the <strong>do-not-pack list</strong> in action.</p>
 </li>
 <li><p>Commit the <em>good</em> version:</p>
 <pre><code>git add .
@@ -116,8 +118,44 @@ git push
 the key is not there. The drawer stayed home. <strong>This is what safe looks like.</strong></p>
 </li>
 </ol>
-</section><section class="sec"><h2>Part C — The &quot;almost leaked&quot; drill (5 min)</h2>
-<p>Most leaks aren&#39;t malice; they&#39;re autopilot. Build the checking reflex.</p>
+</section><section class="sec"><h2>Part C — The no-peek trick (10 min)</h2>
+<p>Here&#39;s the cleanest rule in all of vibe coding: <strong>the AI needs to <em>use</em> your
+secrets, but it never needs to <em>see</em> them.</strong> It writes the lock; you put the
+key in.</p>
+<p>When you&#39;re adding a <strong>real</strong> key (from a service&#39;s dashboard), don&#39;t paste it
+anywhere the AI can read it. Instead, ask:</p>
+<pre><code>I&#39;m about to add a real API key for this feature. Create a file called .env
+with a line WEATHER_API_KEY= (empty value), plus a short comment explaining
+what belongs there. Then write the code so it reads the key from .env.
+Do NOT invent, guess, or fill in any value, and don&#39;t ask me to paste the
+key into chat — I&#39;ll open the file myself and paste it in. Finally, verify
+the setup by checking the value is present (not empty) WITHOUT printing it.
+</code></pre>
+<p>Then:</p>
+<ol>
+<li>The AI builds everything <em>except</em> the value — the <code>.env</code> line with an empty
+<code>=</code>, and the code that reads it.</li>
+<li><strong>You</strong> open <code>.env</code> and paste the real key in yourself. It never touches
+the chat, the code, or any screenshot.</li>
+<li>When testing, ask the AI to confirm the app <em>loaded</em> a value — not to show
+it. &quot;Is it there?&quot; is safe. &quot;What is it?&quot; never is.</li>
+</ol>
+<p>Why bother? Anything typed into a chat may be stored, logged, or screenshotted
+forever (Part F). With this pattern, even a screenshot of your entire session
+shows nothing useful to a thief. The AI hands you the drawer with the label
+written — you drop the key in when it&#39;s not looking.</p>
+</section><section class="sec"><h2>Part D — The last cheap moment: look before you push (10 min)</h2>
+<p>Most leaks aren&#39;t malice; they&#39;re autopilot. Build the checking reflex —
+because once a secret is <em>pushed</em>, it&#39;s in <strong>history</strong>, and history is
+forever. This is the rule:</p>
+<blockquote>
+<p>💡 <strong>Secret in a commit? Two branches:</strong>
+<strong>Not pushed yet → erasable.</strong> A save point only becomes history when
+others can see it. Take it back, fix it, re-save clean.
+<strong>Already pushed → rotate.</strong> No rewriting trick changes the math: bots had
+it minutes ago. Revoke first, panic second (Part E).</p>
+</blockquote>
+<p><strong>The &quot;almost leaked&quot; drill:</strong></p>
 <ol>
 <li><p>Type, yourself:</p>
 <pre><code>git add .
@@ -130,14 +168,25 @@ info, or stuff I wouldn&#39;t put on a poster?</em></p>
 <li><p>Imagine you see something you don&#39;t want. Unpack it (ask your AI, or type):</p>
 <pre><code>git restore --staged .env
 </code></pre>
-<p>That single habit — <strong>look before you push</strong> — prevents most leaks.</p>
+</li>
+<li><p>Now practice the take-back, safely. Ask your AI:</p>
+<pre><code>Make a small commit that contains the word &quot;oops-test&quot; in a file.
+Do NOT push it. Then show me how to undo that one commit while keeping
+the changes in my files, so it&#39;s like the commit never happened.
+Explain git reset in plain English first.
+</code></pre>
+<p>What you just learned: an unpushed commit is a draft you can rewrite
+(that&#39;s <code>git reset</code> under the hood). A <em>pushed</em> commit is history.</p>
 </li>
 </ol>
-</section><section class="sec"><h2>Part D — The rotation drill (10 min)</h2>
-<p>Someday a secret will leak. (Emailing it to yourself, a screenshot in a group
-chat, pasting it into an AI chat…) The fix is always the same, and it&#39;s
-<em>fine</em> if you know the moves. It&#39;s called <strong>rotation</strong>: change the locks, not
-the doors.</p>
+<p>That single habit — <strong>look before you push</strong> — prevents most leaks. And if a
+secret slips into a commit you haven&#39;t pushed, taking the commit back is the
+last cheap moment. After <code>git push</code>, the cheap moments are over.</p>
+</section><section class="sec"><h2>Part E — The rotation drill (10 min)</h2>
+<p>Someday a secret will leak. (Pushed by accident, emailed to yourself, a
+screenshot in a group chat, pasted into an AI chat…) The fix is always the
+same, and it&#39;s <em>fine</em> if you know the moves. It&#39;s called <strong>rotation</strong>: change
+the locks, not the doors.</p>
 <ol>
 <li>Log into any service you use and find where keys are made (e.g. GitHub →
 Settings → Developer settings → Personal access tokens; or OpenAI →
@@ -146,14 +195,18 @@ whole mechanism.</li>
 <li>Make a throwaway key. Revoke it. Regenerate it. Delete the old one.</li>
 <li>Say the mantra out loud: <strong>&quot;Leaked? Revoke first, panic second.&quot;</strong> A leaked
 key that&#39;s been revoked is a dead key — worthless to the thief.</li>
+<li>One nuance for later: there <em>is</em> surgery that scrubs a pushed secret out of
+git history, and your AI can perform it. But it&#39;s cosmetic — copies and
+bots may already exist. Rotation is the part that actually protects you;
+surgery is optional tidying you do <em>after</em> rotating.</li>
 </ol>
-</section><section class="sec"><h2>Part E — Secrets and AI chats (5 min)</h2>
+</section><section class="sec"><h2>Part F — Secrets and AI chats (5 min)</h2>
 <p>Your AI assistant is brilliant and <strong>not a vault</strong>. Chats may be stored,
 reviewed, or logged. So:</p>
 <ul>
 <li><strong>Never paste a real API key, password, or token into an AI chat.</strong> Not even
-&quot;just quickly.&quot; The AI never needs the real value to help you — it can show
-you <em>where</em> to put it.</li>
+&quot;just quickly.&quot; Use the no-peek trick (Part C) — the AI never needs the
+value to help you.</li>
 <li>Screenshots count. Emails count. Group chats count. Error messages that
 <em>contain</em> your key count.</li>
 <li>If an AI asks for your real password to &quot;fix&quot; something: <strong>it doesn&#39;t need
@@ -162,24 +215,88 @@ from software you trust.</li>
 <li>Your <code>.env</code> file stays in the drawer. You talk <em>about</em> it (&quot;the key in my
 .env isn&#39;t working&quot;) — you never paste its contents.</li>
 </ul>
+</section><section class="sec"><h2>Part G — When it&#39;s a real app: limits protect the front door (10 min)</h2>
+<p>Keys protect your <em>accounts</em>. <strong>Limits</strong> protect your <em>app</em>. The day you ship
+something public (Challenge 6), strangers arrive — and some of them are bots.
+Two bad days to know about:</p>
+<ul>
+<li><strong>Abuse:</strong> a script finds your &quot;email me&quot; button and fires it 10,000 times.
+Your email and API bills explode while you sleep.</li>
+<li><strong>DDoS</strong> (Distributed Denial of Service): someone floods your site with so
+much fake traffic that real visitors can&#39;t get in. You can&#39;t always prevent
+it, but you can make it boring.</li>
+</ul>
+<p>Your blast-radius kit — each is one prompt or one dashboard setting:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Danger</th>
+<th>Guard</th>
+<th>Where it lives</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Key leaks out</td>
+<td><strong>Rotation</strong> (Part E)</td>
+<td>The service&#39;s dashboard</td>
+</tr>
+<tr>
+<td>Runaway bills</td>
+<td><strong>Spend caps</strong> — monthly usage limits &amp; billing alerts</td>
+<td>Every paid service&#39;s dashboard, the day you create the key</td>
+</tr>
+<tr>
+<td>Bots hammer your forms</td>
+<td><strong>Rate limits</strong> — e.g. max 10 requests per minute per visitor (per IP or per user)</td>
+<td>Written into the app by your AI; often built into your host too</td>
+</tr>
+<tr>
+<td>Site flooded offline</td>
+<td><strong>DDoS shield</strong></td>
+<td>Your host — Cloudflare (where your DNS already lives), Vercel, Netlify all include one free</td>
+</tr>
+</tbody></table></div>
+<p>Try one right now. Ask your AI:</p>
+<pre><code>Add rate limiting to my app: each visitor can submit the form at most
+10 times per minute (per IP). If they go over, show a friendly message:
+&quot;Whoa, slow down — try again in a minute.&quot; Explain how it works in
+plain English.
+</code></pre>
+<p>And two habits that cost nothing:</p>
+<ul>
+<li><strong>Build with sandbox keys.</strong> Most paid services give <em>test</em> keys that act
+real but cost nothing (Stripe&#39;s test cards are famous). Swap to live keys
+only when you ship.</li>
+<li><strong>Turn on what&#39;s free by default.</strong> Ask your AI: <em>&quot;What abuse protection
+(DDoS shield, rate limiting) does my hosting platform include, and how do I
+make sure it&#39;s on?&quot;</em></li>
+</ul>
 <hr>
 </section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
 <ul>
 <li><em>&quot;Is there anything in my project that looks like a secret or API key that
 shouldn&#39;t be in git? Check before I push.&quot;</em></li>
+<li><em>&quot;Create a .env file with empty entries and the code that reads them — I&#39;ll
+paste the real values myself. Never ask me to paste secrets in chat.&quot;</em></li>
+<li><em>&quot;I committed a secret but haven&#39;t pushed: undo that commit, keep my
+changes, move the secret to .env, and commit a clean version.&quot;</em></li>
+<li><em>&quot;I accidentally pushed a secret. Walk me through rotating it first, then
+removing it from git history, step by step, calmly.&quot;</em></li>
+<li><em>&quot;Add rate limiting: max 10 requests per minute per visitor on this
+endpoint, with a friendly &#39;slow down&#39; message.&quot;</em></li>
 <li><em>&quot;Add this new feature using an environment variable from .env — do not
 hardcode the value in the code.&quot;</em></li>
-<li><em>&quot;I accidentally committed a secret. Walk me through rotating it and
-removing it from git history, step by step, calmly.&quot;</em></li>
 </ul>
 </section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>Your project has a <code>.env</code> file holding a (fake) key</li>
 <li><span class="cb" aria-hidden="true"></span><code>.gitignore</code> lists <code>.env</code>, and <code>git status</code> proves git ignores it</li>
-<li><span class="cb" aria-hidden="true"></span>You looked at your repo on GitHub and confirmed the key isn&#39;t there</li>
+<li><span class="cb" aria-hidden="true"></span>You did the no-peek drill: the AI built the <code>.env</code> scaffolding and never
+saw a value</li>
 <li><span class="cb" aria-hidden="true"></span>You ran the &quot;look before you push&quot; drill: <code>git add .</code> → <code>git status</code> → check</li>
+<li><span class="cb" aria-hidden="true"></span>You can recite the rule: <em>unpushed = erasable, pushed = rotate</em></li>
 <li><span class="cb" aria-hidden="true"></span>You did one rotation drill (revoke + regenerate) at a real service</li>
-<li><span class="cb" aria-hidden="true"></span>You can finish the sentence: &quot;If a secret leaks, first I ______ it&quot;</li>
+<li><span class="cb" aria-hidden="true"></span>Your app has a rate limit, and you know where spend caps live</li>
 </ul>
 </section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
 <div class="tw"><table>
@@ -214,8 +331,32 @@ removing it from git history, step by step, calmly.&quot;</em></li>
 <td>The do-not-pack list: files git will never save</td>
 </tr>
 <tr>
+<td>Git reset</td>
+<td>Take back an unpushed save point while keeping the work</td>
+</tr>
+<tr>
+<td>History</td>
+<td>The record of all pushed commits. Forever. Bots read it</td>
+</tr>
+<tr>
 <td>Rotation</td>
 <td>Leaked? Revoke the old key, create a new one. Change the locks</td>
+</tr>
+<tr>
+<td>Rate limit</td>
+<td>A ceiling on how often one visitor (IP or user) can use your app</td>
+</tr>
+<tr>
+<td>DDoS</td>
+<td>Flooding a site with fake traffic until real people can&#39;t use it</td>
+</tr>
+<tr>
+<td>Sandbox / test key</td>
+<td>A key that behaves real but costs nothing — for building</td>
+</tr>
+<tr>
+<td>Spend cap</td>
+<td>A hard ceiling a service enforces on your monthly bill</td>
 </tr>
 <tr>
 <td>Secret manager</td>
@@ -224,17 +365,23 @@ removing it from git history, step by step, calmly.&quot;</em></li>
 </tbody></table></div>
 </section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
 <ul>
-<li><strong>&quot;I already committed/pushed a real key!&quot;</strong> Don&#39;t hide. <strong>Revoke/rotate the
-key first</strong> (Part D) — a revoked key can&#39;t hurt you even if it&#39;s visible.
-Then ask your AI: <em>&quot;Help me remove a secret from my git history and push
-the cleaned version.&quot;</em> Removing history is fiddly; rotation makes it urgent,
-not catastrophic.</li>
+<li><strong>&quot;I committed a real key and haven&#39;t pushed!&quot;</strong> Nothing is history yet —
+take the commit back (Part D: reset, move the secret to <code>.env</code>, commit
+clean). Then breathe.</li>
+<li><strong>&quot;I already pushed a real key.&quot;</strong> Don&#39;t hide and don&#39;t trust history
+surgery. <strong>Rotate first</strong> (Part E) — a revoked key can&#39;t hurt you even
+while it&#39;s visible. Then ask your AI: <em>&quot;Help me remove a secret from my
+git history and push the cleaned version.&quot;</em></li>
 <li><strong>My app can&#39;t find the key / feature stopped working.</strong> Usually the code
 isn&#39;t reading <code>.env</code> correctly. Ask: <em>&quot;The app can&#39;t find my environment
 variable — check how the code reads .env and fix it.&quot;</em></li>
-<li><strong>I pasted a real secret into the AI chat.</strong> Rotate that key now (Part D).
-Then delete what you can from the chat/history, and move on. Rotation fixes
-pastes, too.</li>
+<li><strong>I pasted a real secret into the AI chat.</strong> Rotate that key now (Part E).
+Then delete what you can from the chat/history, and move on. Rotation
+fixes pastes, too.</li>
+<li><strong>My bill spiked / my app is getting hammered.</strong> Rate limit the endpoint
+(Part G), check the spend cap, and if the abuse involved one of <em>your</em>
+keys, rotate. Ask your AI: <em>&quot;My [endpoint] is being called way too much —
+add per-IP rate limiting and tell me what protections my host includes.&quot;</em></li>
 <li><strong>Is [this string] a secret?</strong> If it&#39;s long, gibberish-looking, and unlocks
 access to something — treat it as one. Ask your AI: <em>&quot;What is this kind of
 credential used for?&quot;</em> (but paste a <strong>redacted</strong> version, e.g. <code>sk-abc…xyz</code>).</li>
