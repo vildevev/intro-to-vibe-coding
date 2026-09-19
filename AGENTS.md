@@ -1,31 +1,28 @@
-# AGENTS.md — repository memory
+# AGENTS.md — Intro to Vibe Coding course repo
 
-Keep this file under one page. Add a rule when the same mistake happens twice.
+This repo contains course material, not an app. Challenges are written for
+**non-technical learners** using an AI coding agent (like this one) for the
+first time.
 
-## Commands
+## Writing rules
 
-- Build: `make build` (must finish with "Build succeeded")
-- Test: `make test` (all green; never skip or delete a failing test)
-- Lint: `make lint` (zero warnings)
-- Itest: `make itest` (integration, needs docker)
+- Audience has never used a terminal, git, or a code editor. Assume zero.
+- Plain language first; introduce a technical term only with an everyday
+  analogy, and collect terms in the challenge's jargon table.
+- Every challenge: a story ("why you should care"), hands-on steps, exact
+  copy-paste prompts for the AI, a "you passed when" checklist, and a
+  recovery section for when it goes wrong.
+- The AI does the typing; the learner makes the decisions and verifies.
+  Never require memorizing commands.
 
-## Verifying your work
+## Structure
 
-Run build, test, and lint before reporting any task complete, and paste the output.
-If a test fails, fix the code, not the test.
+- `README.md` — course home and map
+- `NN-slug/CHALLENGE.md` — one challenge per numbered folder
+- `CHEATSHEET.md` — printable one-pagers per topic
 
 ## Conventions
 
-<Language/framework conventions, formatting, naming.>
-
-## Architecture
-
-<One-paragraph mental model: main modules and data flow.>
-
-## Things the agent gets wrong
-
-<Each mistake, its fix, and how to check for it.>
-
-## Hooks
-
-<Deterministic hooks and what they enforce.>
+- Keep `node_modules/`, `.env`, and `dist/` out of git (already in .gitignore).
+- Challenge folders may contain starter files learners practice on; keep them
+  deliberately breakable.
