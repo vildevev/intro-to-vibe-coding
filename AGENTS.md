@@ -34,8 +34,10 @@ the regenerated `docs/`.
 
 ## Deploying
 
-GitHub Pages: repo Settings → Pages → Deploy from branch → `main` → `/docs`.
-No build step runs on GitHub's side; `docs/` is committed pre-built.
+Live at `getglod.com` (GitHub Pages, deploy-from-branch, no build step on
+GitHub's side; `docs/` is committed pre-built). `docs/CNAME` pins the custom
+domain — keep it in the build output. DNS is on Cloudflare: apex A records
+point at GitHub's 185.199.108–111.153, `www` CNAMEs to `vildevev.github.io`.
 
 ## Conventions
 
