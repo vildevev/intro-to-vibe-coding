@@ -220,6 +220,8 @@ function buildChallenge(ch, idx) {
 fs.rmSync(DOCS, { recursive: true, force: true });
 fs.mkdirSync(path.join(DOCS, 'assets'), { recursive: true });
 fs.writeFileSync(path.join(DOCS, '.nojekyll'), '');
+// custom domain for GitHub Pages — only push this once learn.getglod.com DNS exists
+fs.writeFileSync(path.join(DOCS, 'CNAME'), 'learn.getglod.com\n');
 fs.copyFileSync(path.join(ROOT, 'site', 'style.css'), path.join(DOCS, 'assets', 'style.css'));
 
 fs.writeFileSync(path.join(DOCS, 'index.html'), buildHome());
