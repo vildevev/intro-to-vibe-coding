@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Learn to see what the AI changed before you accept it — the 10-second habit that turns "why is everything broken?" into "ah, I see what you did there."">
+<title>Challenge 05: Trust, But Verify — Intro to Vibe Coding</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../index.html#course-map">Course map</a>
+    <a href="../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">05</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 05</span><span class="chip">about 45 minutes</span></p>
+    <h1>Trust, But Verify</h1>
+    <p class="mission"><strong>Mission.</strong> Learn to <em>see</em> what the AI changed before you accept it — the 10-second habit that turns &quot;why is everything broken?&quot; into &quot;ah, I see what you did there.&quot;</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Priya asked her AI for one button. It helpfully rewrote 6 files, &quot;modernized&quot;
+her design, and renamed her main page. She said &quot;yes&quot; to the changes without
+looking — why would she? She can&#39;t read code. Two hours later her site was a
+stranger.</p>
+<p>The trap for non-coders is thinking review isn&#39;t for you: <em>&quot;I can&#39;t read code,
+so why look?&quot;</em> Because <strong>you don&#39;t review code — you review <em>behavior</em>.</strong> What
+changed? Where? Did it touch what you asked for, or extra things? Does the
+result still do what it did before? That&#39;s a director watching dailies, not a
+cinematographer.</p>
+<p>And the tool for watching is wonderfully visual: the <strong>diff</strong> — a before/after
+photo of your files, deletions in red, additions in green.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>What a <strong>diff</strong> is and how to read one (yes, you — it&#39;s made for humans)</li>
+<li>Reviewing at three levels: <em>what changed</em>, <em>is it what I asked</em>, <em>does it still work</em></li>
+<li>How to reject changes gracefully (and why rejecting is a <em>feature</em>)</li>
+<li>Why small requests make review trivial (and big ones make it impossible)</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Challenges 1–4 done (save points + a page + the debugging loop)</li>
+<li><span class="cb" aria-hidden="true"></span>A save point made — you&#39;re about to generate changes on purpose</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Read your first diff (10 min)</h2>
+<ol>
+<li><p>Ask your AI for one small, visible change:</p>
+<pre><code>Add a footer to my page: &quot;© 2026 — made with vibes&quot;. Change nothing else.
+</code></pre>
+</li>
+<li><p>Now <em>watch the receipt</em>. Type it yourself:</p>
+<pre><code>git diff
+</code></pre>
+<p>You&#39;ll see something like:</p>
+<pre><code class="language-diff"><span class="add">+ &lt;footer&gt;© 2026 — made with vibes&lt;/footer&gt;</span>
+</code></pre>
+<p>Green <code>+</code> lines = added. Red <code>−</code> lines = removed. That&#39;s the whole skill of
+reading a diff. You just reviewed a change like an engineer.</p>
+</li>
+<li><p>Before you accept <em>anything</em> in your AI tool, you can also just ask:</p>
+<pre><code>Show me the diff of what you&#39;re about to do, and explain each change
+in one plain-English sentence.
+</code></pre>
+<p>Make this your default. The AI should always show its receipt <em>before</em>
+charging the card.</p>
+</li>
+</ol>
+</section><section class="sec"><h2>Part B — The three review questions (15 min)</h2>
+<p>For every change, ask — in order:</p>
+<ol>
+<li><strong>What changed?</strong> (the diff: which files, added vs. removed)</li>
+<li><strong>Is it what I asked for — and nothing else?</strong> This is the big one. A
+request for &quot;one button&quot; that also &quot;improves&quot; your CSS and renames files is
+scope creep from an intern who got excited. Extra changes = unreviewed risk.</li>
+<li><strong>Does everything still work?</strong> Not just the new thing — the old things.
+Click the buttons. Does the page still load? (Pros call this &quot;not breaking
+the other stuff.&quot; The AI rarely checks on its own; it moves fast.)</li>
+</ol>
+<p>Practice the play on each of these, reviewing the diff <em>before</em> looking at
+the page:</p>
+<pre><code>Add a dark mode toggle button to my page.
+</code></pre>
+<pre><code>Change all my headings to a different font.
+</code></pre>
+<pre><code>Add a &quot;guestbook&quot; section where visitors could leave a name and message.
+</code></pre>
+<p>For each: read the diff → ask &quot;did it touch anything besides the ask?&quot; →
+check the page → check an <em>old</em> feature too.</p>
+</section><section class="sec"><h2>Part C — Reject like a boss (10 min)</h2>
+<p>Rejection is a tool, not a failure. It&#39;s the moment you&#39;re the director.</p>
+<ol>
+<li><p>Ask for something you&#39;ll deliberately refuse:</p>
+<pre><code>Redesign my whole page in a minimalist style.
+</code></pre>
+</li>
+<li><p>Review the diff. Now, choose your response from the pro menu:</p>
+<ul>
+<li><strong>Full reject</strong> — <em>&quot;Undo all of that, back to the last commit. We&#39;re not
+doing the redesign.&quot;</em></li>
+<li><strong>Partial accept</strong> — <em>&quot;Keep the spacing changes, undo everything else.&quot;</em></li>
+<li><strong>Defer</strong> — <em>&quot;Save this as an idea for later — note it in a file called
+IDEAS.md and undo it for now.&quot;</em></li>
+</ul>
+</li>
+<li><p>Verify the rejection actually happened: <code>git status</code> (or <code>git diff</code>) should
+show a clean project; the page should look like before. Then commit the
+state you&#39;re happy with.</p>
+</li>
+</ol>
+<blockquote>
+<p>💡 The diff + the time machine make rejection <em>free</em>. This combo is why
+vibe coders get to be picky.</p>
+</blockquote>
+</section><section class="sec"><h2>Part D — Why small requests are a review strategy (10 min)</h2>
+<p>Think about what you just did. For a one-line footer, review took ~15 seconds
+and you caught everything. Now imagine reviewing &quot;redesign everything&quot; —
+hundreds of changed lines, no chance.</p>
+<p><strong>Small requests aren&#39;t a style preference — they&#39;re the only way review
+stays possible.</strong> The math:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Request size</th>
+<th>Diff size</th>
+<th>Can you actually review it?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>One button</td>
+<td>~5 lines</td>
+<td>Yes, in seconds</td>
+</tr>
+<tr>
+<td>One feature</td>
+<td>~30–100 lines</td>
+<td>Yes, with the 3 questions</td>
+</tr>
+<tr>
+<td>&quot;Make it better&quot;</td>
+<td>~everything</td>
+<td>No. This is how sites become strangers</td>
+</tr>
+</tbody></table></div>
+<p>Make a save point after every reviewed-and-approved change. Then your
+rejection menu always works, and one bad change never compounds into another.</p>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Show me the diff and explain each change in one sentence before applying.&quot;</em></li>
+<li><em>&quot;Did you change anything beyond what I asked for? Show me if so.&quot;</em></li>
+<li><em>&quot;What could this change break? Which existing features should I re-test?&quot;</em></li>
+<li><em>&quot;Undo that completely — restore to the last commit.&quot;</em></li>
+<li><em>&quot;Change exactly one thing: X. Touch nothing else, and confirm that when
+you&#39;re done.&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You read a diff with your own eyes and could say what was added/removed</li>
+<li><span class="cb" aria-hidden="true"></span>You caught (on purpose or by luck) the AI doing more than you asked — and named it</li>
+<li><span class="cb" aria-hidden="true"></span>You rejected a change fully or partially, and verified the rejection</li>
+<li><span class="cb" aria-hidden="true"></span>You can recite the 3 review questions without looking</li>
+<li><span class="cb" aria-hidden="true"></span>You know why &quot;make it better&quot; is an unreviewable request</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Diff</td>
+<td>Before/after photo of your files: red = removed, green = added</td>
+</tr>
+<tr>
+<td>Scope creep</td>
+<td>The AI doing extra things you didn&#39;t ask for</td>
+</tr>
+<tr>
+<td>Review</td>
+<td>Reading the receipt before paying: what changed, is it right, what breaks?</td>
+</tr>
+<tr>
+<td>Reject / revert</td>
+<td>Undo a change — free and shameless when you have save points</td>
+</tr>
+<tr>
+<td>Refactor</td>
+<td>Rewriting how code works without changing what it does. Occasionally needed; rarely urgent; always worth asking &quot;why now?&quot;</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>The diff is enormous and unreadable.</strong> That&#39;s the signal, not a problem to
+push through: reject it, and re-ask in smaller bites (Challenge 3).</li>
+<li><strong>The AI says &quot;trust me, this is better.&quot;</strong> No intern gets &quot;trust me&quot; past
+the director. Same three questions.</li>
+<li><strong>You approved, and now something else broke.</strong> Find your last good save
+point (<code>git log --oneline</code>), restore, re-do the change smaller. This is the
+system working, not failing.</li>
+<li><strong>You can&#39;t tell what a changed line <em>means</em>.</strong> You don&#39;t need to. Ask:
+<em>&quot;In plain English, what does this line make the page do?&quot;</em> Behavior, not
+syntax — that&#39;s the level you review at.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../../challenges/06-ship-it/">Challenge 6 — Ship It</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/04-debug-red-text/"><span>Previous</span><strong>The Red Text</strong></a>
+    <a class="next" href="../../challenges/06-ship-it/"><span>Next</span><strong>Ship It</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+</body>
+</html>

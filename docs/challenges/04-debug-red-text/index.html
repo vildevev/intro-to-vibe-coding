@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Turn error messages from panic fuel into the most useful thing your AI can receive. Fix 3 planted bugs without breaking a sweat.">
+<title>Challenge 04: The Red Text — Intro to Vibe Coding</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../index.html#course-map">Course map</a>
+    <a href="../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">04</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 04</span><span class="chip">about 45 minutes</span></p>
+    <h1>The Red Text</h1>
+    <p class="mission"><strong>Mission.</strong> Turn error messages from panic fuel into the most useful thing your AI can receive. Fix 3 planted bugs without breaking a sweat.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Everyone remembers their first wall of red text. Heart rate up, stomach down,
+the sure feeling that you broke something irreplaceable and everyone can tell.</p>
+<p>Here&#39;s the reframe that changes everything: <strong>an error message is a clue, not
+a verdict.</strong> It&#39;s the program saying, as precisely as it can, &quot;I stopped
+<em>here</em>, because of <em>this</em>.&quot; Programs can&#39;t lie and can&#39;t be sarcastic — the
+red text is the most honest thing in your project. And no creature on Earth is
+better at reading honest clues than your AI… <em>if you hand it the clue.</em></p>
+<p>Non-technical vibe coders fail at debugging for exactly one reason: they
+describe their feelings (&quot;it&#39;s just broken??&quot;) instead of delivering the
+evidence. Today you learn to deliver evidence.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>How to <em>read</em> the shape of an error (which file, which line, what complaint)</li>
+<li>The debugging loop: <strong>reproduce → capture → describe → fix → verify → save</strong></li>
+<li>What &quot;reproducing&quot; means and why it&#39;s 80% of debugging</li>
+<li>When to fix, and when to time-travel back (Challenge 1)</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Challenges 0–1 done (a page, and save points)</li>
+<li><span class="cb" aria-hidden="true"></span><strong>Make a save point right now.</strong> You&#39;re about to invite bugs in.</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Release the bugs (5 min)</h2>
+<p>Ask your AI:</p>
+<pre><code>This is a debugging drill. Secretly plant exactly 3 bugs in my project
+that will cause visible errors or obvious breakage when I open the page.
+Do NOT tell me what they are or where. Keep them different in kind:
+one crash-style error, one thing that looks fine but is wrong, one
+styling break. Commit the bugged version with the message &quot;debug drill:
+3 bugs planted&quot;.
+</code></pre>
+<ol>
+<li>Open the page. Find what breaks. That first part — <em>making the problem
+show up on demand</em> — is called <strong>reproducing</strong>, and it&#39;s the step
+professionals never skip. A bug you can trigger at will is a solved bug;
+a bug that &quot;happens sometimes&quot; is a horror movie.</li>
+<li>Refresh the page (or reopen it) and watch it break again. That&#39;s a
+reproducible bug. Congratulations, you&#39;re debugging now.</li>
+</ol>
+</section><section class="sec"><h2>Part B — Deliver the evidence (15 min)</h2>
+<p>For each bug, you&#39;ll run the same play. Where the error text lives:</p>
+<ul>
+<li><strong>On the page itself</strong> (crash-style errors)</li>
+<li><strong>In the browser console</strong>: press <code>F12</code> (Mac: <code>Cmd+Option+J</code>) → <strong>Console</strong>
+tab. Red text there is the program&#39;s private diary. (If that sounds scary:
+you&#39;re only <em>reading</em> it, never typing in it. Closing it is also safe.)</li>
+<li><strong>In your AI&#39;s terminal area</strong>, if it was running something</li>
+</ul>
+<p>Then use the template — this exact shape, every time:</p>
+<pre><code>A bug: [what you expected] — but instead [what actually happened].
+
+The error message says:
+[paste the exact red text, all of it]
+
+Here&#39;s how I make it happen: [open the page, click X, …]
+
+Explain the error in plain English first. Then propose the smallest
+possible fix and show me before applying it.
+</code></pre>
+<p>Notice what you&#39;re doing: <strong>expected vs. actual</strong> (the gap <em>is</em> the bug),
+<strong>the raw evidence</strong> (exact words, not your summary of them), and <strong>the
+recipe</strong> (how to reproduce). Plus two guardrails: <em>plain English first, show
+me before applying.</em> You&#39;re the detective&#39;s client, not the suspect.</p>
+<p>Fix all three bugs this way. One at a time. Verify each fix <em>before</em> asking
+for the next one (that&#39;s &quot;verify&quot; — the step everyone skips).</p>
+</section><section class="sec"><h2>Part C — Save the wins (10 min)</h2>
+<p>After each confirmed fix, the ritual (it&#39;s three lines now, not a mystery):</p>
+<pre><code>git add .
+git commit -m &quot;fixed: button did nothing — missing click handler&quot;
+git push
+</code></pre>
+<p>(<code>git push</code> if you set up GitHub.) Write the commit message as <strong>what was
+wrong, in plain words</strong> — Future You will search these one day.</p>
+<p>Then ask your AI to reveal:</p>
+<pre><code>Drill over. Where were the 3 bugs? Explain each in one plain-English
+sentence.
+</code></pre>
+<p>Compare your commits to its answers. You just documented 3 real bugs like a
+professional.</p>
+</section><section class="sec"><h2>Part D — Know when not to fix (5 min)</h2>
+<p>Some bugs you <em>fix</em> (the red text, clear cause, small change). Some you
+<em>time-travel past</em>:</p>
+<ul>
+<li>The AI broke something and neither of you can see why → go back to your
+last good save point and re-ask for the change differently. <strong>Re-asking is
+cheaper than fixing.</strong> Vibe coders have unlimited retries; use them.</li>
+<li>The &quot;fix&quot; is getting complicated (your AI starts saying things like &quot;we&#39;ll
+need to refactor&quot;) → stop. Restore, simplify the request.</li>
+</ul>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Explain this error in plain English before fixing anything.&quot;</em></li>
+<li><em>&quot;What are the 3 most likely causes, and how would we test which one it is?&quot;</em></li>
+<li><em>&quot;Fix it, then tell me how you&#39;d double-check the fix works.&quot;</em></li>
+<li><em>&quot;This error happened after your last change. What did you change that
+could have caused it?&quot;</em></li>
+<li><em>&quot;We&#39;ve tried this twice and it still breaks. Stop fixing — restore my last
+good commit, and let&#39;s re-ask in a different way.&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You found all 3 bugs (or made an honest attempt at each, with evidence)</li>
+<li><span class="cb" aria-hidden="true"></span>You pasted exact error text at least once — not a summary, the text itself</li>
+<li><span class="cb" aria-hidden="true"></span>You committed after a fix, with a &quot;fixed: ___&quot; message</li>
+<li><span class="cb" aria-hidden="true"></span>You can name the loop: reproduce → capture → describe → fix → verify → save</li>
+<li><span class="cb" aria-hidden="true"></span>You know where the console lives (F12) and that reading it is safe</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Bug</td>
+<td>When the program does something other than what was intended</td>
+</tr>
+<tr>
+<td>Error / exception</td>
+<td>The program stopping and explaining why — the red text</td>
+</tr>
+<tr>
+<td>Reproduce</td>
+<td>Make the bug happen on demand. Solvable bugs are reproducible bugs</td>
+</tr>
+<tr>
+<td>Console</td>
+<td>The browser&#39;s backstage diary (F12). Read-only for you</td>
+</tr>
+<tr>
+<td>Stack trace</td>
+<td>The error&#39;s longer &quot;how I got here&quot; story — paste it all</td>
+</tr>
+<tr>
+<td>Debugging</td>
+<td>Detective work: evidence → hypothesis → test → fix</td>
+</tr>
+<tr>
+<td>Regression</td>
+<td>Something that used to work, broke again. Save points catch these</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>There&#39;s no error message — it&#39;s just wrong.</strong> Describe expected vs. actual
+anyway (&quot;I expected the photo left of the text; it&#39;s below&quot;). Vague bugs just
+need sharper descriptions, not different tools.</li>
+<li><strong>The red text mentions files you&#39;ve never heard of.</strong> Normal — those are
+the program&#39;s internal files. Paste everything anyway; your AI reads the
+noise fluently.</li>
+<li><strong>The AI &quot;fixed&quot; it and now there are two new errors.</strong> Happens. Time-travel
+to your last good commit and re-ask smaller. No feelings, just retries.</li>
+<li><strong>You feel genuinely overwhelmed.</strong> Close the laptop. Seriously. Errors have
+no deadline; the time machine means nothing is lost. Return with tea.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../../challenges/05-review-the-diff/">Challenge 5 — Trust, But Verify</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/03-prompt-like-a-pro/"><span>Previous</span><strong>Prompt Like a Pro</strong></a>
+    <a class="next" href="../../challenges/05-review-the-diff/"><span>Next</span><strong>Trust, But Verify</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+</body>
+</html>

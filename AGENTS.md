@@ -17,9 +17,25 @@ first time.
 
 ## Structure
 
-- `README.md` — course home and map
+- `README.md` — course home and map (also the website's landing content)
 - `NN-slug/CHALLENGE.md` — one challenge per numbered folder
 - `CHEATSHEET.md` — printable one-pagers per topic
+- `build.mjs` + `site/style.css` — static-site generator and design system
+- `docs/` — generated website (committed; GitHub Pages serves this folder)
+
+## Commands
+
+- Build site: `npm install` (once), then `npm run build` (regenerates `docs/`)
+- Preview site: `python3 -m http.server 8142 --directory docs`
+
+Edit the markdown sources, never `docs/` — it is generated output. After
+changing any course content, run the build and commit both the source and
+the regenerated `docs/`.
+
+## Deploying
+
+GitHub Pages: repo Settings → Pages → Deploy from branch → `main` → `/docs`.
+No build step runs on GitHub's side; `docs/` is committed pre-built.
 
 ## Conventions
 

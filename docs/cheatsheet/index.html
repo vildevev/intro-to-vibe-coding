@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Printable one-page cheat sheets: git, secrets, prompting, debugging, reviewing and shipping.">
+<title>Cheat Sheets — Intro to Vibe Coding</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../index.html#course-map">Course map</a>
+    <a href="../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg"><div class="level-meta">
+      <p class="level-chips"><span class="chip">Reference</span><span class="chip">Print me</span></p>
+      <h1>The Cheat Sheets</h1>
+      <p class="mission"><strong>Mission.</strong> One page per topic. Print them, tape them to your monitor, survive anything.</p>
+    </div></div>
+    <div class="prose sheet"><p>One page per topic. Print, tape to monitor, survive anything.</p>
+<section class="sec sec-sheet"><h2>💾 Git — the time machine</h2>
+<p><strong>The ritual (after every good moment):</strong></p>
+<pre><code>git add .                          pack the suitcase
+git commit -m &quot;what I just did&quot;    label &amp; seal it (plain words!)
+git push                           upload to the cloud (GitHub)
+</code></pre>
+<p><strong>Looking around (never breaks anything):</strong></p>
+<pre><code>git status      what&#39;s going on right now?
+git log --oneline  my save points, newest first
+git diff        what exactly changed (red = removed, green = added)
+</code></pre>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>Save before you renovate — commit before every big AI change.</li>
+<li>Commit messages in plain words Future You can search.</li>
+<li><code>git log</code> trapped your terminal? Press <code>q</code>.</li>
+<li>Never truly lost if it was ever committed. Panic → <code>git log</code> → restore.</li>
+<li>Branch = parallel universe for experiments. Merge = bring the good ones home.</li>
+</ul>
+<hr>
+</section><section class="sec sec-sheet"><h2>🔐 Secrets — don&#39;t get hacked</h2>
+<ul>
+<li>A <strong>secret</strong> = any string a program uses to prove permission: API keys,
+tokens, passwords. Long + gibberish-looking + unlocks something = secret.</li>
+<li>Secrets live in <strong><code>.env</code></strong>, never in code, never in chats, screenshots,
+emails, or group chats.</li>
+<li><strong><code>.gitignore</code></strong> is the do-not-pack list. It must contain <code>.env</code>.</li>
+<li><strong>Look before you push:</strong> after <code>git add .</code>, run <code>git status</code> and read every
+filename. Something shouldn&#39;t be there? <code>git restore --staged &lt;file&gt;</code>.</li>
+<li><strong>Leaked? Revoke first, panic second.</strong> (Rotation = change the locks.)</li>
+<li>The AI never needs your real password or key. If it asks: red flag.</li>
+<li>Bots scan GitHub for keys within minutes. This is not paranoia; it&#39;s weather.</li>
+</ul>
+<p><strong>Before you deploy, view your live page source and search for <code>key</code>, <code>sk-</code>,
+<code>token</code>. Nothing there = ship clean.</strong></p>
+<hr>
+</section><section class="sec sec-sheet"><h2>🗣️ Prompting — brief, don&#39;t wish</h2>
+<p>The AI is a brilliant intern with total amnesia. Remove the guessing.</p>
+<p><strong>The 4 parts:</strong></p>
+<ol>
+<li><strong>Role</strong> — &quot;you are a web designer for cozy neighborhood shops&quot;</li>
+<li><strong>Goal</strong> — what to build, for whom</li>
+<li><strong>Constraints</strong> — colors, sections, size, &quot;don&#39;t touch X&quot;, &quot;one page&quot;</li>
+<li><strong>Examples / context</strong> — the actual hero line, the vibe, a site you like</li>
+</ol>
+<p><strong>Force multipliers:</strong></p>
+<ul>
+<li><em>&quot;Ask me 3–5 questions before you start.&quot;</em></li>
+<li>Small bites: one judgment call per prompt. Two &quot;ands&quot; = two prompts.</li>
+<li>Keep an <strong><code>AGENTS.md</code></strong> house-rules file: explain in plain English, ask
+before deleting, one change at a time, secrets in <code>.env</code>.</li>
+<li><em>&quot;Here&#39;s what I wanted: X. Here&#39;s what I got: Y. What should I have said?&quot;</em></li>
+</ul>
+<hr>
+</section><section class="sec sec-sheet"><h2>🐞 Debugging — errors are evidence</h2>
+<p><strong>The loop:</strong> reproduce → capture → describe → fix → verify → <strong>save</strong>.</p>
+<p><strong>The evidence template:</strong></p>
+<pre><code>A bug: I expected [X] but instead [Y].
+
+The error says:
+[paste the EXACT red text — all of it]
+
+How I make it happen: [open page, click the button, …]
+
+Explain in plain English first. Propose the smallest fix, show me
+before applying.
+</code></pre>
+<ul>
+<li>Red text is the program&#39;s honest diary, not a verdict.</li>
+<li>Console = the diary&#39;s location: <code>F12</code> (Mac: <code>Cmd+Option+J</code>). Reading is safe.</li>
+<li>No error but something&#39;s wrong? Describe expected vs. actual anyway.</li>
+<li><strong>Stuck 20 minutes → restore last good commit, re-ask smaller.</strong>
+Retries are free. Marathons are expensive.</li>
+</ul>
+<hr>
+</section><section class="sec sec-sheet"><h2>🔍 Reviewing — trust, but verify</h2>
+<p>Before accepting any AI change, three questions:</p>
+<ol>
+<li><strong>What changed?</strong> (<code>git diff</code> — red/green receipt)</li>
+<li><strong>Is it what I asked — and <em>nothing else</em>?</strong> (scope creep is the #1 hazard)</li>
+<li><strong>Does everything still work?</strong> (old features too, not just the new one)</li>
+</ol>
+<p><strong>The pro menu when it&#39;s wrong:</strong> full reject (<em>&quot;restore to the last
+commit&quot;</em>) · partial accept (<em>&quot;keep the spacing, undo the rest&quot;</em>) ·
+defer (<em>&quot;note it in IDEAS.md and undo&quot;</em>).</p>
+<p>Request size math: one button = 5 lines = reviewable in seconds.
+&quot;Make it better&quot; = everything = unreviewable. Small requests are a
+<em>review strategy</em>.</p>
+<hr>
+</section><section class="sec sec-sheet"><h2>🚀 Shipping — the ship loop</h2>
+<pre><code>small change → review diff → commit → push → live in ~1 minute
+</code></pre>
+<ul>
+<li><strong>Static</strong> (paper: menu, portfolio, invite) → GitHub Pages, free:
+repo → Settings → Pages → deploy from <code>main</code>.</li>
+<li><strong>Dynamic</strong> (needs memory: accounts, saving, emailing) → needs a server
+and a hosting service. Secrets go in the host&#39;s <em>settings panel</em>
+(&quot;Environment Variables&quot;), never in code.</li>
+<li>After any deployment: check for 404s (did you push?), hard-refresh
+(<code>Cmd+Shift+R</code>) for staleness, secrets-scan the live source.</li>
+</ul>
+<p><strong>The 10 rules of graduation:</strong> one folder per project · git init first ·
+save before renovating · secrets in <code>.env</code> · revoke before panicking ·
+brief, don&#39;t wish · small bites · read the receipt · errors are evidence ·
+ship the small real thing.</p>
+</section></div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Use everything. Build something a real human needs, ship it, and send the link to someone who matters. This one's yours.">
+<title>Challenge 07: Capstone: Build & Ship Something Real — Intro to Vibe Coding</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../index.html#course-map">Course map</a>
+    <a href="../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">07</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 07</span><span class="chip">2–4 hours (spread over a day or a week — save points make it resumable)</span></p>
+    <h1>Capstone: Build & Ship Something Real</h1>
+    <p class="mission"><strong>Mission.</strong> Use everything. Build something a real human needs, ship it, and send the link to someone who matters. This one&#39;s yours.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Everything before this was the dojo. This is the first walk outside.</p>
+<p>One warning: the capstone feels different because <em>nobody hands you the
+next step</em>. That&#39;s not a bug — that&#39;s the whole skill. From here on, the
+course&#39;s voice in your head is the checklist at the bottom of this file.
+Run it in order, every time, for anything that matters.</p>
+</section><section class="sec sec-before"><h2>📋 The menu</h2>
+<p>Pick something a <strong>specific person</strong> needs — it&#39;s more motivating than
+&quot;practice project.&quot; Good first ships:</p>
+<ul>
+<li><strong>The personal one-pager</strong> — you, your work, your links. Send it to someone hiring.</li>
+<li><strong>The small-business page</strong> — a friend&#39;s shop, a menu, opening hours, a map link.</li>
+<li><strong>The event invite</strong> — a birthday, a community dinner, a garage sale: what,
+when, where, RSVP instructions.</li>
+<li><strong>The useful tool</strong> — a tip calculator, a packing-list generator, a
+&quot;what&#39;s-for-dinner decider&quot; button, a countdown to something you dread.</li>
+</ul>
+<p>Pick now. Small and real beats big and imaginary: a live tip calculator
+outranks an unfinished social network, every time.</p>
+<hr>
+</section><section class="sec"><h2>The build — phase by phase</h2>
+<h3>Phase 1 — Intent (10 min, on paper)</h3>
+<p>Answer in writing before touching the AI:</p>
+<ul>
+<li>Who is this for? (A person, by name if possible)</li>
+<li>What should a visitor <strong>do</strong> on this site? (One primary action: call, buy,
+RSVP, laugh, calculate…)</li>
+<li>What&#39;s the vibe? (Three adjectives. &quot;Clean and warm&quot;, not &quot;nice&quot;)</li>
+<li>What&#39;s explicitly <strong>not</strong> included? (No accounts. No payments. Whatever
+you&#39;re cutting — write it down, or the scope creep writes it for you.)</li>
+</ul>
+<h3>Phase 2 — House rules (10 min)</h3>
+<p>New folder, new <code>AGENTS.md</code>. Steal from Challenge 3, plus your scar tissue:</p>
+<pre><code># House rules
+- I&#39;m a beginner: explain every change in plain English before doing it
+- One small change at a time; ask before anything bigger
+- Ask before deleting or renaming files
+- Secrets never go in code; use .env
+- Before I push, remind me to review the diff
+</code></pre>
+<h3>Phase 3 — The brief (15 min)</h3>
+<p>One good prompt — role, goal, constraints, examples — and let it interview
+you. Build v1 as <strong>small bites</strong> (Challenge 3). Nothing else. Resist the
+&quot;also add…&quot; avalanche; that&#39;s what IDEAS.md is for:</p>
+<pre><code>Keep a running file called IDEAS.md. Anything I mention that&#39;s not
+for v1, add it there instead of building it.
+</code></pre>
+<h3>Phase 4 — The rhythm (the actual building, 1–2 hrs)</h3>
+<p>Loop, slowly and deliberately:</p>
+<p><strong>ask (small) → review diff → test in browser → commit → (push)</strong></p>
+<ul>
+<li>Save point after <em>every approved change</em> — this is the muscle, use it.</li>
+<li>Errors: reproduce, paste the exact text, expected-vs-actual (Challenge 4).</li>
+<li>Stuck 20+ minutes on one thing: restore last good commit, re-ask smaller.
+Retries are free; sunk-cost marathons are how weekends die.</li>
+<li>Checkpoint feeling: &quot;could I hand this URL to my person <em>right now</em> and not
+apologize?&quot; That&#39;s v1. Stop adding. (The rest of the menu is IDEAS.md&#39;s job.)</li>
+</ul>
+<h3>Phase 5 — The pre-flight check (15 min)</h3>
+<p>Before shipping, run the full inspection — out loud, like a pilot:</p>
+<ul>
+<li><span class="cb" aria-hidden="true"></span><code>git status</code> clean; <code>git log</code> shows sensible save-point messages</li>
+<li><span class="cb" aria-hidden="true"></span>Secrets audit: no keys/passwords in code; <code>.env</code> in <code>.gitignore</code>;
+<code>git status</code> doesn&#39;t list it</li>
+<li><span class="cb" aria-hidden="true"></span>No real personal data that shouldn&#39;t be public (yours or anyone else&#39;s)</li>
+<li><span class="cb" aria-hidden="true"></span>The 3 review questions on every change since the last good point</li>
+<li><span class="cb" aria-hidden="true"></span>Opened on a phone. Screens look sane, nothing overflows weirdly</li>
+<li><span class="cb" aria-hidden="true"></span>Ask your AI for a final pass: <em>&quot;Review my project like a skeptical
+senior developer: what would embarrass me publicly? Plain English.&quot;</em></li>
+</ul>
+<h3>Phase 6 — Ship it (15 min)</h3>
+<p>GitHub Pages (Challenge 6). Watch the green check. Open on your phone.</p>
+<h3>Phase 7 — The human test (5 min, non-negotiable)</h3>
+<p>Send the link to the person it&#39;s for — or the person who&#39;ll be honest.
+Watch them use it <em>without helping</em>. Every place they hesitate is a real bug
+report. Fix the top one, re-run the ship loop, send again.</p>
+<p>You have now done the full job. Not &quot;played with AI&quot; — <strong>shipped software,
+end to end, responsibly.</strong> That&#39;s rarer than you think.</p>
+<hr>
+</section><section class="sec sec-finish"><h2>🏁 Graduation: The Vibe Coder&#39;s Checklist</h2>
+<p>Print this. Run it top-to-bottom on every real project, forever:</p>
+<ol>
+<li><strong>One folder per project</strong> — know where you are.</li>
+<li><strong><code>git init</code> before anything else.</strong> Save points from minute one.</li>
+<li><strong>Save before you renovate.</strong> Commit before every big AI change.</li>
+<li><strong>Secrets live in <code>.env</code>,</strong> <code>.env</code> is in <code>.gitignore</code>, and no secret is
+ever pasted into a chat, email, or screenshot.</li>
+<li><strong>Leaked? Revoke first, panic second.</strong></li>
+<li><strong>Brief, don&#39;t wish:</strong> role, goal, constraints, example — or ask the AI
+to interview you first.</li>
+<li><strong>Small bites.</strong> If a request has two things you&#39;d judge separately,
+it&#39;s two requests.</li>
+<li><strong>Read the receipt:</strong> diff → &quot;did it touch only what I asked?&quot; → does the
+old stuff still work?</li>
+<li><strong>Errors are evidence:</strong> reproduce, paste exact text, expected vs. actual.
+Stuck 20 minutes? Restore and re-ask smaller.</li>
+<li><strong>Ship the small real thing</strong> — live URL, a human on it — then iterate.
+Perfect lives in IDEAS.md.</li>
+</ol>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Something you described exists on the public internet at a URL</li>
+<li><span class="cb" aria-hidden="true"></span>You ran the pre-flight check honestly, before shipping</li>
+<li><span class="cb" aria-hidden="true"></span>At least one human visited it, and you watched</li>
+<li><span class="cb" aria-hidden="true"></span>You fixed one thing they found confusing and re-shipped</li>
+<li><span class="cb" aria-hidden="true"></span>Your repo&#39;s <code>git log</code> reads like a story of the build</li>
+<li><span class="cb" aria-hidden="true"></span>The checklist feels like <em>your</em> checklist, not the course&#39;s</li>
+</ul>
+</section><section class="sec sec-next"><h2>🎓 Where to go next</h2>
+<ul>
+<li><strong>Level up secrets:</strong> password managers for humans, &quot;secret managers&quot; for
+apps, two-factor authentication everywhere.</li>
+<li><strong>Level up shipping:</strong> custom domains; a dynamic host when an idea needs a
+memory; asking your AI to explain &quot;databases&quot; when you&#39;re ready.</li>
+<li><strong>Level up collaboration:</strong> GitHub lets people copy (fork) and improve each
+other&#39;s work — you know enough to contribute to a project now.</li>
+<li><strong>The real secret:</strong> you just learned the <em>operating system</em> of building
+software — the tools, the safety habits, the review instincts. Tools will
+change yearly. The loop won&#39;t: <strong>brief, small bites, save points, verify,
+ship.</strong></li>
+</ul>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Mid-project dread: &quot;this is worse than when I started.&quot;</strong> Restore your
+best save point and re-brief. The list of commits is your undo history —
+dread is a signal to travel, not to quit.</li>
+<li><strong>The AI keeps missing the point of the project.</strong> Your Phase-1 intent
+isn&#39;t in its context. Paste your written answers into the prompt: &quot;keep
+this in mind for every change: …&quot; (or add it to <code>AGENTS.md</code>).</li>
+<li><strong>Scope creep (yours).</strong> IDEAS.md. Breathe. V1 ships, then v1.1.</li>
+<li><strong>It&#39;s almost good but you can&#39;t articulate what&#39;s wrong.</strong> Try:
+<em>&quot;Ask me 5 diagnostic questions about what feels off with this page.&quot;</em>
+Multiple choice is easier than essays.</li>
+<li><strong>Time&#39;s up, it&#39;s not done.</strong> Ship the smaller version that IS done.
+A live half-thing beats a perfect imaginary whole thing. Always.</li>
+</ul>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/06-ship-it/"><span>Previous</span><strong>Ship It</strong></a>
+    <a class="next" href="../../cheatsheet/"><span>Next</span><strong>The cheat sheets</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+</body>
+</html>

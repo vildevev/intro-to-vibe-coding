@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Learn the difference between telling the AI what you want and communicating it — the skill that decides whether you get a generic page or your page.">
+<title>Challenge 03: Prompt Like a Pro — Intro to Vibe Coding</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../index.html#course-map">Course map</a>
+    <a href="../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">03</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 03</span><span class="chip">about 45 minutes</span></p>
+    <h1>Prompt Like a Pro</h1>
+    <p class="mission"><strong>Mission.</strong> Learn the difference between <em>telling</em> the AI what you want and <em>communicating</em> it — the skill that decides whether you get a generic page or <strong>your</strong> page.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Two people ask their AI for &quot;a website for my bakery.&quot; One gets a beige,
+generic template with stock everything. The other gets a warm site with
+handwriting fonts, a Tuesday-specials banner, and a photo of the actual
+cinnamon rolls. Same AI. Same five minutes.</p>
+<p>The difference was never talent. The first person ordered like it&#39;s a vending
+machine. The second gave a proper brief — like they&#39;d brief a designer.</p>
+<p>Here&#39;s the model that fixes everything: <strong>the AI is a brilliant intern with
+total amnesia.</strong> World-class skills, zero memory of yesterday, no idea what&#39;s
+in your head, no idea what &quot;make it pop&quot; means. It will confidently build
+<em>whatever it guessed you meant.</em> Your job is to remove the guessing.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The 4 parts of a prompt that works: <strong>role, goal, constraints, examples</strong></li>
+<li>Why <strong>small requests</strong> beat big ones</li>
+<li><strong>AGENTS.md</strong> — a house-rules file the AI reads every time, so you stop
+repeating yourself</li>
+<li>How to let the AI interview <em>you</em></li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Challenge 0 done (a working page)</li>
+<li><span class="cb" aria-hidden="true"></span>A save point made (Golden Rule #1 — you&#39;re practicing it now, right?)</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — The two-bakery experiment (15 min)</h2>
+<p>You&#39;ll build the same thing twice. First, badly:</p>
+<ol>
+<li><p>In a <strong>new folder</strong> (ask your AI: <em>&quot;Create a folder called bakery-bad
+inside my course folder and work there&quot;</em>), type:</p>
+<pre><code>make a website for a bakery
+</code></pre>
+</li>
+<li><p>Look at the result. Fine. Beige. Could be anyone&#39;s bakery in any city.</p>
+</li>
+</ol>
+<p>Now, properly. In another new folder, <code>bakery-good</code>, type:</p>
+<pre><code>You are a web designer who specializes in cozy neighborhood shops.
+Build a one-page website for my bakery, &quot;Flour &amp; Fog&quot;, in a rainy
+coastal town.
+
+The vibe: warm, handmade, a little foggy. Handwriting-style headings,
+cream and deep-teal colors. NOT corporate, no stock-photo smiles.
+
+It must include:
+- a hero section: &quot;Fresh from the oven since 2021&quot;
+- a &quot;Today&#39;s specials&quot; section with 3 items and prices
+- an &quot;Our story&quot; paragraph (I&#39;ll give you details if you ask)
+- opening hours and a fake address
+
+Rules: ask me up to 3 questions before you start. Use placeholder
+photos with captions, not real images. Keep it to one page.
+</code></pre>
+<ol start="3">
+<li>Notice what happens: it asks you questions. Answer them. That&#39;s the
+intern interviewing the boss — encourage it forever.</li>
+<li>Compare the two bakeries. Same AI, same intern. You were the difference.</li>
+</ol>
+<p><strong>The 4 parts, named:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Bakery example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Role</strong> — who the AI is being</td>
+<td>&quot;web designer who specializes in cozy shops&quot;</td>
+</tr>
+<tr>
+<td><strong>Goal</strong> — what to build, for whom</td>
+<td>&quot;one-page site for Flour &amp; Fog&quot;</td>
+</tr>
+<tr>
+<td><strong>Constraints</strong> — the guardrails</td>
+<td>colors, sections, one page, placeholders, &quot;no corporate&quot;</td>
+</tr>
+<tr>
+<td><strong>Examples / context</strong> — what &quot;good&quot; looks like</td>
+<td>the exact hero line, &quot;rainy coastal town&quot;</td>
+</tr>
+</tbody></table></div>
+<p>You don&#39;t need all 4 every time. But when a result disappoints you, the
+missing part is almost always one of them.</p>
+</section><section class="sec"><h2>Part B — Small bites (10 min)</h2>
+<p>Now rebuild your own page — but this time watch request size.</p>
+<ol>
+<li><p>Ask for a big vague renovation:</p>
+<pre><code>Make my About Me page way better.
+</code></pre>
+</li>
+<li><p>Look at what came back. When you ask for &quot;better,&quot; the AI invents a
+definition of better. Sometimes it&#39;s nice! Often it&#39;s <em>its</em> taste, not
+yours. Save point, then undo it if you like (<code>git</code> — Challenge 1 pays off).</p>
+</li>
+<li><p>Now ask the same thing as three small, concrete bites, one at a time:</p>
+<pre><code>Add a &quot;Now&quot; section: 3 things I&#39;m currently into, as a list.
+</code></pre>
+<pre><code>Make the Now section a horizontal row of cards, each with an emoji.
+</code></pre>
+<pre><code>Add one sentence at the bottom in italics: &quot;Built with vibe coding,
+no hand-written code.&quot;
+</code></pre>
+</li>
+<li><p>Small bites give you a decision after every bite: <em>keep, tweak, or undo.</em>
+Big bites give you one giant &quot;surprise or undo.&quot; Which would you rather
+manage?</p>
+</li>
+</ol>
+<blockquote>
+<p>💡 Rule of thumb: if your prompt has an &quot;and&quot; joining two things you&#39;d want
+to judge separately, make it two prompts.</p>
+</blockquote>
+</section><section class="sec"><h2>Part C — House rules: AGENTS.md (15 min)</h2>
+<p>Tired of retyping &quot;keep it simple, explain changes in plain English, don&#39;t
+delete my sections&quot;? Every serious AI tool reads a settings file in your
+project — usually named <strong><code>AGENTS.md</code></strong> — before every task. It&#39;s the standing
+instructions / house rules. Write once, benefit forever.</p>
+<ol>
+<li><p>Ask your AI:</p>
+<pre><code>Create an AGENTS.md file in my project with these house rules:
+- I&#39;m a beginner; explain every change in plain English before doing it
+- Ask before deleting or renaming any file or section
+- Make one small change at a time; no big rewrites without asking
+- This project is for learning vibe coding — prefer simple over clever
+- Never put secrets or API keys in code; use .env (Challenge 2 rule)
+Then show me the file.
+</code></pre>
+</li>
+<li><p>Open it and edit the rules to taste. It&#39;s <em>your</em> house. (You&#39;re reading
+one right now, actually — this course repo has an <code>AGENTS.md</code> that tells
+every AI how to treat this course.)</p>
+</li>
+<li><p>Test it. Ask for something your rules should intercept:</p>
+<pre><code>Reorganize all my files into new folders and rename everything.
+</code></pre>
+<p>If it pauses and checks with you first — your house rules just worked.
+If it plows ahead: say <em>&quot;Undo that — my AGENTS.md says ask first. Follow
+the house rules.&quot;</em></p>
+</li>
+</ol>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Ask me 3–5 questions before you build this, so you get it right the first
+time.&quot;</em></li>
+<li><em>&quot;Give me 3 options with different trade-offs before you build.&quot;</em></li>
+<li><em>&quot;Here&#39;s what I wanted: X. Here&#39;s what I got: Y. What should I have said?&quot;</em>
+(the single best prompt for learning)</li>
+<li><em>&quot;Update AGENTS.md with the rule we just agreed on.&quot;</em> (recurring lessons
+become house rules)</li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You built the same thing twice and <em>saw</em> what a real brief changes</li>
+<li><span class="cb" aria-hidden="true"></span>You asked for a change as 3 small bites instead of 1 vague renovation</li>
+<li><span class="cb" aria-hidden="true"></span>Your project has an <code>AGENTS.md</code> with at least 3 house rules</li>
+<li><span class="cb" aria-hidden="true"></span>The AI asked you questions before building, at least once, because you told it to</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Prompt</td>
+<td>Your instruction to the AI. A brief, not a wish</td>
+</tr>
+<tr>
+<td>Role</td>
+<td>Who the AI should act as (&quot;you are a web designer…&quot;)</td>
+</tr>
+<tr>
+<td>Constraint</td>
+<td>A guardrail: colors, sizes, &quot;don&#39;t touch X&quot;</td>
+</tr>
+<tr>
+<td>AGENTS.md</td>
+<td>The house-rules file your AI reads every time it works in this folder</td>
+</tr>
+<tr>
+<td>Context</td>
+<td>What the AI can currently see. If it can&#39;t see it, it doesn&#39;t know it</td>
+</tr>
+<tr>
+<td>Hallucination</td>
+<td>When the AI confidently makes things up — the amnesia acting up</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>The result is bland / generic.</strong> Your prompt was missing <em>context</em> and
+<em>constraints</em>. Add: who it&#39;s for, the vibe, one concrete example.</li>
+<li><strong>The AI built something huge you didn&#39;t ask for.</strong> Your AGENTS.md rules
+weren&#39;t followed — remind it, and make smaller requests.</li>
+<li><strong>You keep repeating the same instructions.</strong> Move them into <code>AGENTS.md</code>.</li>
+<li><strong>The AI misunderstands &quot;simple.&quot;</strong> Show, don&#39;t tell: paste a screenshot
+description or point at a site you like (&quot;like the feel of strapya-world.com,
+but cleaner&quot; — any reference helps).</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../../challenges/04-debug-red-text/">Challenge 4 — The Red Text</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/02-secrets-and-env/"><span>Previous</span><strong>Secrets: Don't Get Hacked</strong></a>
+    <a class="next" href="../../challenges/04-debug-red-text/"><span>Next</span><strong>The Red Text</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+</body>
+</html>

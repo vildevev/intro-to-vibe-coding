@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Learn the one skill that makes AI coding safe: save points you can always go back to. By the end, nothing the AI (or you) breaks will ever be permanent again.">
+<title>Challenge 01: The Git Time Machine — Intro to Vibe Coding</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../index.html#course-map">Course map</a>
+    <a href="../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">01</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 01</span><span class="chip">about 60 minutes</span></p>
+    <h1>The Git Time Machine</h1>
+    <p class="mission"><strong>Mission.</strong> Learn the one skill that makes AI coding safe: <strong>save points you can always go back to.</strong> By the end, nothing the AI (or you) breaks will ever be permanent again.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Lisa spent a weekend vibe coding a website for her dog-walking business. It
+was beautiful. Then she asked the AI to &quot;make the pricing section nicer,&quot; went
+to make coffee, came back — and the whole site was broken. The AI had rewritten
+half the files. There was no Undo button. There was no going back. She rebuilt
+the whole thing from scratch.</p>
+<p>Here&#39;s the secret: <strong>a save button has existed for 50 years.</strong> It&#39;s called
+<strong>git</strong>, and it works like save points in a video game. Reached a good moment?
+Save. Something breaks later? Load the save. The AI can be as chaotic as it
+wants — you can always go back to &quot;the moment it was perfect.&quot;</p>
+<p>This is the single most important challenge in the course.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>Repo</strong> — a folder with time-machine powers</li>
+<li><strong>Commit</strong> — a named save point (&quot;added the contact form&quot;)</li>
+<li><strong>Restore</strong> — travel back to any save point</li>
+<li><strong>GitHub</strong> — a copy of your save points in the cloud</li>
+<li><strong>Branch</strong> — a parallel universe where experiments can&#39;t hurt anything</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Finished Challenge 0 (you have a project folder with an About Me page)</li>
+<li><span class="cb" aria-hidden="true"></span>Your AI assistant is open in that folder</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Turn on the time machine (10 min)</h2>
+<p>Your AI will do the work — but today you&#39;ll press the buttons yourself a few
+times, so the magic stops being magic.</p>
+<p>Type these, one at a time, in your terminal (yes, you — it&#39;s 4 words each.
+Your AI can watch and cheer):</p>
+<pre><code>git init
+</code></pre>
+<p>You just said: &quot;make this folder a time-machine folder.&quot; (Only once per
+project. If it says a warning about your name, ask your AI: <em>&quot;git wants my
+name and email, help me set it.&quot;</em>)</p>
+<pre><code>git status
+</code></pre>
+<p>This is the most-used command in software. It just <em>looks around</em> and reports:
+what&#39;s new, what changed, what&#39;s about to be saved. Read what it says. Ask
+your AI: <em>&quot;Explain this git status output in plain English, like I&#39;m new.&quot;</em></p>
+</section><section class="sec"><h2>Part B — Make your first save points (10 min)</h2>
+<p>Now save your About Me page. Two steps, like packing a suitcase:</p>
+<ol>
+<li><p><strong>Pack the suitcase</strong> (choose what to save):</p>
+<pre><code>git add .
+</code></pre>
+<p>(The <code>.</code> means &quot;everything in this folder.&quot;)</p>
+</li>
+<li><p><strong>Label and seal it</strong> (create the save point):</p>
+<pre><code>git commit -m &quot;my first save point: About Me page&quot;
+</code></pre>
+</li>
+</ol>
+<p>The <code>-m</code> part is a <strong>message</strong> — a note to Future You. Write messages in plain
+words you&#39;d actually say: <code>&quot;pricing section looks good before AI touches it&quot;</code>,
+not <code>&quot;asdf&quot;</code>. Future You is often panicking and in a hurry; leave good notes.</p>
+<p>Make one more save point: ask the AI for a small change, check the page, then
+<code>git add .</code> and <code>git commit -m &quot;...&quot;</code> again.</p>
+<blockquote>
+<p>💡 <strong>Golden Rule #1: Save before you renovate.</strong> Before any big AI change,
+make a save point. It costs 10 seconds. Skipping it is how Lisa lost a weekend.</p>
+</blockquote>
+<p>See your history — all your save points, newest first:</p>
+<pre><code>git log
+</code></pre>
+<p>(To exit the log view, press the <code>q</code> key. Everyone gets trapped once. Now you
+won&#39;t.)</p>
+</section><section class="sec"><h2>Part C — The time travel moment (15 min)</h2>
+<p>This is where it stops being theory. You&#39;re going to <strong>let the AI break your
+site on purpose</strong>, then travel back in time.</p>
+<ol>
+<li><p><strong>Save first</strong> (Golden Rule #1): <code>git add .</code> and commit with a message like
+<code>&quot;last good version before the disaster drill&quot;</code>.</p>
+</li>
+<li><p>Now, with a straight face, ask your AI:</p>
+<pre><code>Make the page as ugly and broken as you can: clashing colors, huge
+chaotic text, and delete one of my sections. This is a drill — do not
+fix anything.
+</code></pre>
+</li>
+<li><p>Look at your page in the browser. Enjoy the horror. This is what an
+uncontrolled AI change feels like.</p>
+</li>
+<li><p>Now the superpower. Find the save point you want to return to:</p>
+<pre><code>git log --oneline
+</code></pre>
+<p>(Same list, short and tidy.) Then travel back — ask your AI:</p>
+<pre><code>Restore my project to the commit that says &quot;last good version before
+the disaster drill&quot; — undo everything that happened after it.
+</code></pre>
+</li>
+<li><p>Refresh the browser. Your page is back. <strong>Nothing the AI does is permanent
+anymore.</strong> Say it out loud; it&#39;s a big deal.</p>
+</li>
+</ol>
+</section><section class="sec"><h2>Part D — Cloud backup (GitHub) (15 min)</h2>
+<p>Save points so far live on your computer. If your laptop meets a swimming
+pool, they die with it. <strong>GitHub</strong> is a free website that keeps a copy of your
+save points in the cloud. It&#39;s also where the world stores software — you&#39;re
+a member now.</p>
+<ol>
+<li><p>Create a free account at <a href="https://github.com">github.com</a> if you don&#39;t have one.</p>
+</li>
+<li><p>On GitHub, click <strong>+ → New repository</strong>, name it <code>vibe-coding-course</code>, set it
+to <strong>Private</strong>, and create it. (A &quot;repository&quot; — or <em>repo</em> — is just a
+time-machine folder. That&#39;s the whole definition.)</p>
+</li>
+<li><p>Ask your AI:</p>
+<pre><code>I made an empty private GitHub repo called vibe-coding-course.
+Connect this folder to it and push my commits. Walk me through any
+login steps — explain everything in plain English.
+</code></pre>
+</li>
+<li><p>Open your repo on github.com and see your files and your save-point history.
+That&#39;s your work, safe in the cloud.</p>
+</li>
+</ol>
+<p>From now on, after each save point, <strong>push</strong> (upload):</p>
+<pre><code>git push
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Pay attention on Challenge 2:</strong> GitHub is public-ish. Pushing the wrong
+file there is exactly how people get hacked. One more save point first:
+<code>git add .</code> + commit + push.</p>
+</blockquote>
+</section><section class="sec"><h2>Part E — Parallel universes (10 min, optional but fun)</h2>
+<p>Big idea: sometimes you want to try something wild without risking the good
+version. A <strong>branch</strong> is a parallel universe: experiment freely there, and if
+it&#39;s better, merge it back; if it&#39;s terrible, delete it and nobody ever knows.</p>
+<ol>
+<li><p>Ask your AI:</p>
+<pre><code>Create a git branch called wild-idea and switch to it.
+Then change my page&#39;s color scheme to neon pink and green.
+</code></pre>
+</li>
+<li><p>Look at the page. Bold choice.</p>
+</li>
+<li><p>Now choose your ending — ask your AI for either:</p>
+<ul>
+<li><em>&quot;I hate it. Delete the wild-idea branch and switch me back to the
+main version.&quot;</em> — or —</li>
+<li><em>&quot;Actually it&#39;s growing on me. Merge wild-idea into main.&quot;</em></li>
+</ul>
+</li>
+</ol>
+<p>You just did something professional developers do every day. Conceptually,
+you now understand one of the hardest things to teach junior engineers.</p>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Before making changes, check git status and tell me if there are unsaved
+changes.&quot;</em></li>
+<li><em>&quot;Make this change, then create a git commit with a message describing what
+you did, then push.&quot;</em></li>
+<li><em>&quot;Something looks wrong since your last change. Show me what changed since
+the last commit, in plain English.&quot;</em></li>
+<li><em>&quot;Explain this git error like I&#39;ve never used git.&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Your project has at least 4 save points (check <code>git log --oneline</code>)</li>
+<li><span class="cb" aria-hidden="true"></span>You restored a deliberately broken page from a save point — with your own eyes</li>
+<li><span class="cb" aria-hidden="true"></span>Your save points are on GitHub (you can see them in your browser)</li>
+<li><span class="cb" aria-hidden="true"></span>You created a branch, decided its fate, and returned safely</li>
+<li><span class="cb" aria-hidden="true"></span>You can explain in one sentence: what&#39;s the difference between commit and push?</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Git</td>
+<td>The time machine itself — the save-point system</td>
+</tr>
+<tr>
+<td>Repo (repository)</td>
+<td>A folder with the time machine switched on</td>
+</tr>
+<tr>
+<td>Commit</td>
+<td>A named save point; a photo of your project at a good moment</td>
+</tr>
+<tr>
+<td><code>git status</code></td>
+<td>&quot;What&#39;s going on right now?&quot; — look, don&#39;t touch</td>
+</tr>
+<tr>
+<td><code>git add .</code></td>
+<td>Pack the suitcase: choose what goes into the next save point</td>
+</tr>
+<tr>
+<td><code>git commit -m &quot;...&quot;</code></td>
+<td>Seal and label the suitcase</td>
+</tr>
+<tr>
+<td><code>git push</code></td>
+<td>Upload save points to the cloud (GitHub)</td>
+</tr>
+<tr>
+<td><code>git log</code></td>
+<td>The list of all your save points, newest first</td>
+</tr>
+<tr>
+<td>Branch</td>
+<td>A parallel universe for experiments; merge = bring good ideas home</td>
+</tr>
+<tr>
+<td>GitHub</td>
+<td>The cloud home for your save points (not the same thing as git!)</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>&quot;fatal: not a git repository&quot;</strong> — you&#39;re in the wrong folder. Ask your AI:
+<em>&quot;Which folder am I in? Is it the right project?&quot;</em></li>
+<li><strong><code>git log</code> won&#39;t let you type.</strong> Press <code>q</code>. (Told you.)</li>
+<li><strong>The AI offers 5 different ways to undo.</strong> Say: <em>&quot;Use the simplest safe
+option, and tell me what you&#39;re about to do before doing it.&quot;</em></li>
+<li><strong>GitHub asks for a password and nothing works.</strong> GitHub wants a &quot;Personal
+Access Token&quot; instead of a password — ask your AI: <em>&quot;Help me create a GitHub
+Personal Access Token and use it.&quot;</em> (And yes — that token is a secret.
+Challenge 2 will teach you where it lives.)</li>
+<li><strong>&quot;I think I deleted everything!!!&quot;</strong> Breathe. If it was ever committed,
+it&#39;s never gone. Ask your AI: <em>&quot;Show me git log. What&#39;s the newest save
+point? Can we go back to it?&quot;</em></li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../../challenges/02-secrets-and-env/">Challenge 2 — Secrets: Don&#39;t Get Hacked</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/00-setup/"><span>Previous</span><strong>Meet Your AI Copilot</strong></a>
+    <a class="next" href="../../challenges/02-secrets-and-env/"><span>Next</span><strong>Secrets: Don't Get Hacked</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+</body>
+</html>

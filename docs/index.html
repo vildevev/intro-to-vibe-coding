@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A free course for non-technical people: eight hands-on challenges covering git, secrets, prompting, debugging, code review and shipping to the web.">
+<title>Intro to Vibe Coding — build software by describing it</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="index.html#course-map">Course map</a>
+    <a href="cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<section class="hero gridbg">
+  <div class="hero-copy">
+    <h1>Build software by describing&nbsp;it.</h1>
+    <p class="lede">Vibe coding for people who have never coded: eight hands-on
+    challenges that teach you to never lose your work, keep your secrets safe,
+    and put something real on the internet.</p>
+    <div class="cta-row">
+      <a class="btn" href="challenges/00-setup/">Start Challenge 0</a>
+      <a class="btn btn-ghost" href="#course-map">Browse the course map</a>
+    </div>
+    <p class="micro">Free. No experience needed. About six hours, spread over as many days as you like.</p>
+  </div>
+  <div class="hero-term" aria-hidden="true">
+    <div class="term-bar">git log --oneline</div>
+    <pre>c0ffee1  shipped my first website
+b4d4555  fixed all three planted bugs
+5e3d10c  moved the api key into .env
+a11ce5d  reviewed the diff, said no
+8badf00d survived the disaster drill
+1234567  turned on the time machine
+<span class="cursor">▊</span></pre>
+  </div>
+</section>
+<div class="prose">
+<section class="sec"><h2>How this works</h2>
+<ul>
+<li>8 challenges, in order. Each one is 30–60 minutes, mostly <em>doing</em>.</li>
+<li>You need one thing installed: an <strong>AI coding assistant</strong> (e.g. ZCode,
+Claude Code, Cursor, or Replit) and a web browser. Challenge 0 covers setup.</li>
+<li>Every challenge follows the same shape:
+<strong>a story → hands-on steps → prompts to copy-paste → a &quot;you passed when&quot; checklist → what to do when it goes wrong.</strong></li>
+<li>Work in pairs or a group if you can. Comparing disasters is half the fun.</li>
+</ul>
+</section><section class="sec"><h2>The course map</h2>
+<ol class="levels" id="course-map">
+  <li><a href="challenges/00-setup/">
+    <span class="lvl-num" aria-hidden="true">00</span>
+    <span class="lvl-main"><span class="lvl-title">Meet Your AI Copilot</span>
+    <span class="lvl-skill">Set up your workshop, build your first page in 10 minutes</span></span>
+    <span class="lvl-time">30 min</span>
+  </a></li>
+  <li><a href="challenges/01-git-time-machine/">
+    <span class="lvl-num" aria-hidden="true">01</span>
+    <span class="lvl-main"><span class="lvl-title">The Git Time Machine</span>
+    <span class="lvl-skill">Never lose your work — undo anything</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/02-secrets-and-env/">
+    <span class="lvl-num" aria-hidden="true">02</span>
+    <span class="lvl-main"><span class="lvl-title">Secrets: Don't Get Hacked</span>
+    <span class="lvl-skill">Keep passwords and API keys out of danger</span></span>
+    <span class="lvl-time">45 min</span>
+  </a></li>
+  <li><a href="challenges/03-prompt-like-a-pro/">
+    <span class="lvl-num" aria-hidden="true">03</span>
+    <span class="lvl-main"><span class="lvl-title">Prompt Like a Pro</span>
+    <span class="lvl-skill">Get the AI to build what's actually in your head</span></span>
+    <span class="lvl-time">45 min</span>
+  </a></li>
+  <li><a href="challenges/04-debug-red-text/">
+    <span class="lvl-num" aria-hidden="true">04</span>
+    <span class="lvl-main"><span class="lvl-title">The Red Text</span>
+    <span class="lvl-skill">Fix errors without panicking</span></span>
+    <span class="lvl-time">45 min</span>
+  </a></li>
+  <li><a href="challenges/05-review-the-diff/">
+    <span class="lvl-num" aria-hidden="true">05</span>
+    <span class="lvl-main"><span class="lvl-title">Trust, But Verify</span>
+    <span class="lvl-skill">Review what the AI changed before accepting it</span></span>
+    <span class="lvl-time">45 min</span>
+  </a></li>
+  <li><a href="challenges/06-ship-it/">
+    <span class="lvl-num" aria-hidden="true">06</span>
+    <span class="lvl-main"><span class="lvl-title">Ship It</span>
+    <span class="lvl-skill">Put your creation on the real internet</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/07-capstone/">
+    <span class="lvl-num" aria-hidden="true">07</span>
+    <span class="lvl-main"><span class="lvl-title">Capstone</span>
+    <span class="lvl-skill">Build and launch something real, end to end</span></span>
+    <span class="lvl-time">2–4 hrs</span>
+  </a></li>
+</ol>
+</section><section class="sec"><h2>The 5 Golden Rules of Vibe Coding</h2>
+<ol>
+<li><strong>Save before you renovate.</strong> Make a git save point before letting the AI
+make big changes. (Challenge 1)</li>
+<li><strong>Secrets never leave the drawer.</strong> Passwords and API keys live in <code>.env</code>
+and are never pasted into chats, code, or screenshots. (Challenge 2)</li>
+<li><strong>The AI is your intern, not your boss.</strong> Brilliant, tireless, and
+occasionally overconfident. You review, you decide. (Challenges 3 &amp; 5)</li>
+<li><strong>Errors are clues, not failures.</strong> Red text is treasure map data. (Challenge 4)</li>
+<li><strong>One change at a time.</strong> Small requests, reviewed, saved, shipped. (Challenge 6)</li>
+</ol>
+</section><section class="sec"><h2>FAQ</h2>
+<details class="faq"><summary>Do I need to learn to code?</summary><div class="faq-a">
+No. You&#39;ll learn to <em>read</em> enough — like knowing what a street sign means vs.
+being a mechanic. You&#39;ll pick up vocabulary naturally.</div></details>
+<details class="faq"><summary>Which AI assistant should I use?</summary><div class="faq-a">
+Any that can edit files on your computer (ZCode, Claude Code, Cursor) — or a
+browser-based one (Replit). The challenges are tool-agnostic; when we say
+&quot;ask your AI,&quot; any of them works.</div></details>
+<details class="faq"><summary>What does this cost?</summary><div class="faq-a">
+The course is free. AI assistants have free tiers good enough for all 8
+challenges; paid plans (~$20/month) are faster but not required. Deploying in
+Challenge 6 is free (GitHub Pages).</div></details>
+<details class="faq"><summary>What if I break something?</summary><div class="faq-a">
+That&#39;s the point of Challenge 1. Git is a time machine — and by Challenge 2
+you&#39;ll know how to verify nothing dangerous got saved.</div></details>
+<hr>
+<p><em>Start here → <a href="challenges/00-setup/">Challenge 0: Meet Your AI Copilot</a></em></p>
+</section>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+</body>
+</html>

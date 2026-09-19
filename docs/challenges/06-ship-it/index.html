@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Put what you built on the real internet, with a link you can send to your mom. (Or your investors.)">
+<title>Challenge 06: Ship It — Intro to Vibe Coding</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../index.html#course-map">Course map</a>
+    <a href="../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">06</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 06</span><span class="chip">about 60 minutes</span></p>
+    <h1>Ship It</h1>
+    <p class="mission"><strong>Mission.</strong> Put what you built on the real internet, with a link you can send to your mom. (Or your investors.)</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Everything you&#39;ve built so far lives in a private world called <strong>localhost</strong> —
+&quot;just for me, on this machine, only while my tools are running.&quot; It&#39;s a diary
+entry. The moment you send a link to localhost to a friend, you learn the
+diary-entry problem: <em>they can&#39;t open it. Nobody can.</em></p>
+<p><strong>Shipping</strong> (or <strong>deploying</strong>) means copying your finished work to a computer
+whose full-time job is showing your site to the world. Your site stops being a
+diary entry and becomes a business card — a URL that works on any phone,
+anywhere, while you sleep.</p>
+<p>The secret pros won&#39;t tell you: for the sites you&#39;re building, shipping takes
+about 10 minutes and costs nothing. The rest of this challenge is learning the
+loop that makes shipping <em>routine</em>, and one safety rule that matters forever.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>What <strong>deploying</strong> actually is (copying your work to an always-on computer)</li>
+<li><strong>GitHub Pages</strong> — free hosting straight from your Challenge-1 GitHub repo</li>
+<li>The ship loop: <strong>change → save → push → live</strong></li>
+<li>The one new security rule: secrets belong on the server, never in shipped code</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Challenge 1 done — project on GitHub (this is the ticket to ride)</li>
+<li><span class="cb" aria-hidden="true"></span>A page you&#39;re not embarrassed to show humans. Almost-ready counts.</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Your first launch (15 min)</h2>
+<p>For pages made of plain files (like your About Me and bakery pages — pros call
+these <strong>static</strong> sites: just paper, no machinery), GitHub hosts them free.</p>
+<ol>
+<li>On your repo&#39;s GitHub page: <strong>Settings → Pages</strong>.</li>
+<li>Under &quot;Build and deployment&quot;, set <strong>Source</strong> to <strong>Deploy from a branch</strong>,
+pick your <code>main</code> branch and <code>/ (root)</code>, and <strong>Save</strong>.</li>
+<li>Wait for the green check (1–3 minutes). Refresh until you see:
+<em>&quot;Your site is live at <code>https://YOUR-USERNAME.github.io/vibe-coding-course/</code>&quot;</em></li>
+<li>Open it. <strong>On your phone.</strong> This is the moment. Send it to one person who
+will be nice about it.</li>
+</ol>
+<blockquote>
+<p>🤖 If any button doesn&#39;t look like this (GitHub rearranges its furniture
+sometimes): ask your AI, <em>&quot;Walk me through enabling GitHub Pages for my
+repo, step by step, for the current GitHub layout.&quot;</em></p>
+</blockquote>
+</section><section class="sec"><h2>Part B — The ship loop (15 min)</h2>
+<p>Here&#39;s the professional rhythm you&#39;ll use forever:</p>
+<pre><code>change (small bite)  →  review the diff  →  commit  →  push  →  live in ~1 minute
+</code></pre>
+<p>Run the loop twice right now:</p>
+<ol>
+<li><p>Ask for a small change that&#39;s worth the world seeing — e.g.:</p>
+<pre><code>Add a line to my footer: &quot;Last updated [today&#39;s date]&quot;.
+Change nothing else, show me the diff first.
+</code></pre>
+</li>
+<li><p>Review it (Challenge 5, three questions). Commit. Push.</p>
+</li>
+<li><p>Watch your live site update about a minute later. No servers, no settings.</p>
+</li>
+<li><p>Do it once more with a change of your choice.</p>
+</li>
+</ol>
+<p>Notice what you&#39;ve assembled across this course: prompt (C3) → diff review
+(C5) → commit (C1) → secrets check (C2) → push → <strong>live</strong>. That pipeline <em>is</em>
+professional software development. You&#39;re doing the real loop, just calmer.</p>
+</section><section class="sec"><h2>Part C — When your app needs a brain (15 min, reading challenge)</h2>
+<p>Static sites are paper: text, images, buttons that work in the browser. But
+some ideas need <strong>machinery</strong> — saving a guestbook entry so it exists
+tomorrow, sending an email, storing passwords. That machinery is a <strong>server</strong>
+(a computer running your logic, in the cloud), and you&#39;ll know you need one
+when your idea involves <em>remembering</em> or <em>doing</em> things after the page closes.</p>
+<p>You don&#39;t need to build a server today, but you need the map:</p>
+<ul>
+<li><strong>Static</strong> (paper): portfolio, event invite, bakery menu, About Me →
+GitHub Pages, free, perfect.</li>
+<li><strong>Dynamic</strong> (paper + machinery): anything that saves data, has user
+accounts, or sends messages → you&#39;ll eventually deploy to a hosting service
+(free tiers exist for all of them) <em>and</em> — this is the important part —</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>The shipping security rule (Challenge 2 grows up):</strong> the moment you
+deploy anything dynamic, your secrets move <em>from your <code>.env</code> drawer to the
+hosting service&#39;s settings panel</em> (usually called &quot;Environment Variables&quot;
+or &quot;Secrets&quot;). Never paste a real API key into code because &quot;it needs to be
+on the server anyway.&quot; It gets there through the settings panel, still never
+written in your files. When you get there, ask your AI: <em>&quot;How do I add my
+.env values as environment variables on this host?&quot;</em></p>
+</blockquote>
+<p>And the flip side to check today, on your fresh static site: <strong>view your live
+site&#39;s source</strong> (right-click → View Page Source) and search for anything that
+looks like a key (<code>sk-</code>, <code>key=</code>, <code>token</code>). Nothing there? Ship clean.</p>
+</section><section class="sec"><h2>Part D — Name it (optional, 10 min)</h2>
+<p><code>your-username.github.io/vibe-coding-course</code> is honest but not lovely. A
+<strong>domain</strong> is your site&#39;s own name — <code>flourandfog.com</code> — rented yearly
+(~$10–15) from a <strong>registrar</strong> (e.g. Namecheap, Cloudflare). Buying one and
+connecting it is a nice 30-minute quest for another day; ask your AI
+<em>&quot;walk me through connecting a custom domain to GitHub Pages&quot;</em> when the
+moment comes. For now: free subdomain, fully respectable.</p>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Is my project a static site or does it need a server? Explain like I&#39;m new.&quot;</em></li>
+<li><em>&quot;My GitHub Pages site shows the wrong thing / a 404. Walk me through
+diagnosing it.&quot;</em> (80% of the time: files in a subfolder, or the push didn&#39;t
+happen — the loop skipped a step.)</li>
+<li><em>&quot;Before I deploy, check the project for anything that shouldn&#39;t be public:
+secrets, real names, phone numbers, API keys.&quot;</em> ← <strong>make this a habit</strong></li>
+<li><em>&quot;Help me write a one-line announcement for shipping my site.&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>A URL of yours loads on your phone, on real internet</li>
+<li><span class="cb" aria-hidden="true"></span>Someone else has opened your link</li>
+<li><span class="cb" aria-hidden="true"></span>You ran the full ship loop twice: change → review → commit → push → live</li>
+<li><span class="cb" aria-hidden="true"></span>You checked your live source code for secrets (nothing found, or you rotated)</li>
+<li><span class="cb" aria-hidden="true"></span>You can explain: static = paper, dynamic = paper + machinery</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>localhost</td>
+<td>Your private rehearsal — only visible on your machine</td>
+</tr>
+<tr>
+<td>Deploy / ship</td>
+<td>Copy finished work to an always-on computer the world can reach</td>
+</tr>
+<tr>
+<td>Hosting</td>
+<td>The always-on computer showing your site to the world</td>
+</tr>
+<tr>
+<td>GitHub Pages</td>
+<td>Free hosting for static sites, straight from your repo</td>
+</tr>
+<tr>
+<td>Static site</td>
+<td>Paper: files served as-is. Fast, free, no memory</td>
+</tr>
+<tr>
+<td>Server / backend</td>
+<td>Machinery: code that runs in the cloud and <em>remembers</em> things</td>
+</tr>
+<tr>
+<td>Domain</td>
+<td>Your site&#39;s own rented name, like <code>flourandfog.com</code></td>
+</tr>
+<tr>
+<td>404</td>
+<td>&quot;Nothing lives at this address&quot; — usually a typo or a missing push</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>&quot;404 not found&quot; on your live site.</strong> First: did you <em>push</em>? (The live site
+updates from GitHub, not from your laptop.) Second: is the page file in the
+repo root? Ask your AI to check both.</li>
+<li><strong>Site live but stale — changes missing.</strong> The push didn&#39;t include your
+latest commit, or the browser cached the old version. Hard-refresh
+(<code>Cmd+Shift+R</code>). Then <code>git log</code> and compare what&#39;s on GitHub.</li>
+<li><strong>&quot;Your site is taking forever to build.&quot;</strong> Wait 3 minutes. GitHub Pages is
+free and unhurried. Refresh the Actions/Settings page before diagnosing.</li>
+<li><strong>You accidentally deployed something you shouldn&#39;t have</strong> (a real name, a
+key, a phone number). Same protocol as Challenge 2: <em>rotate/revoke first</em>
+if it was a secret, then remove the content, push the cleaned version.
+Note: sites may be archived by third parties — the rotation matters more
+than the deletion.</li>
+</ul>
+<div class="next-card"><p><strong>Final quest:</strong> <a href="../../challenges/07-capstone/">Challenge 7 — Capstone</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/05-review-the-diff/"><span>Previous</span><strong>Trust, But Verify</strong></a>
+    <a class="next" href="../../challenges/07-capstone/"><span>Next</span><strong>Capstone: Build & Ship Something Real</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+</body>
+</html>

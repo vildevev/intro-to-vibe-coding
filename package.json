@@ -1,0 +1,20 @@
+{
+  "name": "intro-to-vibe-coding",
+  "version": "1.0.0",
+  "description": "*A course for people who have never written code — and never need to.*",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "marked": "^18.0.13"
+  },
+  "type": "module",
+  "devDependencies": {
+    "puppeteer-core": "^25.11.0"
+  }
+}

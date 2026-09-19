@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Learn where passwords and API keys live, and build the habit that separates safe vibe coders from cautionary tales on the evening news.">
+<title>Challenge 02: Secrets: Don't Get Hacked — Intro to Vibe Coding</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../index.html#course-map">Course map</a>
+    <a href="../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">02</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 02</span><span class="chip">about 45 minutes</span></p>
+    <h1>Secrets: Don't Get Hacked</h1>
+    <p class="mission"><strong>Mission.</strong> Learn where passwords and API keys live, and build the habit that separates safe vibe coders from cautionary tales on the evening news.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Marcus built a little app that texts him the weather every morning. It needed
+an <strong>API key</strong> — a password his app uses to talk to the weather service. The
+AI put that password directly in the code. Marcus pushed his code to GitHub,
+proud, and went to bed.</p>
+<p>Software robots scan GitHub <em>constantly</em> — not for code, for <strong>passwords</strong>.
+Marcus&#39;s key was found in under 10 minutes. By morning, strangers were using
+his weather-service account around the clock. His bill: thousands of dollars.
+The service eventually forgave him. Some companies don&#39;t.</p>
+<p>None of this requires a genius hacker. It&#39;s an automated vacuum cleaner that
+sucks up passwords people leave on the floor. Today you learn to never leave
+passwords on the floor.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>What a <strong>secret</strong> is (API keys, tokens, passwords — passwords for <em>programs</em>)</li>
+<li>The <strong><code>.env</code> file</strong> — the drawer where secrets live</li>
+<li>How <strong><code>.gitignore</code></strong> keeps the drawer out of your save points</li>
+<li><strong>Rotation</strong> — what to do the day a secret leaks (change the locks)</li>
+<li>The rules for secrets and AI chats</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Challenge 1 done: your project has save points and a GitHub repo</li>
+<li><span class="cb" aria-hidden="true"></span>Your AI assistant open in your project folder</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Do it wrong on purpose (5 min)</h2>
+<p>You need to see the bad way once, safely, with a <strong>fake</strong> key.</p>
+<p>Ask your AI:</p>
+<pre><code>Add a feature to my page: a weather widget that would call a weather API.
+For now, put a FAKE api key directly in the code — literally write
+API_KEY = &quot;sk-fake-key-12345&quot; in the code. I&#39;m doing a security exercise.
+Then commit it.
+</code></pre>
+<p>Look at the code. There it is: a password, sitting in a file, in the open.
+If that were a real key and you pushed to GitHub — Marcus&#39;s morning.</p>
+<blockquote>
+<p>💡 <strong>A secret is any string a program uses to prove it&#39;s allowed to do
+something.</strong> API keys, tokens, passwords, connection strings. If it&#39;s long,
+random-looking, and lets software access something — it&#39;s a secret.</p>
+</blockquote>
+</section><section class="sec"><h2>Part B — Build the drawer: <code>.env</code> (10 min)</h2>
+<p>The fix is a boring convention that every real app on Earth uses: secrets live
+in a special file named <strong><code>.env</code></strong> (short for <em>environment</em>), and that file is
+never saved into git.</p>
+<ol>
+<li><p>Ask your AI:</p>
+<pre><code>Move the fake API key out of the code into a new file called .env.
+Make the code read it from there instead. Explain what you did in
+plain English.
+</code></pre>
+</li>
+<li><p>Open the <code>.env</code> file yourself and look at it. One line, roughly:</p>
+<pre><code>WEATHER_API_KEY=sk-fake-key-12345
+</code></pre>
+<p>The code now <em>reads</em> the value from the drawer instead of holding it.
+(This is called an <strong>environment variable</strong> — a setting the program picks
+up from outside its own files.)</p>
+</li>
+<li><p>Now check what git thinks. Run it yourself:</p>
+<pre><code>git status
+</code></pre>
+<p>See <code>.env</code> in red? That means git wants to pack it into your next save
+point. <strong>This is the exact moment people get hacked</strong> — one <code>git add .</code>
+and the password is in history forever.</p>
+</li>
+<li><p>Tell git to never pack it. Ask your AI:</p>
+<pre><code>Make sure .env is listed in .gitignore, and confirm to me that
+git status no longer shows .env.
+</code></pre>
+</li>
+<li><p>Run <code>git status</code> again yourself. <code>.env</code> gone from the list? That silence
+is the sound of safety. (Your scaffold&#39;s <code>.gitignore</code> already ignored
+<code>.env</code> — make sure you can <em>see</em> the line in the <code>.gitignore</code> file and
+understand what it does: it&#39;s the <strong>do-not-pack list</strong> for your suitcase.)</p>
+</li>
+<li><p>Commit the <em>good</em> version:</p>
+<pre><code>git add .
+git commit -m &quot;moved secret to .env, out of git&quot;
+git push
+</code></pre>
+</li>
+<li><p>Go look at your repo on github.com. Find the weather-widget code. Notice:
+the key is not there. The drawer stayed home. <strong>This is what safe looks like.</strong></p>
+</li>
+</ol>
+</section><section class="sec"><h2>Part C — The &quot;almost leaked&quot; drill (5 min)</h2>
+<p>Most leaks aren&#39;t malice; they&#39;re autopilot. Build the checking reflex.</p>
+<ol>
+<li><p>Type, yourself:</p>
+<pre><code>git add .
+</code></pre>
+</li>
+<li><p><strong>Stop.</strong> Before anything else: <code>git status</code>. Read the file list line by
+line, asking of each file: <em>does this contain a password, a key, personal
+info, or stuff I wouldn&#39;t put on a poster?</em></p>
+</li>
+<li><p>Imagine you see something you don&#39;t want. Unpack it (ask your AI, or type):</p>
+<pre><code>git restore --staged .env
+</code></pre>
+<p>That single habit — <strong>look before you push</strong> — prevents most leaks.</p>
+</li>
+</ol>
+</section><section class="sec"><h2>Part D — The rotation drill (10 min)</h2>
+<p>Someday a secret will leak. (Emailing it to yourself, a screenshot in a group
+chat, pasting it into an AI chat…) The fix is always the same, and it&#39;s
+<em>fine</em> if you know the moves. It&#39;s called <strong>rotation</strong>: change the locks, not
+the doors.</p>
+<ol>
+<li>Log into any service you use and find where keys are made (e.g. GitHub →
+Settings → Developer settings → Personal access tokens; or OpenAI →
+API keys). Notice the buttons <strong>Revoke</strong> and <strong>Create new</strong>. That&#39;s the
+whole mechanism.</li>
+<li>Make a throwaway key. Revoke it. Regenerate it. Delete the old one.</li>
+<li>Say the mantra out loud: <strong>&quot;Leaked? Revoke first, panic second.&quot;</strong> A leaked
+key that&#39;s been revoked is a dead key — worthless to the thief.</li>
+</ol>
+</section><section class="sec"><h2>Part E — Secrets and AI chats (5 min)</h2>
+<p>Your AI assistant is brilliant and <strong>not a vault</strong>. Chats may be stored,
+reviewed, or logged. So:</p>
+<ul>
+<li><strong>Never paste a real API key, password, or token into an AI chat.</strong> Not even
+&quot;just quickly.&quot; The AI never needs the real value to help you — it can show
+you <em>where</em> to put it.</li>
+<li>Screenshots count. Emails count. Group chats count. Error messages that
+<em>contain</em> your key count.</li>
+<li>If an AI asks for your real password to &quot;fix&quot; something: <strong>it doesn&#39;t need
+it.</strong> No legitimate tool asks for your passwords. That&#39;s a red flag, even
+from software you trust.</li>
+<li>Your <code>.env</code> file stays in the drawer. You talk <em>about</em> it (&quot;the key in my
+.env isn&#39;t working&quot;) — you never paste its contents.</li>
+</ul>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Is there anything in my project that looks like a secret or API key that
+shouldn&#39;t be in git? Check before I push.&quot;</em></li>
+<li><em>&quot;Add this new feature using an environment variable from .env — do not
+hardcode the value in the code.&quot;</em></li>
+<li><em>&quot;I accidentally committed a secret. Walk me through rotating it and
+removing it from git history, step by step, calmly.&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Your project has a <code>.env</code> file holding a (fake) key</li>
+<li><span class="cb" aria-hidden="true"></span><code>.gitignore</code> lists <code>.env</code>, and <code>git status</code> proves git ignores it</li>
+<li><span class="cb" aria-hidden="true"></span>You looked at your repo on GitHub and confirmed the key isn&#39;t there</li>
+<li><span class="cb" aria-hidden="true"></span>You ran the &quot;look before you push&quot; drill: <code>git add .</code> → <code>git status</code> → check</li>
+<li><span class="cb" aria-hidden="true"></span>You did one rotation drill (revoke + regenerate) at a real service</li>
+<li><span class="cb" aria-hidden="true"></span>You can finish the sentence: &quot;If a secret leaks, first I ______ it&quot;</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Secret</td>
+<td>Any password a <em>program</em> uses: API key, token, connection string</td>
+</tr>
+<tr>
+<td>API key</td>
+<td>A password one program uses to talk to another service</td>
+</tr>
+<tr>
+<td><code>.env</code></td>
+<td>The drawer file where secrets live, outside the code</td>
+</tr>
+<tr>
+<td>Environment variable</td>
+<td>A value the program reads from outside itself (from <code>.env</code>)</td>
+</tr>
+<tr>
+<td>Hardcoded</td>
+<td>Written directly into the code — the dangerous way</td>
+</tr>
+<tr>
+<td><code>.gitignore</code></td>
+<td>The do-not-pack list: files git will never save</td>
+</tr>
+<tr>
+<td>Rotation</td>
+<td>Leaked? Revoke the old key, create a new one. Change the locks</td>
+</tr>
+<tr>
+<td>Secret manager</td>
+<td>A pro service that keeps secrets for companies (you don&#39;t need this yet)</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>&quot;I already committed/pushed a real key!&quot;</strong> Don&#39;t hide. <strong>Revoke/rotate the
+key first</strong> (Part D) — a revoked key can&#39;t hurt you even if it&#39;s visible.
+Then ask your AI: <em>&quot;Help me remove a secret from my git history and push
+the cleaned version.&quot;</em> Removing history is fiddly; rotation makes it urgent,
+not catastrophic.</li>
+<li><strong>My app can&#39;t find the key / feature stopped working.</strong> Usually the code
+isn&#39;t reading <code>.env</code> correctly. Ask: <em>&quot;The app can&#39;t find my environment
+variable — check how the code reads .env and fix it.&quot;</em></li>
+<li><strong>I pasted a real secret into the AI chat.</strong> Rotate that key now (Part D).
+Then delete what you can from the chat/history, and move on. Rotation fixes
+pastes, too.</li>
+<li><strong>Is [this string] a secret?</strong> If it&#39;s long, gibberish-looking, and unlocks
+access to something — treat it as one. Ask your AI: <em>&quot;What is this kind of
+credential used for?&quot;</em> (but paste a <strong>redacted</strong> version, e.g. <code>sk-abc…xyz</code>).</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../../challenges/03-prompt-like-a-pro/">Challenge 3 — Prompt Like a Pro</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/01-git-time-machine/"><span>Previous</span><strong>The Git Time Machine</strong></a>
+    <a class="next" href="../../challenges/03-prompt-like-a-pro/"><span>Next</span><strong>Prompt Like a Pro</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+</body>
+</html>
