@@ -34,10 +34,13 @@ the regenerated `docs/`.
 
 ## Deploying
 
-Live at `getglod.com` (GitHub Pages, deploy-from-branch, no build step on
-GitHub's side; `docs/` is committed pre-built). `docs/CNAME` pins the custom
-domain — keep it in the build output. DNS is on Cloudflare: apex A records
-point at GitHub's 185.199.108–111.153, `www` CNAMEs to `vildevev.github.io`.
+GitHub Pages: repo Settings → Pages → Deploy from branch → `main` → `/docs`.
+No build step runs on GitHub's side; `docs/` is committed pre-built.
+Live at `https://vildevev.github.io/intro-to-vibe-coding/`.
+
+⚠️ Do NOT set a custom apex domain on Pages (no `docs/CNAME`) without asking:
+`getglod.com` (Cloudflare) already hosts the user's Glod app — attaching it
+to Pages hijacks that site and makes the github.io URL redirect away.
 
 ## Conventions
 
