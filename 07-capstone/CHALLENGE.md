@@ -154,6 +154,14 @@ Print this. Run it top-to-bottom on every real project, forever:
   change yearly. The loop won't: **brief, small bites, save points, verify,
   ship.**
 
+## 📬 Tell me
+
+You shipped something real — I genuinely want to see it. Post your link and
+your hardest-bug story in [the graduation thread](https://github.com/vildevev/intro-to-vibe-coding/discussions/1),
+or email me privately at [vildevev.business@gmail.com](mailto:vildevev.business@gmail.com).
+Stuck somewhere instead? [Discussions](https://github.com/vildevev/intro-to-vibe-coding/discussions)
+is where other beginners hang out. I read everything.
+
 ## 🆘 When it goes wrong
 
 - **Mid-project dread: "this is worse than when I started."** Restore your

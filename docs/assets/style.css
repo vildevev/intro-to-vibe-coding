@@ -522,6 +522,13 @@ body {
 }
 .foot p + p { margin-top: 0.2em; }
 
+.foot a {
+  color: var(--green-deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.foot a:hover { color: var(--ink); }
+
 /* ---------- small screens ---------- */
 
 @media (max-width: 780px) {

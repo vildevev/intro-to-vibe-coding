@@ -72,6 +72,14 @@ Challenge 6 is free (GitHub Pages).
 That's the point of Challenge 1. Git is a time machine — and by Challenge 2
 you'll know how to verify nothing dangerous got saved.
 
+## Say hi
+
+Building along? Finished a challenge? I read everything.
+
+- **Something broken, or stuck on a step?** [Post in Discussions](https://github.com/vildevev/intro-to-vibe-coding/discussions) — other learners hang out there, and finished students show off what they built in [the graduation thread](https://github.com/vildevev/intro-to-vibe-coding/discussions/1).
+- **Just want to say hi or give private feedback?** [vildevev.business@gmail.com](mailto:vildevev.business@gmail.com)
+- **The course helped?** [Star the repo on GitHub](https://github.com/vildevev/intro-to-vibe-coding) — it's how other beginners find it.
+
 ---
 
 *Start here → [Challenge 0: Meet Your AI Copilot](00-setup/CHALLENGE.md)*
