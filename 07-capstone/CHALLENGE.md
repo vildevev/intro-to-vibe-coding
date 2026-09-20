@@ -92,6 +92,7 @@ Before shipping, run the full inspection — out loud, like a pilot:
       `git status` doesn't list it
 - [ ] No real personal data that shouldn't be public (yours or anyone else's)
 - [ ] The 3 review questions on every change since the last good point
+- [ ] Tests green, if your project has them (Challenge 5) — no green, no ship
 - [ ] Opened on a phone. Screens look sane, nothing overflows weirdly
 - [ ] Ask your AI for a final pass: *"Review my project like a skeptical
       senior developer: what would embarrass me publicly? Plain English."*

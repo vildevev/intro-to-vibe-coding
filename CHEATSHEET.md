@@ -116,6 +116,12 @@ Before accepting any AI change, three questions:
 commit"*) · partial accept (*"keep the spacing, undo the rest"*) ·
 defer (*"note it in IDEAS.md and undo"*).
 
+**Teach the robot to check for you:** before big changes, have the AI write
+tests for what must always work ("page loads, my name in the heading, footer
+appears"). Then the loop is: change → *run the tests* → green? commit.
+Red is the best evidence you'll ever have — paste it into the debugging
+template. **No green, no commit.**
+
 Request size math: one button = 5 lines = reviewable in seconds.
 "Make it better" = everything = unreviewable. Small requests are a
 *review strategy*.

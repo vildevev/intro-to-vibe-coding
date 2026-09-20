@@ -121,6 +121,11 @@ Retries are free. Marathons are expensive.</li>
 <p><strong>The pro menu when it&#39;s wrong:</strong> full reject (<em>&quot;restore to the last
 commit&quot;</em>) · partial accept (<em>&quot;keep the spacing, undo the rest&quot;</em>) ·
 defer (<em>&quot;note it in IDEAS.md and undo&quot;</em>).</p>
+<p><strong>Teach the robot to check for you:</strong> before big changes, have the AI write
+tests for what must always work (&quot;page loads, my name in the heading, footer
+appears&quot;). Then the loop is: change → <em>run the tests</em> → green? commit.
+Red is the best evidence you&#39;ll ever have — paste it into the debugging
+template. <strong>No green, no commit.</strong></p>
 <p>Request size math: one button = 5 lines = reviewable in seconds.
 &quot;Make it better&quot; = everything = unreviewable. Small requests are a
 <em>review strategy</em>.</p>

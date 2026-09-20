@@ -33,7 +33,7 @@ the decisions — and to check its work.
 | 2 | [Secrets: Don't Get Hacked](02-secrets-and-env/CHALLENGE.md) | Keep passwords and API keys out of danger | 60 min |
 | 3 | [Prompt Like a Pro](03-prompt-like-a-pro/CHALLENGE.md) | Get the AI to build what's actually in your head | 45 min |
 | 4 | [The Red Text](04-debug-red-text/CHALLENGE.md) | Fix errors without panicking | 45 min |
-| 5 | [Trust, But Verify](05-review-the-diff/CHALLENGE.md) | Review what the AI changed before accepting it | 45 min |
+| 5 | [Trust, But Verify](05-review-the-diff/CHALLENGE.md) | Review what the AI changed — and make tests guard the old features | 60 min |
 | 6 | [Ship It](06-ship-it/CHALLENGE.md) | Put your creation on the real internet | 60 min |
 | 7 | [Capstone](07-capstone/CHALLENGE.md) | Build and launch something real, end to end | 2–4 hrs |
 
