@@ -529,6 +529,192 @@ body {
 }
 .foot a:hover { color: var(--ink); }
 
+/* ---------- the loop demo (home) — you are the gate ---------- */
+
+.sec-sim {
+  background: var(--paper-2);
+  border-radius: var(--radius);
+  padding: 1.4em 1.6em;
+}
+.sec-sim > h2 { margin-top: 0.2em; }
+
+.sim-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  align-items: center;
+  margin-top: 1em;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.key {
+  font-family: "Spline Sans Mono", monospace;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.15em 0.75em;
+  white-space: nowrap;
+}
+.key-you { background: var(--hl); color: var(--ink); }
+.key-ai { background: var(--green-wash); color: var(--green-deep); }
+.key-err { background: var(--red-wash); color: var(--red); }
+.key-gate { background: #fff; color: var(--ink); border: 1.5px solid var(--ink-soft); }
+.key-gate::before { content: "◆ "; color: var(--green); }
+
+.sim {
+  display: grid;
+  grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr);
+  grid-template-areas:
+    "track term"
+    "info term";
+  gap: 1rem 1.4rem;
+  align-items: start;
+  margin-top: 1.1em;
+}
+
+/* phase track */
+.sim-track {
+  grid-area: track;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.sim-phase {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: "Spline Sans Mono", monospace;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.ph-dot {
+  flex: none;
+  width: 0.85em;
+  height: 0.85em;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: #fff;
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+.sim-phase[data-gate] .ph-dot { border-radius: 2px; transform: rotate(45deg) scale(0.9); }
+.sim-phase.done { color: var(--green-deep); }
+.sim-phase.done .ph-dot { background: var(--green); border-color: var(--green); }
+.sim-phase.active { color: var(--ink); font-weight: 700; }
+.sim-phase.active .ph-dot { border-color: var(--green); box-shadow: 0 0 0 4px rgba(35, 122, 80, 0.15); }
+.sim-phase.active[data-gate] .ph-dot {
+  border-color: #C9A400;
+  animation: sim-pulse 1.2s ease-in-out infinite;
+}
+@keyframes sim-pulse { 50% { box-shadow: 0 0 0 6px rgba(255, 232, 107, 0.55); } }
+
+/* explainer card — the prose budget, swaps per beat */
+.sim-info {
+  grid-area: info;
+  background: var(--paper);
+  border-left: 4px solid var(--hl);
+  border-radius: 0 8px 8px 0;
+  padding: 0.85em 1em;
+  font-size: 0.93rem;
+  line-height: 1.55;
+  box-shadow: 2px 2px 0 var(--line);
+  min-height: 7.5em;
+}
+.sim-info a { color: var(--green-deep); }
+
+/* the transcript terminal */
+.sim-term {
+  grid-area: term;
+  background: var(--code-bg);
+  border-radius: 14px;
+  box-shadow: 6px 6px 0 var(--line);
+  overflow: hidden;
+  min-width: 0;
+}
+.sim-term .term-bar {
+  font-family: "Spline Sans Mono", monospace;
+  font-size: 0.8rem;
+  color: #9fc4a8;
+  padding: 0.6em 1.2em;
+  border-bottom: 1px solid rgba(217, 239, 221, 0.18);
+}
+.sim-term .term-bar::before { content: "▶ "; color: var(--hl); }
+
+.sim-log {
+  font-family: "Spline Sans Mono", monospace;
+  font-size: 0.84rem;
+  line-height: 1.75;
+  color: var(--code-ink);
+  padding: 1em 1.2em;
+  min-height: 13.5em;
+  max-height: 20em;
+  overflow-y: auto;
+}
+.sim-wait { color: #7fa389; }
+
+.sim-line { display: block; overflow-wrap: anywhere; transition: opacity 260ms ease, transform 260ms ease; }
+.sim-line.pre { opacity: 0; transform: translateY(5px); }
+.sim-line .who { display: inline-block; min-width: 3.5ch; font-weight: 600; }
+.sim-line.you .who { color: var(--hl); }
+.sim-line.ai .who { color: #8FE8B0; }
+.sim-line.add { color: #8FE8B0; }
+.sim-line.err .who { color: #FFA694; }
+.sim-line.err { color: #FFA694; }
+
+.sim-verdict {
+  display: inline-block;
+  margin-top: 0.5em;
+  font-weight: 600;
+  background: rgba(35, 122, 80, 0.28);
+  border: 1.5px solid #8FE8B0;
+  border-radius: 999px;
+  padding: 0.2em 1em;
+}
+
+/* the gate — pauses the run until the reader decides */
+.sim-gate {
+  margin: 0 1.2em 1.1em;
+  background: var(--paper);
+  border: 2px solid var(--hl);
+  border-radius: var(--radius);
+  padding: 0.9em 1.1em 1em;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35);
+}
+.gate-name {
+  font-family: "Spline Sans Mono", monospace;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.gate-name::before { content: "◆ "; color: var(--green); }
+.gate-prompt { font-size: 0.95rem; margin: 0.25em 0 0.8em; }
+.gate-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+.sim-ctrl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 0 1.2em 1.2em;
+}
+.sim-ctrl .btn, .gate-actions .btn {
+  padding: 0.5em 1.2em;
+  font-size: 0.95rem;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sim-ctrl .btn:disabled { opacity: 0.45; cursor: default; }
+.sim-ctrl .btn:disabled:hover { background: var(--green); }
+.sim-ctrl .btn-ghost:disabled { box-shadow: inset 0 0 0 2px var(--green); }
+.sim-ctrl .btn-ghost:disabled:hover { background: transparent; }
+
+.sim-note { margin-top: 1em; }
+
 /* ---------- small screens ---------- */
 
 @media (max-width: 780px) {
@@ -538,12 +724,29 @@ body {
   .level-head { flex-direction: column; gap: 0.8rem; }
   .pager { grid-template-columns: 1fr; }
   .pager .next { text-align: left; justify-items: start; }
+  .sim {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "track"
+      "term"
+      "info";
+  }
+  .sim-track { flex-direction: row; flex-wrap: wrap; gap: 0.35rem 1rem; }
+  .sim-phase { font-size: 0.76rem; }
+  .sim-info { min-height: 0; }
+  .sim-log { min-height: 11em; max-height: 18em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sim-line { transition: none; }
+  .sim-phase .ph-dot { animation: none !important; }
 }
 
 /* ---------- print (cheat sheets especially) ---------- */
 
 @media print {
   .topbar, .pager, .foot, .skip, .cursor, .cta-row { display: none; }
+  .sec-sim { display: none; }
   body { background: #fff; font-size: 11pt; }
   .hero-term, .prose pre { box-shadow: none; }
   .sec, .faq, .levels li { break-inside: avoid; }
