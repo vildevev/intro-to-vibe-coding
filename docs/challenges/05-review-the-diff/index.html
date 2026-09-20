@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Learn to see what the AI changed before you accept it — the 10-second habit that turns "why is everything broken?" into "ah, I see what you did there."">
+<meta name="description" content="Learn to see what the AI changed before you accept it — the 10-second habit that turns "why is everything broken?" into "ah, I see what you did there." Then automate it with tests: a robot that re-checks your old features so you don't have to.">
 <title>Challenge 05: Trust, But Verify — Intro to Vibe Coding</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,9 +24,9 @@
 <div class="level-head gridbg">
   <div class="level-num" aria-hidden="true">05</div>
   <div class="level-meta">
-    <p class="level-chips"><span class="chip">Challenge 05</span><span class="chip">about 45 minutes</span></p>
+    <p class="level-chips"><span class="chip">Challenge 05</span><span class="chip">about 60 minutes</span></p>
     <h1>Trust, But Verify</h1>
-    <p class="mission"><strong>Mission.</strong> Learn to <em>see</em> what the AI changed before you accept it — the 10-second habit that turns &quot;why is everything broken?&quot; into &quot;ah, I see what you did there.&quot;</p>
+    <p class="mission"><strong>Mission.</strong> Learn to <em>see</em> what the AI changed before you accept it — the 10-second habit that turns &quot;why is everything broken?&quot; into &quot;ah, I see what you did there.&quot; Then automate it with tests: a robot that re-checks your old features so you don&#39;t have to.</p>
   </div>
 </div>
 <div class="prose">
@@ -46,6 +46,8 @@ photo of your files, deletions in red, additions in green.</p>
 <ul>
 <li>What a <strong>diff</strong> is and how to read one (yes, you — it&#39;s made for humans)</li>
 <li>Reviewing at three levels: <em>what changed</em>, <em>is it what I asked</em>, <em>does it still work</em></li>
+<li><strong>Tests</strong> — how to have the AI build a smoke alarm that re-checks your old
+features automatically, so &quot;does it still work&quot; stops relying on memory</li>
 <li>How to reject changes gracefully (and why rejecting is a <em>feature</em>)</li>
 <li>Why small requests make review trivial (and big ones make it impossible)</li>
 </ul>
@@ -157,11 +159,66 @@ stays possible.</strong> The math:</p>
 <p>Make a save point after every reviewed-and-approved change. Then your
 rejection menu always works, and one bad change never compounds into another.</p>
 <hr>
+</section><section class="sec"><h2>Part E — The smoke alarm: let a robot re-check old features (15 min)</h2>
+<p>Review question 3 — <em>&quot;does everything still work?&quot;</em> — has a hidden weakness:
+it relies on your memory and your patience. Humans check the shiny new thing
+and forget the six old things. Software has a boring miracle for exactly this:
+<strong>tests</strong> — tiny automated checks that re-verify old features in seconds,
+every time you ask.</p>
+<p>And here&#39;s the part that matters for you: <strong>you will never write one.</strong> Your
+job is the director&#39;s job — say what &quot;working&quot; means in plain words. The AI
+translates each sentence into a check. That translation is a task computers
+are good at; deciding what <em>should</em> be true is the task only you can do.</p>
+<ol>
+<li><p><strong>Build the alarm while everything is calm.</strong> Before any new change, ask:</p>
+<pre><code>Before making any changes: write a few simple automated checks (tests)
+for this project — the things that must ALWAYS work: the page loads,
+my name is in the heading, the Now section shows 3 cards, the footer
+line appears. Pick the simplest test setup that runs in my environment,
+zero new dependencies if possible. Explain each check in plain English.
+Then run them and show me everything passing.
+</code></pre>
+</li>
+<li><p><strong>Look at the green.</strong> Every check passing is a snapshot of &quot;working&quot; —
+your baseline. From now on, green means nothing broke; red means question 3
+got answered for you, precisely, in plain words.</p>
+</li>
+<li><p><strong>Watch it catch a crime.</strong> The regression drill — ask your AI:</p>
+<pre><code>This is a drill: quietly break ONE old feature (not the new stuff),
+do not tell me which, and do not fix anything. Then run the tests.
+</code></pre>
+<p>Red. And not just red — <em>named</em>: which check failed, describing which old
+behavior broke. That&#39;s a regression caught without you clicking through
+anything. Now have it fix the break and watch the green come back.</p>
+</li>
+<li><p><strong>The habit, from now on:</strong> after every accepted change, three words —</p>
+<pre><code>Run the tests.
+</code></pre>
+<p>Green? Commit (Golden Rule #1). Red? You just got the <em>evidence</em> half of
+the debugging loop (Challenge 4) handed to you. <strong>No green, no commit.</strong></p>
+</li>
+</ol>
+<p>Two honest limits, so the alarm stays trustworthy:</p>
+<ul>
+<li>Tests only check what you thought to ask. Your list of checks is only as
+good as your plain-English spec — add a check whenever you notice a &quot;must
+always work&quot; you forgot (&quot;also check the contact section still exists&quot;).</li>
+<li>Tests are a smoke alarm, not a guarantee. Green doesn&#39;t mean perfect; it
+means <em>nothing you cared about broke</em>. That&#39;s exactly the promise of this
+challenge — trust, but verify, cheaply.</li>
+</ul>
+<hr>
 </section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
 <ul>
 <li><em>&quot;Show me the diff and explain each change in one sentence before applying.&quot;</em></li>
 <li><em>&quot;Did you change anything beyond what I asked for? Show me if so.&quot;</em></li>
 <li><em>&quot;What could this change break? Which existing features should I re-test?&quot;</em></li>
+<li><em>&quot;Before changing anything, write simple tests for the features that must
+always work — simplest setup that runs here, no new dependencies if
+possible.&quot;</em></li>
+<li><em>&quot;Run the tests and tell me plainly: all green, or what went red and why.&quot;</em></li>
+<li><em>&quot;A test went red after your change. Explain which behavior broke in plain
+English, then fix it in the smallest possible way.&quot;</em></li>
 <li><em>&quot;Undo that completely — restore to the last commit.&quot;</em></li>
 <li><em>&quot;Change exactly one thing: X. Touch nothing else, and confirm that when
 you&#39;re done.&quot;</em></li>
@@ -171,6 +228,9 @@ you&#39;re done.&quot;</em></li>
 <li><span class="cb" aria-hidden="true"></span>You read a diff with your own eyes and could say what was added/removed</li>
 <li><span class="cb" aria-hidden="true"></span>You caught (on purpose or by luck) the AI doing more than you asked — and named it</li>
 <li><span class="cb" aria-hidden="true"></span>You rejected a change fully or partially, and verified the rejection</li>
+<li><span class="cb" aria-hidden="true"></span>Your project has a small test suite, and you&#39;ve seen it all green</li>
+<li><span class="cb" aria-hidden="true"></span>You watched a test catch a deliberately broken old feature — and trusted it</li>
+<li><span class="cb" aria-hidden="true"></span>&quot;Run the tests&quot; is now part of your loop after every accepted change</li>
 <li><span class="cb" aria-hidden="true"></span>You can recite the 3 review questions without looking</li>
 <li><span class="cb" aria-hidden="true"></span>You know why &quot;make it better&quot; is an unreviewable request</li>
 </ul>
@@ -199,6 +259,18 @@ you&#39;re done.&quot;</em></li>
 <td>Undo a change — free and shameless when you have save points</td>
 </tr>
 <tr>
+<td>Test (unit test)</td>
+<td>A tiny automated check that one piece of behavior still works. You specify it in plain words; the AI writes it</td>
+</tr>
+<tr>
+<td>Test suite</td>
+<td>The whole set of checks, run together in seconds</td>
+</tr>
+<tr>
+<td>Green / red</td>
+<td>All checks passing / at least one failing. No green, no commit</td>
+</tr>
+<tr>
 <td>Refactor</td>
 <td>Rewriting how code works without changing what it does. Occasionally needed; rarely urgent; always worth asking &quot;why now?&quot;</td>
 </tr>
@@ -215,6 +287,15 @@ system working, not failing.</li>
 <li><strong>You can&#39;t tell what a changed line <em>means</em>.</strong> You don&#39;t need to. Ask:
 <em>&quot;In plain English, what does this line make the page do?&quot;</em> Behavior, not
 syntax — that&#39;s the level you review at.</li>
+<li><strong>A test went red and the output looks like soup.</strong> Paste it into the
+Challenge 4 evidence template — expected vs. actual, exact text, how to
+reproduce. Red tests are the best evidence you&#39;ll ever have.</li>
+<li><strong>The AI wants to install 40 packages to run tests.</strong> Say: <em>&quot;Use the
+simplest possible setup that runs in my environment — zero new dependencies
+if possible.&quot;</em> If the tests cost more than they protect, they&#39;re wrong.</li>
+<li><strong>All the tests suddenly go red after one small change.</strong> Usually the tests
+broke, not the app (they can drift). Ask: <em>&quot;Did the app break, or did the
+tests break? Check the app first, by hand.&quot;</em></li>
 </ul>
 <div class="next-card"><p><strong>Next:</strong> <a href="../../challenges/06-ship-it/">Challenge 6 — Ship It</a></p></div>
 </section>

@@ -2,9 +2,10 @@
 
 **Mission:** Learn to *see* what the AI changed before you accept it — the
 10-second habit that turns "why is everything broken?" into "ah, I see what
-you did there."
+you did there." Then automate it with tests: a robot that re-checks your old
+features so you don't have to.
 
-**Time:** ~45 minutes
+**Time:** ~60 minutes
 
 ---
 
@@ -28,6 +29,8 @@ photo of your files, deletions in red, additions in green.
 
 - What a **diff** is and how to read one (yes, you — it's made for humans)
 - Reviewing at three levels: *what changed*, *is it what I asked*, *does it still work*
+- **Tests** — how to have the AI build a smoke alarm that re-checks your old
+  features automatically, so "does it still work" stops relying on memory
 - How to reject changes gracefully (and why rejecting is a *feature*)
 - Why small requests make review trivial (and big ones make it impossible)
 
@@ -145,11 +148,76 @@ rejection menu always works, and one bad change never compounds into another.
 
 ---
 
+## Part E — The smoke alarm: let a robot re-check old features (15 min)
+
+Review question 3 — *"does everything still work?"* — has a hidden weakness:
+it relies on your memory and your patience. Humans check the shiny new thing
+and forget the six old things. Software has a boring miracle for exactly this:
+**tests** — tiny automated checks that re-verify old features in seconds,
+every time you ask.
+
+And here's the part that matters for you: **you will never write one.** Your
+job is the director's job — say what "working" means in plain words. The AI
+translates each sentence into a check. That translation is a task computers
+are good at; deciding what *should* be true is the task only you can do.
+
+1. **Build the alarm while everything is calm.** Before any new change, ask:
+
+   ```
+   Before making any changes: write a few simple automated checks (tests)
+   for this project — the things that must ALWAYS work: the page loads,
+   my name is in the heading, the Now section shows 3 cards, the footer
+   line appears. Pick the simplest test setup that runs in my environment,
+   zero new dependencies if possible. Explain each check in plain English.
+   Then run them and show me everything passing.
+   ```
+
+2. **Look at the green.** Every check passing is a snapshot of "working" —
+   your baseline. From now on, green means nothing broke; red means question 3
+   got answered for you, precisely, in plain words.
+
+3. **Watch it catch a crime.** The regression drill — ask your AI:
+
+   ```
+   This is a drill: quietly break ONE old feature (not the new stuff),
+   do not tell me which, and do not fix anything. Then run the tests.
+   ```
+
+   Red. And not just red — *named*: which check failed, describing which old
+   behavior broke. That's a regression caught without you clicking through
+   anything. Now have it fix the break and watch the green come back.
+
+4. **The habit, from now on:** after every accepted change, three words —
+
+   ```
+   Run the tests.
+   ```
+
+   Green? Commit (Golden Rule #1). Red? You just got the *evidence* half of
+   the debugging loop (Challenge 4) handed to you. **No green, no commit.**
+
+Two honest limits, so the alarm stays trustworthy:
+
+- Tests only check what you thought to ask. Your list of checks is only as
+  good as your plain-English spec — add a check whenever you notice a "must
+  always work" you forgot ("also check the contact section still exists").
+- Tests are a smoke alarm, not a guarantee. Green doesn't mean perfect; it
+  means *nothing you cared about broke*. That's exactly the promise of this
+  challenge — trust, but verify, cheaply.
+
+---
+
 ## 🤖 Prompts worth stealing
 
 - *"Show me the diff and explain each change in one sentence before applying."*
 - *"Did you change anything beyond what I asked for? Show me if so."*
 - *"What could this change break? Which existing features should I re-test?"*
+- *"Before changing anything, write simple tests for the features that must
+  always work — simplest setup that runs here, no new dependencies if
+  possible."*
+- *"Run the tests and tell me plainly: all green, or what went red and why."*
+- *"A test went red after your change. Explain which behavior broke in plain
+  English, then fix it in the smallest possible way."*
 - *"Undo that completely — restore to the last commit."*
 - *"Change exactly one thing: X. Touch nothing else, and confirm that when
   you're done."*
@@ -159,6 +227,9 @@ rejection menu always works, and one bad change never compounds into another.
 - [ ] You read a diff with your own eyes and could say what was added/removed
 - [ ] You caught (on purpose or by luck) the AI doing more than you asked — and named it
 - [ ] You rejected a change fully or partially, and verified the rejection
+- [ ] Your project has a small test suite, and you've seen it all green
+- [ ] You watched a test catch a deliberately broken old feature — and trusted it
+- [ ] "Run the tests" is now part of your loop after every accepted change
 - [ ] You can recite the 3 review questions without looking
 - [ ] You know why "make it better" is an unreviewable request
 
@@ -170,6 +241,9 @@ rejection menu always works, and one bad change never compounds into another.
 | Scope creep | The AI doing extra things you didn't ask for |
 | Review | Reading the receipt before paying: what changed, is it right, what breaks? |
 | Reject / revert | Undo a change — free and shameless when you have save points |
+| Test (unit test) | A tiny automated check that one piece of behavior still works. You specify it in plain words; the AI writes it |
+| Test suite | The whole set of checks, run together in seconds |
+| Green / red | All checks passing / at least one failing. No green, no commit |
 | Refactor | Rewriting how code works without changing what it does. Occasionally needed; rarely urgent; always worth asking "why now?" |
 
 ## 🆘 When it goes wrong
@@ -184,5 +258,14 @@ rejection menu always works, and one bad change never compounds into another.
 - **You can't tell what a changed line *means*.** You don't need to. Ask:
   *"In plain English, what does this line make the page do?"* Behavior, not
   syntax — that's the level you review at.
+- **A test went red and the output looks like soup.** Paste it into the
+  Challenge 4 evidence template — expected vs. actual, exact text, how to
+  reproduce. Red tests are the best evidence you'll ever have.
+- **The AI wants to install 40 packages to run tests.** Say: *"Use the
+  simplest possible setup that runs in my environment — zero new dependencies
+  if possible."* If the tests cost more than they protect, they're wrong.
+- **All the tests suddenly go red after one small change.** Usually the tests
+  broke, not the app (they can drift). Ask: *"Did the app break, or did the
+  tests break? Check the app first, by hand."*
 
 ➡️ **Next:** [Challenge 6 — Ship It](../06-ship-it/CHALLENGE.md)
