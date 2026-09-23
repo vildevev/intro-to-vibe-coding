@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Turn deploys from a held-breath click into a system: preview first, roll back in one click, back up the memory, and write the 2am runbook before you need it.">
+<title>Challenge 07: Ship Like a Pro — Vibe Coding 201</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html">101 course</a>
+    <a href="../../../201/">201 map</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">07</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 07</span><span class="chip">about 60 minutes</span></p>
+    <h1>Ship Like a Pro</h1>
+    <p class="mission"><strong>Mission.</strong> Turn deploys from a held-breath click into a system: preview first, roll back in one click, back up the memory, and write the 2am runbook before you need it.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Ana&#39;s shop was live. Every update went straight to it — edit, deploy, pray.
+Launch morning she shipped &quot;one tiny button change&quot; and the checkout died.
+For six hours. On launch day. While customers watched. There was no preview
+(the change never rehearsed), no rollback (going back meant finding an old
+version somewhere in the fog), and no backup of the orders she was
+meanwhile losing.</p>
+<p>None of that requires bad luck — it requires missing gears. Professional
+teams aren&#39;t braver than Ana; they have machinery: <strong>previews</strong> (nothing
+meets the public unrehearsed), <strong>rollbacks</strong> (the ship has a reverse gear),
+<strong>backups</strong> (memory can be re-loaded), and a <strong>runbook</strong> (Future You at 2am
+gets instructions, not a mystery). You&#39;re going to install all four gears
+today, and they&#39;re all nearly free.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>Production vs preview</strong>: the stage vs the rehearsal room</li>
+<li><strong>Rollback</strong>: going back to yesterday in one click</li>
+<li><strong>Backups</strong>: exporting your database&#39;s memory on a schedule that isn&#39;t &quot;never&quot;</li>
+<li><strong>The 2am runbook</strong>: one page of instructions written by Day You, for
+ Night You</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Your 201 project on GitHub, deployed on Vercel (Challenge 4 did this)</li>
+<li><span class="cb" aria-hidden="true"></span>Supabase project holding real-ish data (Challenge 1)</li>
+<li><span class="cb" aria-hidden="true"></span>Tests exist and pass (you know why, by now)</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — The rehearsal room (15 min)</h2>
+<p>Vercel&#39;s core trick: <strong>every branch gets its own URL.</strong> <code>main</code> is the stage
+(your real site); any other branch is a rehearsal room with a private door.</p>
+<ol>
+<li><p>Make sure your project is connected to GitHub (Vercel → Settings → Git).
+From Challenge 4 it should be: every push to <code>main</code> already auto-deploys —
+watch Vercel&#39;s Deployments tab as proof.</p>
+</li>
+<li><p>Now the rehearsal: create a branch, paint the barn red, push:</p>
+<pre><code>Create a branch called paint-job. On it, and ONLY on it: add a huge
+red banner across the top of the page that says &quot;UNDER
+CONSTRUCTION??&quot;. Push the branch.
+</code></pre>
+</li>
+<li><p>Look at Vercel → Deployments. The <code>paint-job</code> branch built its <strong>own
+deploy</strong> with its own URL (<code>paint-job-…vercel.app</code>). Open it: red banner.
+Then open your <strong>production</strong> URL: no banner. The stage never saw the
+rehearsal. That&#39;s the whole professional workflow, already running:</p>
+<p><strong>branch → preview URL → click every thing → merge to main → stage.</strong></p>
+</li>
+<li><p>Keep the branch for Part B. You&#39;re about to need something broken.</p>
+</li>
+</ol>
+</section><section class="sec"><h2>Part B — The reverse gear (10 min)</h2>
+<p>Merge the red banner into <code>main</code> (GitHub → Pull request → Merge — or ask
+your AI to walk you through it). Production now has the banner. Imagine it
+also &quot;broke the checkout&quot; — same moment, same feeling.</p>
+<p>Now use the gear that saves careers: Vercel → <strong>Deployments</strong> → find the
+deploy <em>before</em> the banner (the last good one) → the <code>⋯</code> menu →
+<strong>&quot;Instant Rollback&quot;</strong> → confirm. Refresh production: banner gone, yesterday
+restored, in about the time it takes to sip coffee.</p>
+<blockquote>
+<p>💡 Notice what rollback is: the 101&#39;s save points, grown up and pointed at
+the <em>live site</em>. You learned time travel in week one of the 101. This is
+the same spell, cast on production. Say the rule out loud: <strong>&quot;Shipping
+without testing the rollback is renovating without knowing where the door
+is.&quot;</strong></p>
+</blockquote>
+</section><section class="sec"><h2>Part C — Backup the memory (15 min)</h2>
+<p>Rollback restores your <em>code</em>. It does nothing for your <strong>data</strong> — the
+wishes, orders, and users in Supabase. Database backups are the 201 version
+of git: the memory gets its own time machine.</p>
+<ol>
+<li><p>Supabase → <strong>Database → Backups</strong>. See what your free tier gives you
+(scheduled backups may be limited — that&#39;s fine, you&#39;ll add the manual
+habit).</p>
+</li>
+<li><p>The manual export, once today: ask your AI —</p>
+<pre><code>Walk me through exporting my Supabase data so I could restore it
+anywhere. I want a file I can download and keep. Explain what the
+file contains and how a restore would work, in plain English.
+</code></pre>
+</li>
+<li><p>Download it. Put it somewhere real (cloud drive, not just the desktop of
+the same laptop). The habit: <strong>export after any big data change, weekly
+if the app is live.</strong> A backup you took once in a fit of responsibility
+is a museum piece, not a backup.</p>
+</li>
+</ol>
+</section><section class="sec"><h2>Part D — The 2am runbook (15 min)</h2>
+<p>The last gear is a <em>document</em>. When the site breaks at 2am, Day You (calm,
+coffee, full context) writes instructions for Night You (panicked, bleary,
+no context). One page. Ask the AI to draft it, then edit:</p>
+<pre><code>Draft my 2am runbook as RUNBOOK.md in the project root. My stack:
+Vercel (static pages + serverless functions), Supabase (database),
+Stripe (payments), GitHub (code, main deploys to production). Include:
+1) first five minutes: how to check if it&#39;s really down for everyone
+   (Vercel status, my own visit in a private window)
+2) how to read today&#39;s server logs and find the first error
+3) how to roll back a deploy — exact clicks
+4) how to restore the database from a backup — exact clicks
+5) what NEVER to do at 2am (delete the database, rewrite history,
+   &quot;quick fixes&quot; directly in production)
+Keep every step at the level of exact clicks, not concepts.
+</code></pre>
+<p>Read every click in that document. If a step says something you&#39;ve never
+done — go do it once now, calm, so the runbook is tested. A runbook with
+untested steps is a novel. Commit it with everything else: the map (Challenge
+5) now includes the emergency exits.</p>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;What happens if Supabase goes down for an hour? What breaks first, and
+what should my page say while it&#39;s away?&quot;</em></li>
+<li><em>&quot;Which parts of my deploy can be rehearsed on a preview, and which can&#39;t?&quot;</em></li>
+<li><em>&quot;Review my RUNBOOK.md like a skeptical ops engineer: what&#39;s missing,
+what step would fail at 2am?&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>A branch produced a preview URL that never touched production</li>
+<li><span class="cb" aria-hidden="true"></span>You merged something broken to prod <strong>on purpose</strong> and rolled it back</li>
+<li><span class="cb" aria-hidden="true"></span>A database backup file exists somewhere that isn&#39;t just your laptop</li>
+<li><span class="cb" aria-hidden="true"></span>RUNBOOK.md exists, with steps you have actually clicked at least once</li>
+<li><span class="cb" aria-hidden="true"></span>Your deploy ritual reads: branch → preview → click around → merge →
+watch → (rollback if needed)</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Production (prod)</td>
+<td>The stage: the real site, real users, real stakes</td>
+</tr>
+<tr>
+<td>Preview deploy</td>
+<td>The rehearsal room: every branch gets a private URL — nothing public until merged</td>
+</tr>
+<tr>
+<td>Pull request (PR)</td>
+<td>The formal request &quot;rehearsal → stage,&quot; with the diff attached for one last review</td>
+</tr>
+<tr>
+<td>Rollback</td>
+<td>Instant reverse gear: point production back at the last good deploy</td>
+</tr>
+<tr>
+<td>Backup</td>
+<td>The memory&#39;s own save file — kept somewhere other than the machine it describes</td>
+</tr>
+<tr>
+<td>Runbook</td>
+<td>Instructions Day You leaves for Night You: exact clicks for the worst hour</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Rolled back… but the problem persists.</strong> Then it isn&#39;t the deploy — it&#39;s
+the data or an outside service. Open the runbook, step 2: logs. The
+reverse gear only reverses code.</li>
+<li><strong>Rolled back and the NEW data is gone.</strong> Data lives in Supabase, not in
+deploys — rolling back code never touches memory. This is exactly why
+Part C exists; restore from a backup only if data was actually damaged.</li>
+<li><strong>The preview URL is public and you don&#39;t want it indexed.</strong> Preview URLs
+are unlisted, not secret. Fine for rehearsal; don&#39;t put real user data on
+a branch just because it feels private.</li>
+<li><strong>&quot;I&#39;ll write the runbook later.&quot;</strong> You won&#39;t. The runbook is written in
+daylight or not at all — 15 minutes now, or a mystery later. Day You owes
+Night You exactly one document.</li>
+</ul>
+<div class="next-card"><p><strong>Final quest:</strong> <a href="../08-capstone-product/">Challenge 8 — Capstone: A Product, Not a Page</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/06-deep-debugging/"><span>Previous</span><strong>Deep Debugging</strong></a>
+    <a class="next" href="../../challenges/08-capstone-product/"><span>Next</span><strong>Capstone: A Product, Not a Page</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

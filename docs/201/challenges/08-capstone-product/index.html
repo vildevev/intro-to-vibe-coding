@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The whole 201 stack, end to end: an app with accounts, memory, and (optionally) money — shipped with previews, backups, and a real user who isn't you.">
+<title>Challenge 08: Capstone: A Product, Not a Page — Vibe Coding 201</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html">101 course</a>
+    <a href="../../../201/">201 map</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">08</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 08</span><span class="chip">3–5 hours, spread over days (save points make it resumable)</span></p>
+    <h1>Capstone: A Product, Not a Page</h1>
+    <p class="mission"><strong>Mission.</strong> The whole 201 stack, end to end: an app with accounts, memory, and (optionally) money — shipped with previews, backups, and a real user who isn&#39;t you.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>The 101 capstone made you a builder: one folder, one page, one human
+delighted. This capstone makes you an <strong>operator</strong>: a product with users,
+data it must not lose, money it must not misplace, and a running system
+someone depends on. The difference between the two isn&#39;t talent. It&#39;s that
+an operator runs the <em>whole loop</em> — build, protect, watch, recover — and
+that loop is exactly what this course installed. Time to run it all at once.</p>
+</section><section class="sec sec-before"><h2>📋 The menu</h2>
+<p>Pick something that genuinely needs the stack — memory, accounts, and
+ideally one payment. The classics:</p>
+<ul>
+<li><strong>The tiny SaaS</strong> — a tracker (habits, plants, invoices) with sign-in, per-user data, free tier + $2 &quot;pro&quot; tier</li>
+<li><strong>The paid digital good</strong> — a guide/template/checklist behind a Stripe checkout, delivered on payment (webhook unlocks it)</li>
+<li><strong>The booking page</strong> — for a real person&#39;s services: accounts, requests saved to the database, a small deposit via Stripe</li>
+<li><strong>The team tool</strong> — one shared list/dashboard for a real group you&#39;re in, sign-in required</li>
+</ul>
+<p>Pick the one a <strong>real person</strong> needs. In 201, &quot;someone else depends on this&quot;
+is a feature, not a bug — it&#39;s what makes you run the safety gears.</p>
+<hr>
+</section><section class="sec"><h2>The build — phases</h2>
+<h3>Phase 1 — Intent on paper (15 min)</h3>
+<p>Before the AI: who is it for, what does a user <strong>do</strong> (one primary action),
+what&#39;s the data (which tables), what&#39;s the money (free / paid / deposit),
+and — new for 201 — <strong>what must never leak or be lost</strong> (secrets, user data,
+orders). Write it. This page becomes your AGENTS.md seed.</p>
+<h3>Phase 2 — Map and house rules first (15 min)</h3>
+<p>New folder, new <code>AGENTS.md</code> — now with the 201 rules baked in:</p>
+<pre><code># House rules (201)
+- Tour the project map before any non-trivial change; say which files
+  you&#39;ll touch
+- One small change at a time; run the tests after each accepted change
+- Secrets: never in code, chat, or git — .env locally, host panel on the
+  server; use the no-peek pattern, I paste values myself
+- Auth: managed only (Supabase). Payments: Stripe-hosted checkout only.
+  Card numbers never touch this app
+- Before I merge anything to main: preview first, tests green
+</code></pre>
+<h3>Phase 3 — Build the skeleton, then the organs (60–90 min)</h3>
+<p>Order matters now, because the parts depend on each other:</p>
+<ol>
+<li><strong>Memory first</strong> (Challenge 1): tables designed from Phase 1&#39;s &quot;what&#39;s
+the data&quot;. Check the schema in plain English before building on it.</li>
+<li><strong>Lock second</strong> (Challenge 2): sign-in, then RLS <em>before</em> real data
+arrives. The bouncer goes on before the party, not after.</li>
+<li><strong>Money third, in test mode</strong> (Challenge 3): product, checkout, webhook —
+all test-mode until Phase 5.</li>
+<li><strong>Any API ingredient</strong> (Challenge 4): middleman only, keys on the server,
+graceful failure, usage caps on day one.</li>
+<li>Small bites throughout, <strong>tests growing alongside</strong> — every must-always-
+work becomes a check, and &quot;run the tests&quot; closes every bite.</li>
+</ol>
+<p>The rhythm, as always: <strong>ask → diff → try → tests → commit</strong> — with the 201
+addition: <strong>push to a branch and look at the preview</strong>, not just localhost.</p>
+<h3>Phase 4 — Grow it without losing the map (30–60 min)</h3>
+<p>This is where 201 projects die: feature four arrives and nobody remembers
+where feature one lives. Countermeasures, all mandatory:</p>
+<ul>
+<li>The project map updates with every moving day (Challenge 5)</li>
+<li>Debugging stays evidence-based: two witnesses, exact text (Challenge 6)</li>
+<li>Rejection stays free: every scope creep gets &quot;restore and re-ask smaller&quot;</li>
+<li>IDEAS.md eats the &quot;also add…&quot; avalanche alive</li>
+</ul>
+<p><strong>Checkpoint:</strong> &quot;Would I let a stranger sign up and pay right now — and
+could I recover from a disaster tonight?&quot; That&#39;s v1.</p>
+<h3>Phase 5 — The pre-flight, 201 edition (30 min)</h3>
+<p>The 101 checklist, wearing its grown-up shoes:</p>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Git clean, log reads like a story, everything pushed</li>
+<li><span class="cb" aria-hidden="true"></span>Tests green — no green, no ship</li>
+<li><span class="cb" aria-hidden="true"></span>Secrets audit: nothing in code or git; server keys in the host panel;
+no-peek respected everywhere</li>
+<li><span class="cb" aria-hidden="true"></span>RLS on, and you <strong>attacked it</strong> (impostor rows refused)</li>
+<li><span class="cb" aria-hidden="true"></span>Stripe: tested end-to-end; go-live checklist done if selling for real</li>
+<li><span class="cb" aria-hidden="true"></span>Spend caps + usage alerts on every paid service</li>
+<li><span class="cb" aria-hidden="true"></span>Backup taken <em>today</em>; rollback rehearsed <em>today</em> (break a branch, not
+prod)</li>
+<li><span class="cb" aria-hidden="true"></span>RUNBOOK.md updated for this product&#39;s stack</li>
+<li><span class="cb" aria-hidden="true"></span>The skeptic pass: <em>&quot;Review this like a paranoid senior engineer —
+what leaks, what breaks, what embarrasses?&quot;</em></li>
+</ul>
+<h3>Phase 6 — Ship (30 min)</h3>
+<p>Merge to <code>main</code>, watch the deploy, open production on a phone. Then the 201
+moment the 101 never had: <strong>the rollback you don&#39;t need</strong> — knowing the
+reverse gear is there and tested while everything works. Calm is the feature.</p>
+<h3>Phase 7 — The human test, real edition (ongoing)</h3>
+<p>One real user (not your mom — someone who&#39;d actually use it). Watch them.
+Fix the top confusion, re-ship via preview. If you take payments: their real
+receipt is the real milestone — and your first refund policy gets written
+the day their first &quot;oops&quot; email arrives. (It will. Be kind; refunds are
+marketing.)</p>
+<p>Then post the product to
+<a href="https://github.com/vildevev/intro-to-vibe-coding/discussions/1">the graduation thread</a>
+— live link, one sentence, hardest bug. That thread is the course&#39;s hall of
+fame, and 201 graduates are its engineers.</p>
+<hr>
+</section><section class="sec sec-finish"><h2>🏁 The Operator&#39;s Checklist (print this one)</h2>
+<ol>
+<li>One folder per project; the map lives in README + AGENTS.md and is <em>true</em></li>
+<li>Memory first, bouncer before the party (RLS before real data)</li>
+<li>Secrets: no-peek, drawer locally, host panel on the server, caps on day one</li>
+<li>Test keys until it works; live keys only with the go-live checklist</li>
+<li>Cards never touch the app; Stripe hosts the register</li>
+<li>Middleman for every ingredient; timeouts and polite failures always</li>
+<li>Small bites → diff → preview → tests → commit; <strong>no green, no merge</strong></li>
+<li>Prod is sacred: nothing arrives without a rehearsal, nothing stays broken
+without a rollback</li>
+<li>Backups on a schedule that isn&#39;t &quot;never&quot;; restore rehearsed in daylight</li>
+<li>Day You always leaves Night You a RUNBOOK</li>
+</ol>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>A stranger signed up, and their data is theirs alone</li>
+<li><span class="cb" aria-hidden="true"></span>The app survived your own three-act disaster drill (missing key, wrong
+path, crash) with polite manners</li>
+<li><span class="cb" aria-hidden="true"></span>Money moved (or the full test-mode loop did), and the webhook recorded it</li>
+<li><span class="cb" aria-hidden="true"></span>You shipped a real update via preview→merge <em>after</em> the launch</li>
+<li><span class="cb" aria-hidden="true"></span>You have taken a backup and rehearsed a rollback on the live project</li>
+<li><span class="cb" aria-hidden="true"></span>A real human depends on it — and so does your RUNBOOK</li>
+<li><span class="cb" aria-hidden="true"></span>The product is in the graduation thread</li>
+</ul>
+</section><section class="sec sec-next"><h2>🎓 Where to go next</h2>
+<ul>
+<li><strong>Watch it live:</strong> your analytics (visits), Stripe dashboard (money),
+Supabase (memory), Vercel (uptime) — four panes, one product</li>
+<li><strong>&quot;Automate your boring work&quot;</strong> — the next track: AI agents that handle
+files, reports, and schedules. Bring your requests to
+<a href="https://github.com/vildevev/intro-to-vibe-coding/discussions/2">the planning thread</a></li>
+<li><strong>Contribute:</strong> you can now read a project&#39;s map, fork a repo, and send a
+pull request. Open source is a door you know how to knock on</li>
+<li><strong>The real secret:</strong> 101 taught you to direct an intern. 201 taught you to
+operate a system. Both were the same loop, over and over: <strong>brief, small
+bites, save points, verify, ship — and now: rehearse, back up, runbook,
+recover.</strong> Keep the loop. It scales.</li>
+</ul>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Mid-build overwhelm: &quot;this is now a REAL system.&quot;</strong> Yes — and you have
+the gears. Save point, map, runbook. Overwhelm shrinks to the size of the
+next small bite.</li>
+<li><strong>A real user hits a real bug.</strong> Evidence template, two witnesses, exact
+text. You have rehearsed this. Communicate kindly and visibly: &quot;found,
+fixing, shipped&quot; beats silence every time.</li>
+<li><strong>Money goes weird (double charge, failed webhook).</strong> Stop, don&#39;t hack.
+Stripe&#39;s dashboard is truth; reconcile there. Refund generously first,
+diagnose second — trust is the actual product.</li>
+<li><strong>You&#39;re afraid to touch the live app.</strong> Then a gear is missing: preview
+deploys, tests, backup, rollback — rehearsed. Fear isn&#39;t a sign to stop;
+it&#39;s a sign a gear needs installing.</li>
+<li><strong>Time&#39;s up, it&#39;s not done.</strong> Cut scope, not gears. A smaller product with
+the full loop beats a bigger one with the loop &quot;to do later.&quot; Later is
+where 2am lives.</li>
+</ul>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/07-ship-like-a-pro/"><span>Previous</span><strong>Ship Like a Pro</strong></a>
+    <a class="next" href="../../../index.html"><span>Next</span><strong>Vibe Coding 101</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

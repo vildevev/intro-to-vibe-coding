@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Sell something real from your app: a Stripe checkout, a real card charge (one dollar, yours), and the go-live checklist for when it's not a drill anymore.">
+<title>Challenge 03: Take Money — Vibe Coding 201</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html">101 course</a>
+    <a href="../../../201/">201 map</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">03</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 03</span><span class="chip">about 60 minutes</span></p>
+    <h1>Take Money</h1>
+    <p class="mission"><strong>Mission.</strong> Sell something real from your app: a Stripe checkout, a real card charge (one dollar, yours), and the go-live checklist for when it&#39;s not a drill anymore.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Two vibe coders wanted payments. The first asked the AI to &quot;add a credit
+card form&quot; — and got one: boxes for the card number, right on their site.
+The code worked. It also would have made them <strong>illegal on day one</strong>: card
+numbers are radioactive. Storing or even <em>touching</em> them unraw puts you
+under a contract called PCI-DSS with audits, fines, and liability that makes
+tax paperwork look like a coloring book.</p>
+<p>The second vibe coder used <strong>Stripe</strong>. The card box lived on Stripe&#39;s
+computers, the money moved through Stripe&#39;s pipes, and the app itself never
+saw a single digit. Rule for life: <strong>card numbers never touch your app.</strong>
+You don&#39;t handle cash in a bank vault you built in your garage — you use the
+bank. Stripe is the bank.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The payments rule: your app asks Stripe; <strong>Stripe handles the cards</strong></li>
+<li><strong>Test mode</strong>: a full fake economy with fake money — build here first</li>
+<li>The go-live moment: swapping test keys for live keys, on purpose</li>
+<li><strong>Webhooks</strong>: how your app <em>hears</em> &quot;payment succeeded&quot; from Stripe</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Challenges 1–2 done (memory + sign-in — payments ride on both)</li>
+<li><span class="cb" aria-hidden="true"></span>A free <a href="https://stripe.com">stripe.com</a> account (no card needed today)</li>
+<li><span class="cb" aria-hidden="true"></span>Comfort with the no-peek trick — Stripe keys are secrets too</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Meet the fake economy (10 min)</h2>
+<p>In Stripe&#39;s dashboard, find the <strong>Test mode</strong> toggle (top right, orange).
+Test mode is a parallel universe: real features, imaginary money. Make a
+<strong>product</strong> there: name it whatever you&#39;d sell, price it <strong>$1.00</strong> one-time.
+Grab its <strong>Price ID</strong> (starts <code>price_…</code>) — your app will point at it.</p>
+<blockquote>
+<p>💡 Why $1? Because at the end of this challenge you&#39;ll buy it <em>from
+yourself</em> with a real card in live mode. Seeing a real receipt that you
+sent to yourself is the moment &quot;I could sell things&quot; becomes true.</p>
+</blockquote>
+</section><section class="sec"><h2>Part B — Checkout, small bites (20 min)</h2>
+<p>Keys first, no-peek as always — Stripe gives you a <strong>publishable</strong> key (can
+be seen) and a <strong>secret</strong> key (never leaves the drawer; in this challenge it
+will live in <code>.env</code> locally, and in Challenge 7 it moves to the server
+panel — never anywhere else):</p>
+<pre><code>I&#39;m adding Stripe payments. Create .env entries for STRIPE_SECRET_KEY=
+and STRIPE_PRICE_ID= (empty, with comments). Then add a &quot;Buy now&quot; button
+that creates a Stripe Checkout Session (test mode) and redirects me to
+Stripe&#39;s hosted checkout page. Do NOT use my own card form — Stripe
+hosts the card page. Explain the flow in plain English first.
+</code></pre>
+<p>Then the drill, with the famous test card. On Stripe&#39;s checkout page use:</p>
+<pre><code>Email: any test email
+Card: 4242 4242 4242 4242
+Expiry: any future date · CVC: any 3 digits · ZIP: anything
+</code></pre>
+<p>Pay the dollar of fake money. Stripe says thanks and redirects you back.
+Look in Stripe → Payments: the test payment sits there with a green
+&quot;succeeded&quot;. <strong>You just built a store.</strong> Save point.</p>
+</section><section class="sec"><h2>Part C — When Stripe talks back: webhooks (15 min)</h2>
+<p>Right now you&#39;re <em>assuming</em> success because Stripe&#39;s page said thanks. Real
+apps need to <em>hear about it officially</em> — that&#39;s a <strong>webhook</strong>: Stripe
+phones your app after money moves (&quot;payment succeeded — session <code>cs_…</code>&quot;).
+Your app answers the phone, and only then marks the order paid or unlocks
+the content.</p>
+<pre><code>Add a Stripe webhook endpoint in my app for the event
+checkout.session.completed. On success, write a row to a new &quot;orders&quot;
+table: who bought, what, when. Explain webhooks in plain English —
+what Stripe sends, how my app confirms it&#39;s really Stripe talking —
+before writing code.
+</code></pre>
+<p>Test it: another fake purchase → Supabase <code>orders</code> table gains a row,
+written not by your form but by <em>Stripe&#39;s phone call</em>. Money moved, memory
+recorded, nobody typed anything.</p>
+<blockquote>
+<p>💡 Those &quot;how does my app know it&#39;s really Stripe?&quot; details (signatures,
+secrets) are exactly the parts you should never hand-write from memory —
+ask the AI to use Stripe&#39;s official tools, then read the explanation.</p>
+</blockquote>
+</section><section class="sec"><h2>Part D — The go-live checklist (10 min)</h2>
+<p>Test mode graduates to live mode with a <em>checklist</em>, not a leap:</p>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>The purchase flow works end-to-end in <strong>test</strong> — buy button, checkout,
+webhook, orders table</li>
+<li><span class="cb" aria-hidden="true"></span>Taxes &amp; &quot;what am I actually selling&quot; are honest — Stripe asks; answer
+truthfully (a $1 digital sticker is fine; &quot;consulting&quot; is a whole thing)</li>
+<li><span class="cb" aria-hidden="true"></span>Live keys created in Stripe → pasted by <strong>you</strong> into <code>.env</code> (no-peek)
+— test keys stay, commented, for next time</li>
+<li><span class="cb" aria-hidden="true"></span>One real purchase: your own card, your own product, one real dollar.
+Refund yourself in Stripe → Payments (also good to have seen)</li>
+<li><span class="cb" aria-hidden="true"></span>Spend cap habit: Stripe → Settings → Billing alerts, on</li>
+</ul>
+<p>That last real purchase is a graduation moment of its own. Screenshot it.
+You&#39;re a merchant now.</p>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Which Stripe keys exist, which may be public, which must never leave
+.env — and where does each one go in my app?&quot;</em></li>
+<li><em>&quot;What happens if the webhook never fires? Add a fallback so orders can&#39;t
+silently vanish.&quot;</em></li>
+<li><em>&quot;Review my checkout flow like a payments auditor: what would embarrass me
+in month six?&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>A test purchase completes: button → Stripe page → success → back</li>
+<li><span class="cb" aria-hidden="true"></span>Card numbers never appear in your code, <code>.env</code>, or git (Stripe hosts
+the card page — verify with a search of your project)</li>
+<li><span class="cb" aria-hidden="true"></span>A webhook writes real rows to an <code>orders</code> table</li>
+<li><span class="cb" aria-hidden="true"></span>You did the go-live checklist and made one real $1 purchase from yourself</li>
+<li><span class="cb" aria-hidden="true"></span>Test keys are commented in <code>.env</code>, live keys in use — labeled, no-peek</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Stripe</td>
+<td>The rented bank: cards, money movement, receipts — the industry default</td>
+</tr>
+<tr>
+<td>Test mode</td>
+<td>The fake economy: identical features, imaginary money, famous test card 4242…</td>
+</tr>
+<tr>
+<td>Checkout Session</td>
+<td>A one-time &quot;cash register lane&quot; Stripe opens for one purchase</td>
+</tr>
+<tr>
+<td>Publishable key</td>
+<td>The public half of your keys — safe to be seen</td>
+</tr>
+<tr>
+<td>Secret key</td>
+<td>The private half — drawer-only, forever</td>
+</tr>
+<tr>
+<td>Webhook</td>
+<td>The official phone call after money moves: &quot;it&#39;s done, here&#39;s the receipt ID&quot;</td>
+</tr>
+<tr>
+<td>PCI-DSS</td>
+<td>The card-industry rulebook you avoid by never touching card numbers</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>&quot;Invalid API key&quot; in test mode.</strong> Mode mismatch: the key is from one
+mode, the price from the other. Both must be test — or both live.</li>
+<li><strong>The webhook never fires locally.</strong> Stripe&#39;s phones can&#39;t reach your
+laptop by themselves — dev setups need a relay (Stripe CLI). Ask your AI:
+<em>&quot;Set up the Stripe CLI webhook forwarding for local testing.&quot;</em></li>
+<li><strong>You built a card form.</strong> Delete it. No exception, no &quot;just for testing.&quot;
+Test mode <em>would</em> work — and that&#39;s exactly the trap: it trains you to
+ship the radioactive version.</li>
+<li><strong>A real customer appears before you&#39;re ready.</strong> Honest badge of success.
+Freeze new features, do the go-live checklist properly that day, and
+refund graciously if anything was half-built.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../04-apis-are-ingredients/">Challenge 4 — APIs Are Ingredients</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/02-sign-in-safely/"><span>Previous</span><strong>Sign In, Safely</strong></a>
+    <a class="next" href="../../challenges/04-apis-are-ingredients/"><span>Next</span><strong>APIs Are Ingredients</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

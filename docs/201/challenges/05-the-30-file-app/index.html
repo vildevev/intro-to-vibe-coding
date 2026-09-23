@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Keep the map in your head when the project stops being "a folder with a page" and becomes thirty files, three folders, and one AI that sometimes edits the wrong one.">
+<title>Challenge 05: The 30-File App — Vibe Coding 201</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html">101 course</a>
+    <a href="../../../201/">201 map</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">05</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 05</span><span class="chip">about 45 minutes</span></p>
+    <h1>The 30-File App</h1>
+    <p class="mission"><strong>Mission.</strong> Keep the map in your head when the project stops being &quot;a folder with a page&quot; and becomes thirty files, three folders, and one AI that sometimes edits the wrong one.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Everything was fine until it was thirty files. Then this started happening:
+you&#39;d ask for a small fix, the AI would dash off confidently — and change
+the <em>wrong file</em>. Not because it got stupid, but because at thirty files,
+<em>you</em> couldn&#39;t say which file was the right one. So it guessed. Confident
+guessing without a map is how apps rot.</p>
+<p>Here&#39;s the adult truth about &quot;no-code&quot;: at 201 level, you now maintain a
+<strong>codebase</strong>. Not by reading all of it — by owning its <strong>map</strong>. A city you
+know by neighborhoods, not by every brick. The map is a file (your README
+and <code>AGENTS.md</code>), it&#39;s written in plain English, and the AI reads it every
+single time before touching anything. From now on, the map is the project.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The <strong>project tour</strong>: a plain-English map of every neighborhood and what
+lives there — generated once, kept current forever</li>
+<li><strong>README-driven development</strong>: update the map <em>before</em> wandering</li>
+<li>Dependency sanity: what&#39;s in your project, why, and what it costs you</li>
+<li>Structure changes done safely: moves, renames, and green tests</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Your 201 project (challenges 1–4 give you a properly grown one)</li>
+<li><span class="cb" aria-hidden="true"></span>Tests exist and are green (101 · Challenge 5 — your safety net today)</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Commission the map (10 min)</h2>
+<p>Ask the cartographer for the full tour:</p>
+<pre><code>Give me a tour of this project in plain English: draw the neighborhoods
+(pages, server functions, database code, styles, configuration), name
+the important files in each, and for each one say what it does and what
+BREAKS if it disappears. Then write this tour into README.md under a
+heading &quot;Project map&quot;, and add a short version to AGENTS.md so you
+re-read it before future changes.
+</code></pre>
+<p>Read the map it wrote. This is the moment the project stops being a fog and
+becomes a city. Fix anything that reads wrong — you&#39;re the editor, it&#39;s your
+city. Then save-point it:</p>
+<pre><code>git add . &amp;&amp; git commit -m &quot;project map: the city, named&quot;
+</code></pre>
+</section><section class="sec"><h2>Part B — Use the map: the tour-before-changes rule (10 min)</h2>
+<p>New standing rule for every non-trivial request from now on:</p>
+<pre><code>Before making changes: check the project map in AGENTS.md, tell me which
+neighborhood(s) and files this task touches, and which it must NOT
+touch. Then make the change.
+</code></pre>
+<p>Watch the difference. &quot;Fix the buy button&quot; used to get a confident dart
+into the fog. Now it gets: <em>&quot;Touches challenges/03 checkout code and
+.env usage; must not touch the wishes table code&quot;</em> — then the change. You
+just made the AI smarter by making the map mandatory.</p>
+<p><strong>Dependency sanity</strong> — the second half of the map. Your project has a
+shopping list of borrowed parts (in <code>package.json</code>):</p>
+<pre><code>List every dependency in package.json: what it does for us in one
+sentence, and which feature dies without it. Flag any you think we
+don&#39;t actually use.
+</code></pre>
+<p>Unused packages aren&#39;t just clutter — they&#39;re doors you&#39;re not watching. If
+the list finds dead weight: remove one at a time, run the tests, commit.
+(Green between every removal — that&#39;s the net holding.)</p>
+</section><section class="sec"><h2>Part C — The moving-day drill (15 min)</h2>
+<p>Structure changes — renaming files, moving things into folders — are where
+unmapped projects fall apart, because one move breaks every reference to the
+old address. With a map and tests, it&#39;s a controlled drill:</p>
+<pre><code>Moving-day drill: rename the file that holds my checkout code to
+payments.js, moving it into a new folder called server/. Update every
+reference. Run the tests. If anything goes red, fix it and tell me what
+broke. Commit when green with the message &quot;moving day: checkout lives
+in server/payments.js&quot;.
+</code></pre>
+<p>What you&#39;re watching for: the AI updating <em>references</em> (the addresses), not
+just moving the file (the furniture). If tests stayed green, the city&#39;s
+addresses all got updated — real maintenance, safely. Then update the map:</p>
+<pre><code>Moving day done. Update the project map in README.md and AGENTS.md to
+match reality — and tell me what would have broken if we&#39;d skipped the
+map update.
+</code></pre>
+<p>That last question is the lesson: a stale map is worse than no map, because
+it lies with confidence.</p>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Which files does this task touch? What must it NOT touch?&quot;</em> (before
+every non-trivial change)</li>
+<li><em>&quot;Explain how data flows through this app, end to end, in plain English.&quot;</em></li>
+<li><em>&quot;What in this project would be hardest for a stranger to understand?
+Improve the map or the naming — your choice, show me first.&quot;</em></li>
+<li><em>&quot;Is anything in this project unused? Dependencies, files, functions?&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>README.md has a project map that&#39;s true right now</li>
+<li><span class="cb" aria-hidden="true"></span>AGENTS.md has the short version, and the AI reads it before changes</li>
+<li><span class="cb" aria-hidden="true"></span>&quot;Which files does this touch?&quot; precedes your non-trivial requests</li>
+<li><span class="cb" aria-hidden="true"></span>Every dependency can be explained in one sentence; dead ones removed</li>
+<li><span class="cb" aria-hidden="true"></span>You completed a moving-day drill with green tests the whole way</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Codebase</td>
+<td>The whole project as a living thing to maintain, not just files</td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td>The neighborhood plan: what lives where, and what talks to what</td>
+</tr>
+<tr>
+<td>Project map</td>
+<td>Plain-English tour of the neighborhoods, written down where the AI reads it</td>
+</tr>
+<tr>
+<td>Dependency</td>
+<td>A borrowed part from the public shelf (npm) — on your shopping list, costs updates</td>
+</tr>
+<tr>
+<td><code>package.json</code></td>
+<td>The shopping list: every borrowed part, with versions</td>
+</tr>
+<tr>
+<td>Refactor</td>
+<td>Rearranging the house without changing what it does — safe only with a map and tests</td>
+</tr>
+<tr>
+<td>Moving day</td>
+<td>Renaming/moving a file: furniture moves, addresses must all update</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>The map drifted from reality.</strong> Re-commission it: <em>&quot;Regenerate the
+project tour from the actual files — flag anything that contradicts the
+old map.&quot;</em> The drill at the end of Part C is why.</li>
+<li><strong>A change touched three neighborhoods you didn&#39;t expect.</strong> That&#39;s the map
+doing its job: stop, read the diff (101 · Challenge 5), reject if it&#39;s
+scope creep.</li>
+<li><strong>Tests went red mid-moving-day.</strong> Good — the net works. Don&#39;t hand-fix
+blindly: ask <em>&quot;which reference is still pointing at the old address?&quot;</em></li>
+<li><strong>The AI keeps editing the wrong neighborhood anyway.</strong> Your AGENTS.md map
+isn&#39;t being read. Make the tour-before-changes rule a house rule (101 ·
+Challenge 3) — the map only works if reading it is law.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../06-deep-debugging/">Challenge 6 — Deep Debugging</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/04-apis-are-ingredients/"><span>Previous</span><strong>APIs Are Ingredients</strong></a>
+    <a class="next" href="../../challenges/06-deep-debugging/"><span>Next</span><strong>Deep Debugging</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

@@ -83,3 +83,5 @@ Building along? Finished a challenge? I read everything.
 ---
 
 *Start here → [Challenge 0: Meet Your AI Copilot](00-setup/CHALLENGE.md)*
+
+*Already shipped your first product? → [Vibe Coding 201: From Pages to Products](201/)*

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Give your app user accounts — people sign in, see their own data, and nobody sees anyone else's. Without ever building login yourself.">
+<title>Challenge 02: Sign In, Safely — Vibe Coding 201</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html">101 course</a>
+    <a href="../../../201/">201 map</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">02</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 02</span><span class="chip">about 60 minutes</span></p>
+    <h1>Sign In, Safely</h1>
+    <p class="mission"><strong>Mission.</strong> Give your app <strong>user accounts</strong> — people sign in, see their own data, and nobody sees anyone else&#39;s. Without ever building login yourself.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Dave needed logins. He was a vibe coder with a capable intern, so he asked
+for &quot;a login system&quot; and got one: a password box, a users table, done. It
+worked! For four months. Then his site leaked — and because Dave&#39;s code had
+saved passwords as plain readable text, the leak handed strangers a
+neighbor&#39;s key: email + password pairs that people <em>reuse everywhere</em>.</p>
+<p>Here&#39;s the thing nobody tells beginners: <strong>&quot;make a login&quot; is one prompt, but
+<em>a safe login</em> is thousands of hours of specialist work</strong> — password hashing,
+session handling, reset flows, rate limits, breach lists. Nobody, not even
+the best companies, build it themselves anymore. They rent it. So will you.
+Auth is a <strong>rented lock</strong>: the most important lock you&#39;ll ever not-build.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The golden rule: <strong>never roll your own auth</strong> — you wire up managed auth</li>
+<li>Sign-in without passwords: <strong>magic links</strong> (email = the key)</li>
+<li><strong>Ownership</strong>: every user sees only their own rows</li>
+<li>What &quot;hashed password&quot; means, and why you&#39;ll never even see one</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Challenge 1 done: Supabase connected, a table your app writes to</li>
+<li><span class="cb" aria-hidden="true"></span>Your test table has no real personal data in it (drill data only)</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Turn on the rented lock (10 min)</h2>
+<p>Supabase has auth built in (it comes with the vault). In the Supabase
+dashboard: <strong>Authentication → Sign In / Up</strong>. Look at the options: email
+magic link, Google, GitHub, and a dozen more. You&#39;re not <em>building</em> any of
+these — you&#39;re <em>switching them on</em>.</p>
+<ol>
+<li><p>Enable <strong>Email magic link</strong> for now (no passwords at all — the fewest
+possible things to get wrong). If Supabase asks for a &quot;Site URL&quot; for dev
+work, your local address (e.g. <code>http://localhost:3000</code>) is fine for now.</p>
+</li>
+<li><p>Ask your AI to explain what a magic link is, like you&#39;re new:</p>
+<pre><code>Explain magic-link sign-in in plain English: what the user does, what
+Supabase does, and why there&#39;s no password to store at all.
+</code></pre>
+</li>
+</ol>
+<blockquote>
+<p>💡 Notice what&#39;s already true: there is <strong>no password in your database</strong>.
+Nothing to leak, because nothing exists. The best way to protect a secret
+is to not have it.</p>
+</blockquote>
+</section><section class="sec"><h2>Part B — Wire it in, small bites (20 min)</h2>
+<p>Three bites, testing between each:</p>
+<ol>
+<li><p>The sign-in box:</p>
+<pre><code>Add a small sign-in card to my app: an email field and a &quot;Send me a
+sign-in link&quot; button using Supabase magic links. After the link is
+sent, show a friendly &quot;check your email&quot; message. Explain the flow.
+</code></pre>
+</li>
+<li><p>Try it with <strong>your own email</strong>. Click the link that arrives. You just
+created your first user. Look in Supabase → Authentication → Users:
+there you are, row one. That&#39;s the vault knowing who someone is.</p>
+</li>
+<li><p>The personal page:</p>
+<pre><code>Add a &quot;My wishes&quot; view: when signed in, show ONLY the rows this user
+created, and make new wishes remember who created them. When signed
+out, show a &quot;sign in to see your wishes&quot; message instead of the list.
+Explain what changed.
+</code></pre>
+</li>
+</ol>
+</section><section class="sec"><h2>Part C — The bouncer at the vault door (15 min)</h2>
+<p>Right now &quot;only your rows&quot; is a promise the <em>app</em> makes — and apps can be
+lied to. A bored teenager with the anon key can talk to your database
+directly, skipping your polite app entirely. The enforcement has to live
+<em>in the vault</em>, and Supabase has it built-in: <strong>Row Level Security (RLS)</strong> —
+a door policy written as tiny rules.</p>
+<p>Ask your AI:</p>
+<pre><code>Turn on Row Level Security for my wishes table with this policy: anyone
+can read rows, but a signed-in user can only INSERT and SELECT rows where
+the owner is themselves. Explain each policy in plain English first —
+I want to know what the bouncer enforces before you apply it. Then apply
+it and help me test it.
+</code></pre>
+<p>Then <strong>test the bouncer</strong> — the fun part:</p>
+<ol>
+<li>Sign in as yourself, add a wish. Fine.</li>
+<li>In Supabase&#39;s Table Editor, hand-edit your wish&#39;s <code>owner</code> field to some
+other value. Refresh the app: the wish is <em>gone from your list</em> — the
+bouncer just refused an impostor row.</li>
+<li>Try (or ask the AI to try) a database write from <em>outside</em> the app while
+signed out. Blocked. That&#39;s RLS doing its job against people who skip
+your app.</li>
+</ol>
+<p><strong>You passed the deep test of this challenge:</strong> you didn&#39;t just <em>hope</em> the
+lock worked — you attacked it and it held. (Trust, but verify — even for
+locks.)</p>
+</section><section class="sec"><h2>Part D — The words you&#39;ll hear (5 min, reading only)</h2>
+<p>You&#39;ll never manage these yourself, but you should know the nouns:</p>
+<ul>
+<li><strong>Hashing</strong>: turning a password into irreversible gibberish before storing.
+With magic links there are no passwords at all — Supabase would hash them
+if there were.</li>
+<li><strong>Session</strong>: the &quot;you&#39;re still you&quot; state after clicking the link — a
+temporary badge the vault issued, which expires.</li>
+<li><strong>OAuth</strong>: &quot;sign in with Google/GitHub&quot; — another rented lock inside the
+rented lock. Switching it on later is a settings page, not a project.</li>
+</ul>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;How would an attacker try to see another user&#39;s rows? Check my policies
+against that and fix gaps.&quot;</em></li>
+<li><em>&quot;Sign-out isn&#39;t clearing the session properly — walk me through
+verifying what the session state actually is.&quot;</em></li>
+<li><em>&quot;Before I add [new feature], tell me which parts need the signed-in user
+and which are public.&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You sign in with a magic link and Supabase shows you as a user</li>
+<li><span class="cb" aria-hidden="true"></span>Signed-in users see only their own rows; signed-out sees no rows</li>
+<li><span class="cb" aria-hidden="true"></span>You hand-crafted an impostor row and the app refused to show it</li>
+<li><span class="cb" aria-hidden="true"></span>RLS is ON, with policies you can explain in one sentence each</li>
+<li><span class="cb" aria-hidden="true"></span>No password — hashed or otherwise — exists anywhere in your project</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Auth</td>
+<td>Who you are (sign-in) and what you may do (permissions)</td>
+</tr>
+<tr>
+<td>Magic link</td>
+<td>A one-time sign-in link emailed to you — a password that arrives when needed and expires</td>
+</tr>
+<tr>
+<td>Row Level Security (RLS)</td>
+<td>The database&#39;s own bouncer: rules it enforces even against people who skip your app</td>
+</tr>
+<tr>
+<td>Session</td>
+<td>The temporary &quot;still you&quot; badge after sign-in; expires on its own</td>
+</tr>
+<tr>
+<td>Hashing</td>
+<td>Password → irreversible gibberish before storing. (You have none — good)</td>
+</tr>
+<tr>
+<td>OAuth</td>
+<td>&quot;Sign in with Google&quot; — someone else&#39;s login, rented like the rest</td>
+</tr>
+<tr>
+<td>Plain text passwords</td>
+<td>Dave&#39;s mistake. Never exists in your project, even by accident</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>The magic link email never arrives.</strong> Check spam first; then Supabase →
+Authentication → Email templates/logs — ask your AI: <em>&quot;Where does Supabase
+show whether the sign-in email was sent?&quot;</em></li>
+<li><strong>After clicking the link, the app doesn&#39;t recognize me.</strong> The link&#39;s
+destination doesn&#39;t match your app&#39;s address. Ask: <em>&quot;Check the Supabase
+redirect URLs in Auth settings against where my app actually runs.&quot;</em></li>
+<li><strong>&quot;new row violates row-level security policy.&quot;</strong> Celebration, not crisis —
+the bouncer works; your insert just doesn&#39;t say <em>who</em> is asking. Ask the AI
+to attach the signed-in user to the write.</li>
+<li><strong>You&#39;re tempted to &quot;just add a password box&quot; for simplicity.</strong> Don&#39;t.
+Magic links are <em>less</em> work and <em>less</em> risk. The rule has no small print.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../03-take-money/">Challenge 3 — Take Money</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/01-app-memory/"><span>Previous</span><strong>Your App Gets a Memory</strong></a>
+    <a class="next" href="../../challenges/03-take-money/"><span>Next</span><strong>Take Money</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

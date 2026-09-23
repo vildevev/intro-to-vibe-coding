@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Debug like you operate the building, not like you're locked out of it: read server logs, read the network tab, and know what the error codes are trying to tell you.">
+<title>Challenge 06: Deep Debugging — Vibe Coding 201</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html">101 course</a>
+    <a href="../../../201/">201 map</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">06</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 06</span><span class="chip">about 60 minutes</span></p>
+    <h1>Deep Debugging</h1>
+    <p class="mission"><strong>Mission.</strong> Debug like you operate the building, not like you&#39;re locked out of it: read server logs, read the network tab, and know what the error codes are trying to tell you.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>The 101 taught you the debugging loop: reproduce, capture, describe, fix,
+verify, save. But 201 apps have a second floor. When YOUR machine works and
+the SERVER doesn&#39;t — the checkout that fails only for customers, the button
+that spins forever for everyone but you — the old loop stalls, because the
+witness isn&#39;t on your screen anymore. It&#39;s in two places you&#39;ve never been
+shown: the <strong>server logs</strong> (where the server whispers what hurt it) and the
+<strong>network tab</strong> (where the browser records every conversation it had).</p>
+<p>This challenge shows you both, then breaks your app three ways so you can
+practice reading the clues before it&#39;s 2am and real.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>Server logs</strong>: where they live on Vercel, and how to read them</li>
+<li><strong>The network tab</strong>: the browser&#39;s honest diary of every request</li>
+<li>The error-code decoder: <strong>401, 403, 404, 429, 500</strong> — five messages you&#39;ll
+meet for the rest of your life</li>
+<li>The 201 evidence template: same loop, two witnesses</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Challenge 4&#39;s project deployed on Vercel (middleman + key on server)</li>
+<li><span class="cb" aria-hidden="true"></span>The 101 debugging loop in your bones: <em>evidence, not feelings</em></li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Meet the witnesses (10 min)</h2>
+<p>Two diaries record everything. Know where they live:</p>
+<ol>
+<li><strong>Server logs.</strong> Vercel → your project → <strong>Logs</strong>. Every time your
+serverless function runs — success or failure — a line lands here: what
+came in, what it printed, what it choked on. Right now it&#39;s mostly
+silence. Silence is healthy.</li>
+<li><strong>The network tab.</strong> In your browser: <code>F12</code> → <strong>Network</strong> (Mac:
+<code>Cmd+Option+J</code> → Network). Refresh your page and watch: every request —
+pages, fonts, API calls — with its <strong>status code</strong>. Green-ish 200s are
+&quot;fine&quot;; red anything is a conversation worth reading. Click one and you
+see exactly what was sent and exactly what came back.</li>
+</ol>
+<blockquote>
+<p>💡 Reading these is safe. You&#39;re the detective reading witness statements,
+not touching evidence. (And like the 101 console — closing them is always
+harmless too.)</p>
+</blockquote>
+</section><section class="sec"><h2>Part B — The decoder ring (10 min)</h2>
+<p>Error codes are the network&#39;s dialect. Five cover 95% of your life:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Plain English</th>
+<th>Usual suspect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>401</strong></td>
+<td>&quot;Who are you?&quot;</td>
+<td>Not signed in, or a key that&#39;s missing/expired</td>
+</tr>
+<tr>
+<td><strong>403</strong></td>
+<td>&quot;I know who you are. No.&quot;</td>
+<td>Signed in, not allowed — RLS said no, plan limits hit</td>
+</tr>
+<tr>
+<td><strong>404</strong></td>
+<td>&quot;No such address.&quot;</td>
+<td>Typo in a URL or route path</td>
+</tr>
+<tr>
+<td><strong>429</strong></td>
+<td>&quot;Slow down.&quot;</td>
+<td>Rate limit — yours or the service&#39;s (101 · Challenge 2 grows up)</td>
+</tr>
+<tr>
+<td><strong>500</strong></td>
+<td>&quot;I face-planted.&quot;</td>
+<td>Your server code crashed — the server log has the story</td>
+</tr>
+</tbody></table></div>
+<p>Memorize the pairs that travel together: <strong>401 → check the key/session</strong>.
+<strong>403 → check the bouncer (RLS/permissions)</strong>. <strong>500 → check the server log,
+not the browser.</strong> Half of all adult debugging is just routing yourself to
+the right witness by code.</p>
+</section><section class="sec"><h2>Part C — Three break-ins, three reads (25 min)</h2>
+<p>The drill, 201 edition. Ask your AI to plant the crimes:</p>
+<pre><code>Debugging drill, planted one at a time. After each plant, tell me
+&quot;planted&quot; and nothing else — I&#39;ll find it. Wait for my diagnosis before
+the next.
+1. On the SERVER: make the middleman&#39;s environment variable name wrong
+   (so the key is missing at runtime).
+2. In the BROWSER: break the address my page uses to call the middleman
+   (wrong path).
+3. On the SERVER: make the middleman throw an error for one specific
+   input.
+</code></pre>
+<p>Then, for each, run the 201 evidence play:</p>
+<ol>
+<li><p><strong>Reproduce</strong>, then open the network tab and find the red row. <strong>Read the
+code.</strong> 401/403 → server-side key or auth issue. 404 → wrong address.
+500 → take the conversation upstairs.</p>
+</li>
+<li><p><strong>Read the server log</strong> for the matching minute. Plant 1&#39;s log literally
+says the variable is missing; plant 3&#39;s log names the line that threw.</p>
+</li>
+<li><p><strong>Report, then fix</strong>: state the code, the witness, the diagnosis:</p>
+<pre><code>Diagnosis: the page got 401 from /api/polite. Network tab shows the
+request lacked the key; server log says OPENAI_API_KEY is undefined.
+That&#39;s the server env variable name — check it against the code.
+</code></pre>
+<p>Then let the AI fix, verify, and — always — <strong>run the tests</strong> and commit:
+<code>git commit -m &quot;fixed: 401 after deploy — server env var name mismatch&quot;</code>.</p>
+</li>
+</ol>
+<p>Three planted crimes, three correct witnesses. That&#39;s the whole skill: at
+2am you won&#39;t panic because you&#39;ll know <em>which diary to open first</em>.</p>
+</section><section class="sec"><h2>Part D — The upgrade to the evidence template (5 min)</h2>
+<p>The 101 template grows one line for the second floor:</p>
+<pre><code>A bug: [expected] — but instead [actual].
+The error says: [exact red text]
+How I make it happen: [steps]
+The network tab says: [status code + which request]
+The server log says: [paste the matching lines]
+
+Explain in plain English. Smallest fix. Show me before applying.
+</code></pre>
+<p>Two witnesses, one loop, zero vibes.</p>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;My machine works, production doesn&#39;t. Walk me through checking: same
+code? same env vars? what do the server logs say?&quot;</em></li>
+<li><em>&quot;Decode this status code for me in plain English and list the three most
+likely causes for OUR app.&quot;</em></li>
+<li><em>&quot;Add better words to the server log so future-me can diagnose this at
+2am — log the input, the outcome, and the reason on failure.&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You found Vercel&#39;s logs and can pull up a function&#39;s last error</li>
+<li><span class="cb" aria-hidden="true"></span>You found the network tab and can spot the red request + its code</li>
+<li><span class="cb" aria-hidden="true"></span>You diagnosed all three planted crimes by code class, before fixing</li>
+<li><span class="cb" aria-hidden="true"></span>Your evidence template now has the two-witness lines</li>
+<li><span class="cb" aria-hidden="true"></span>You can pair each code (401/403/404/429/500) with its usual suspect</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Server log</td>
+<td>The server&#39;s diary: every run, every crash, every reason</td>
+</tr>
+<tr>
+<td>Network tab</td>
+<td>The browser&#39;s diary of every conversation: what was sent, what came back, in what code</td>
+</tr>
+<tr>
+<td>Status code</td>
+<td>The first word of every reply: 200 &quot;fine&quot;, 401 &quot;who?&quot;, 403 &quot;no&quot;, 404 &quot;nothing here&quot;, 429 &quot;slow down&quot;, 500 &quot;I crashed&quot;</td>
+</tr>
+<tr>
+<td>Production / prod</td>
+<td>The real app, serving real people — where errors have witnesses now</td>
+</tr>
+<tr>
+<td>Environment drift</td>
+<td>&quot;Works on my machine&quot;: your laptop and the server disagree about keys, data, or versions</td>
+</tr>
+<tr>
+<td>Payload</td>
+<td>What a request carries in its suitcase — visible in the network tab</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>The log says nothing useful.</strong> Logs only know what they were told. Ask
+the AI: <em>&quot;Add plain-English logging around the failing step — inputs,
+outcome, reason — then redeploy and let&#39;s reproduce.&quot;</em></li>
+<li><strong>401 but you&#39;re definitely signed in.</strong> Two different diaries disagree —
+browser session vs server key. Check <em>which</em> side got the 401: your page
+to your server (session), or server to the big service (key).</li>
+<li><strong>Everything is 500 and the logs are a wall of soup.</strong> Paste the <em>last</em>
+error only — the first line of the crash is the sentence that matters.
+Soup-reading is exactly what the AI is for; you supply the paste.</li>
+<li><strong>It fixed itself and you never learned why.</strong> Log it anyway: <em>&quot;Add a
+note to the logs capturing what we saw.&quot;</em> Self-healing mysteries become
+2am reruns; witnesses prevent reruns.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../07-ship-like-a-pro/">Challenge 7 — Ship Like a Pro</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/05-the-30-file-app/"><span>Previous</span><strong>The 30-File App</strong></a>
+    <a class="next" href="../../challenges/07-ship-like-a-pro/"><span>Next</span><strong>Ship Like a Pro</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

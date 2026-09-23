@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The advanced course: databases, accounts, payments, APIs, architecture, deep debugging and shipping like a pro — for people who finished the 101.">
+<title>Vibe Coding 201 — From Pages to Products</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../index.html">101 course</a>
+    <a href="../201/">201 map</a>
+    <a href="../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg"><div class="level-meta">
+    <p class="level-chips"><span class="chip">Course 201</span><span class="chip">Follow-up to the 101</span></p>
+    <h1>Vibe Coding 201 — From Pages to Products</h1>
+    <p class="mission"><strong>Mission.</strong> An app that remembers things, has users, takes money — and survives its first disaster. The same loop, real stakes.</p>
+  </div></div>
+<div class="prose">
+<p><em>The follow-up to Intro to Vibe Coding: for people who can ship a page, and
+want to ship a <strong>product</strong> — one that remembers things, has users, and maybe
+makes money.</em></p>
+<p><strong>You&#39;re ready for 201 if:</strong> you finished the 101 (or can already build and
+deploy a simple page with an AI assistant), and your next idea hits a wall —
+&quot;<em>but the app needs to remember people</em>, &quot;<em>I want users to sign in</em>&quot;,
+&quot;<em>can I charge for this?</em>&quot; Every one of those walls is a challenge here.</p>
+<section class="sec"><h2>What changes from the 101</h2>
+<p>The skills stay; the stakes go up. Save points, small bites, the no-peek
+trick, reading the diff, &quot;run the tests&quot; — those are <strong>instincts now</strong>, and
+every challenge assumes you use them without being told. What&#39;s new:</p>
+<ul>
+<li>Your app stops being paper. It <strong>remembers things</strong> (a database), has
+<strong>accounts</strong> (auth), <strong>takes money</strong> (payments), and <strong>calls other
+services</strong> (APIs).</li>
+<li>Your secrets get a second home: the <strong>server</strong>. The drawer rule evolves.</li>
+<li>You stop debugging by staring: you read <strong>logs</strong>, <strong>status codes</strong>, and
+<strong>the network tab</strong>.</li>
+<li>You ship like it&#39;s a real product: <strong>previews, rollbacks, backups, and a
+2am runbook.</strong></li>
+</ul>
+</section><section class="sec"><h2>The course map</h2>
+<ol class="levels" id="course-map">
+  <li><a href="challenges/01-app-memory/">
+    <span class="lvl-num" aria-hidden="true">01</span>
+    <span class="lvl-main"><span class="lvl-title">Your App Gets a Memory</span>
+    <span class="lvl-skill">Databases without fear: save and read real data</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/02-sign-in-safely/">
+    <span class="lvl-num" aria-hidden="true">02</span>
+    <span class="lvl-main"><span class="lvl-title">Sign In, Safely</span>
+    <span class="lvl-skill">User accounts — without ever building login yourself</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/03-take-money/">
+    <span class="lvl-num" aria-hidden="true">03</span>
+    <span class="lvl-main"><span class="lvl-title">Take Money</span>
+    <span class="lvl-skill">Selling something real with Stripe</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/04-apis-are-ingredients/">
+    <span class="lvl-num" aria-hidden="true">04</span>
+    <span class="lvl-main"><span class="lvl-title">APIs Are Ingredients</span>
+    <span class="lvl-skill">Calling maps, weather, and AI models from your app</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/05-the-30-file-app/">
+    <span class="lvl-num" aria-hidden="true">05</span>
+    <span class="lvl-main"><span class="lvl-title">The 30-File App</span>
+    <span class="lvl-skill">Keeping the map in your head as the app grows</span></span>
+    <span class="lvl-time">45 min</span>
+  </a></li>
+  <li><a href="challenges/06-deep-debugging/">
+    <span class="lvl-num" aria-hidden="true">06</span>
+    <span class="lvl-main"><span class="lvl-title">Deep Debugging</span>
+    <span class="lvl-skill">Server logs, the network tab, and what error codes mean</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/07-ship-like-a-pro/">
+    <span class="lvl-num" aria-hidden="true">07</span>
+    <span class="lvl-main"><span class="lvl-title">Ship Like a Pro</span>
+    <span class="lvl-skill">Previews, rollbacks, backups, and the 2am runbook</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/08-capstone-product/">
+    <span class="lvl-num" aria-hidden="true">08</span>
+    <span class="lvl-main"><span class="lvl-title">Capstone: A Product, Not a Page</span>
+    <span class="lvl-skill">The whole stack, end to end, for a real user</span></span>
+    <span class="lvl-time">3–5 hrs</span>
+  </a></li>
+</ol>
+</section><section class="sec"><h2>The 201 Golden Rules</h2>
+<ol>
+<li><strong>Never build login yourself.</strong> Auth is a rented lock, not a hobby project.</li>
+<li><strong>Card numbers never touch your app.</strong> Payments live at Stripe; you just
+point at them.</li>
+<li><strong>Secrets on the server go in the host&#39;s settings panel</strong> — never in code,
+never in git, never in chat. (The drawer rule, grown up.)</li>
+<li><strong>Build with test keys.</strong> Go live only when it already works.</li>
+<li><strong>Prod is sacred.</strong> Nothing reaches it without a save point, a preview,
+and a tested rollback.</li>
+</ol>
+</section><section class="sec"><h2>Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>A project from the 101 you can still open (or any simple page + git repo)</li>
+<li><span class="cb" aria-hidden="true"></span>The same AI assistant as before</li>
+<li><span class="cb" aria-hidden="true"></span>Free accounts you&#39;ll create along the way: Supabase (challenges 1–2),
+Stripe (challenge 3), Vercel (challenges 4, 7, 8)</li>
+<li><span class="cb" aria-hidden="true"></span>Small real budget: challenge 3 charges you ~$1 of your own money, on
+purpose, so you&#39;ve seen a real sale from the inside</li>
+</ul>
+</section><section class="sec"><h2>FAQ</h2>
+<p><strong>Do I finally need to learn to code?</strong>
+Still no — but you&#39;ll learn to <em>operate</em> a system: logs, dashboards,
+databases, deploys. Think driver&#39;s education, not mechanical engineering.</p>
+<p><strong>Is 201 safe to do with real accounts and money?</strong>
+That&#39;s what test keys, sandbox modes, and spend caps are for — the 101&#39;s
+blast-radius kit, everywhere. The only real money is the ~$1 you charge
+yourself in Challenge 3, and you get it back from yourself.</p>
+<p><strong>Where do questions go?</strong>
+Same place as always: <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">Discussions</a>
+— and finished products go in
+<a href="https://github.com/vildevev/intro-to-vibe-coding/discussions/1">the graduation thread</a>.</p>
+<hr>
+<p><em>Coming after 201: &quot;Automate your boring work&quot; — AI agents that handle your
+files, reports, and schedules. Vote and suggest in
+<a href="https://github.com/vildevev/intro-to-vibe-coding/discussions/2">the 201 planning thread</a>.</em></p>
+<p><em>Start here → <a href="challenges/01-app-memory/">Challenge 1: Your App Gets a Memory</a></em></p>
+</section>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

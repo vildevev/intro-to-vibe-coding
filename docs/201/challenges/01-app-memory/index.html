@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Break the paper ceiling. Give your app a real database so it remembers what people tell it — after refresh, after closing the tab, after a week.">
+<title>Challenge 01: Your App Gets a Memory — Vibe Coding 201</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html">101 course</a>
+    <a href="../../../201/">201 map</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">01</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 01</span><span class="chip">about 60 minutes</span></p>
+    <h1>Your App Gets a Memory</h1>
+    <p class="mission"><strong>Mission.</strong> Break the paper ceiling. Give your app a real database so it <em>remembers</em> what people tell it — after refresh, after closing the tab, after a week.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Maria built a birthday wishlist app in her 101 style: small bites, save
+points, nice diff reviews. Her sister added &quot;noise-cancelling headphones.&quot;
+Maria refreshed the page to admire it. <strong>Gone.</strong> Every item anyone ever
+added evaporated, because the data lived <em>in the page</em> — and a page is paper.
+Close the book, lose the notes.</p>
+<p>Everything in the 101 was deliberately paper: fast, free, and forgetful. The
+moment your idea needs to <em>remember</em> — wishlists, signups, scores, orders,
+messages — you&#39;ve hit the wall every real app hits. The wall has a name:
+you need a <strong>database</strong>. And the secret is that in 2026, you rent one in
+about four minutes and never operate it yourself.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>What a <strong>database</strong> is: a spreadsheet that never forgets, never sleeps, and
+every visitor can write to</li>
+<li>Why you <strong>rent</strong> a managed database (Supabase) and never build your own</li>
+<li>The 101 rules, grown up: the no-peek trick for <strong>database keys</strong>, and where
+server secrets live</li>
+<li>The full read–write loop: form → save → list</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>A simple project you can extend (a page with a form or list is perfect)</li>
+<li><span class="cb" aria-hidden="true"></span>Git save points working, tests from 101 · Challenge 5 optional but welcome</li>
+<li><span class="cb" aria-hidden="true"></span>A free <a href="https://supabase.com">supabase.com</a> account — create one now</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — Rent the vault (10 min)</h2>
+<p>Supabase is a managed database company: they run the computers, you use a
+dashboard. (Managed = <em>someone else loses sleep so you don&#39;t have to</em>.)</p>
+<ol>
+<li>Create a <strong>new project</strong> in the Supabase dashboard. Name it after your
+app. Pick the region closest to your future users. The free tier is
+genuinely enough for learning and small real apps.</li>
+<li>While it spins up (a minute or two), notice what you are <em>not</em> doing:
+no servers to rent, no disks to size, no backups to schedule. Rented
+vaults come with alarms.</li>
+<li>In the Supabase sidebar find <strong>Project Settings → API</strong>. You&#39;ll see two
+long strings — a <strong>URL</strong> and an <strong>anon key</strong>. Your app will use both.
+Stop here and read Part B before touching them.</li>
+</ol>
+</section><section class="sec"><h2>Part B — The no-peek trick, grown up (10 min)</h2>
+<p>You already know the rule: <em>the AI uses secrets, never sees them.</em> Database
+keys are no different — and the drawer is the same old <code>.env</code>:</p>
+<pre><code>My app is about to talk to Supabase. Create entries in .env for:
+SUPABASE_URL= (empty) and SUPABASE_ANON_KEY= (empty), with comments
+explaining each. Then write the code that reads them from .env and
+connects. Do NOT invent values and don&#39;t ask me to paste them — I&#39;ll
+copy them from my Supabase dashboard myself. Then verify the values
+are loaded without printing them.
+</code></pre>
+<p>You paste the URL and key into <code>.env</code> yourself. Same drawer, bigger locks.</p>
+<blockquote>
+<p>💡 <strong>The anon key is <em>designed</em> to be semi-public</strong> — it&#39;s what browsers
+use. The real security comes from <em>rules</em> about who may read and write
+what (Challenge 2 turns that knob). Still: keys go in the drawer, always.
+The habit matters more than today&#39;s threat model.</p>
+</blockquote>
+</section><section class="sec"><h2>Part C — Teach the vault what to remember (10 min)</h2>
+<p>A database stores <strong>tables</strong> — think spreadsheet tabs. Columns are the kinds
+of things you save; rows are the actual things. For a wishlist: one table,
+<code>wishes</code>, with columns <code>id</code>, <code>text</code>, <code>created_at</code>.</p>
+<p>Ask your AI:</p>
+<pre><code>Help me create a table called wishes in Supabase with: id (auto), text
+(short string), created_at (timestamp). Walk me through doing it in the
+Supabase dashboard&#39;s Table Editor — I&#39;ll click, you guide. Explain what a
+table, column, and row are like I&#39;ve never used a database.
+</code></pre>
+<p>Click along in Supabase&#39;s <strong>Table Editor</strong>. Add one row by hand (&quot;hello
+database&quot;) so you&#39;ve seen a row with your own eyes. That&#39;s the vault
+holding something.</p>
+</section><section class="sec"><h2>Part D — The full loop: save and read (20 min)</h2>
+<p>Now the app: a form that saves a wish, and a list that shows all wishes.
+Small bites, as always:</p>
+<ol>
+<li><p>Read first:</p>
+<pre><code>Show me my page reads wishes from Supabase: fetch all rows, newest
+first, and display them as a list. Explain each piece in plain English
+before writing it.
+</code></pre>
+</li>
+<li><p>Then write:</p>
+<pre><code>Add a small form: a text input and a &quot;Add wish&quot; button. On submit,
+save a new row to the wishes table and refresh the list. Empty input
+shows a friendly message instead of saving.
+</code></pre>
+</li>
+<li><p>Then the moment that matters: <strong>add a wish, refresh the page, close the
+tab, come back.</strong> Still there? Your app has a memory. That&#39;s the wall,
+gone.</p>
+</li>
+<li><p><strong>Run the tests</strong> (or ask the AI to add a test that the list shows a
+saved wish — your smoke alarm grows with the app). Green? Save point:</p>
+<pre><code>git add . &amp;&amp; git commit -m &quot;app remembers wishes: supabase table + form + list&quot; &amp;&amp; git push
+</code></pre>
+</li>
+</ol>
+</section><section class="sec"><h2>Part E — The grown-up blast-radius check (5 min)</h2>
+<p>New power, new cap. In Supabase: <strong>Settings → Usage</strong> — see the free tier&#39;s
+limits and where a paid tier would start. Set the habit now: every new
+service gets its limits looked at the day you adopt it. (101 · Challenge 2&#39;s
+spend-cap rule — it applies to free tiers too.)</p>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Explain my database schema in plain English — tables, columns, and how
+they relate.&quot;</em></li>
+<li><em>&quot;Before writing code, tell me which requests will READ and which will
+WRITE, and what could go wrong in each.&quot;</em></li>
+<li><em>&quot;The save worked but the list doesn&#39;t show the new item. Walk me through
+checking: was it saved? is the fetch right? (Don&#39;t guess — check.)&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>A Supabase table exists with a row you created by hand</li>
+<li><span class="cb" aria-hidden="true"></span>Your app saves new rows from a form and lists them</li>
+<li><span class="cb" aria-hidden="true"></span>A wish survives refresh, tab-close, and your comeback</li>
+<li><span class="cb" aria-hidden="true"></span>Supabase keys live in <code>.env</code>, and the AI never saw them</li>
+<li><span class="cb" aria-hidden="true"></span>You know where Supabase shows its limits</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Database</td>
+<td>A spreadsheet that never forgets, is always on, and many people can write to at once</td>
+</tr>
+<tr>
+<td>Table / row / column</td>
+<td>Spreadsheet tab / one saved thing / a kind of thing you save</td>
+</tr>
+<tr>
+<td>Managed database</td>
+<td>A database someone else runs (and loses sleep over) — you rent it</td>
+</tr>
+<tr>
+<td>Supabase</td>
+<td>A popular managed database with a friendly dashboard; our rented vault</td>
+</tr>
+<tr>
+<td>Anon key</td>
+<td>The semi-public key browsers use; rules decide what it&#39;s allowed to do</td>
+</tr>
+<tr>
+<td>Schema</td>
+<td>The shape of your memory: which tables and columns exist</td>
+</tr>
+<tr>
+<td>Persist / persistence</td>
+<td>&quot;It survives&quot; — the property Maria&#39;s wishlist didn&#39;t have</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>&quot;Invalid API key&quot; or connection errors.</strong> The <code>.env</code> values are wrong or
+the code isn&#39;t reading them. Ask: <em>&quot;The app can&#39;t connect — check how .env
+is read first, then whether the values look complete (no stray spaces).&quot;</em></li>
+<li><strong>Saved but not showing.</strong> Two steps failed differently: ask the AI to
+<em>check</em> which step broke — the save or the fetch — before fixing anything.</li>
+<li><strong>You pasted a key into chat by reflex.</strong> Rotate: Supabase → Settings → API
+→ &quot;Reset anon key&quot;. Then re-paste into <code>.env</code> yourself. Revoke first,
+panic second — the rule doesn&#39;t care which service.</li>
+<li><strong>Supabase asks about &quot;Row Level Security&quot; and it sounds scary.</strong> It&#39;s the
+vault&#39;s door policy — and it&#39;s literally Challenge 2. For now keep the
+default doors open <em>for practice data only</em>; no real names or emails yet.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../02-sign-in-safely/">Challenge 2 — Sign In, Safely</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../index.html"><span>Previous</span><strong>201 course home</strong></a>
+    <a class="next" href="../../challenges/02-sign-in-safely/"><span>Next</span><strong>Sign In, Safely</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

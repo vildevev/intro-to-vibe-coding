@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Let your app call other services — an AI model, a map, the weather — safely: keys on the server, graceful failure when the world misbehaves.">
+<title>Challenge 04: APIs Are Ingredients — Vibe Coding 201</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html">101 course</a>
+    <a href="../../../201/">201 map</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">04</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 04</span><span class="chip">about 60 minutes</span></p>
+    <h1>APIs Are Ingredients</h1>
+    <p class="mission"><strong>Mission.</strong> Let your app call other services — an AI model, a map, the weather — safely: keys on the server, graceful failure when the world misbehaves.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The story</h2>
+<p>Priya&#39;s startup idea needed AI: users typed text, her app made it
+polite. She asked the AI for &quot;GPT in my site&quot; and pasted the code it gave —
+which put her OpenAI key <em>in the browser code</em>, because that&#39;s the only place
+a plain web page can keep things. Her launch tweet did numbers. So did the
+bots: <code>view-source:</code> is not a hacker skill, it&#39;s a browser menu. Her key was
+crawled, used, and her $5 credit became a $5,000 invoice in one weekend.</p>
+<p>Remember Challenge 2&#39;s bouncer lesson: <em>anything in the browser is public.</em>
+Browser code isn&#39;t just visible to polite users reading diffs — it&#39;s visible
+to everyone, always. The fix is the oldest idea in the book, with a new name:
+<strong>a middleman</strong>. Your page asks your middleman; the middleman — running on a
+server, where secrets <em>can</em> live — holds the key, talks to the big service,
+and hands back only the answer. Users see the answer. Nobody sees the key.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>The middleman pattern</strong> (serverless functions): where browser secrets go
+to die — nowhere, because none live there</li>
+<li><strong>Server environment variables</strong>: the host&#39;s settings panel is the grown-up
+<code>.env</code></li>
+<li><strong>Graceful failure</strong>: other services will be slow, down, or out of credits —
+your app should shrug politely, not face-plant</li>
+</ul>
+</section><section class="sec sec-before"><h2>📋 Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Any project from challenges 1–3 (or a fresh simple page)</li>
+<li><span class="cb" aria-hidden="true"></span>A free <a href="https://vercel.com">vercel.com</a> account — sign in <strong>with
+GitHub</strong> (it reads your repos; that&#39;s the magic of Challenge 7)</li>
+<li><span class="cb" aria-hidden="true"></span>An API key to play with: OpenAI, or any free-tier API you like</li>
+</ul>
+<hr>
+</section><section class="sec"><h2>Part A — The middleman, first contact (15 min)</h2>
+<p>On Vercel, a middleman is a <strong>serverless function</strong>: a small file in your
+project that runs on <em>their</em> servers when a certain address is visited. To
+the browser it looks like a page. To you, it&#39;s a private room.</p>
+<pre><code>Add a serverless function (Vercel-style) at /api/polite that: reads
+OPENAI_API_KEY from environment variables, takes the text my page sends,
+asks the AI model to make it polite, and returns just the result. Do not
+put the key anywhere client-side. Explain what a serverless function is
+like I&#39;ve never run one.
+</code></pre>
+<p>Deploy it once (Vercel makes this one click from the dashboard — Challenge 7
+does this properly; for now let the AI walk you through the dashboard
+import). Then set the key where it belongs:</p>
+<p><strong>Vercel → your project → Settings → Environment Variables:</strong> add
+<code>OPENAI_API_KEY</code>, paste the value yourself — <strong>no-peek, server edition.</strong>
+The host&#39;s settings panel <em>is</em> the grown-up <code>.env</code>: values live with the
+server, outside the code, outside git, outside chats.</p>
+<p>Then test the loop: your page → <code>/api/polite</code> → OpenAI → back. If the answer
+comes back polite, a server you&#39;ve never seen just used a secret you never
+showed, on your behalf. That&#39;s the pattern. Everything else is detail.</p>
+</section><section class="sec"><h2>Part B — Break it on purpose (15 min)</h2>
+<p>The middleman works when the world is friendly. Now make the world unfriendly
+and watch your app&#39;s manners:</p>
+<pre><code>Drill time. Do these one at a time, and after each: I&#39;ll try the feature
+and tell you what I saw.
+1. Rename the environment variable on the server so the key is missing.
+2. Change the API route path so the page calls the wrong address.
+3. (If the API supports it) use an invalid key.
+</code></pre>
+<p>For each break, notice <em>how</em> your app fails. If it shows raw error soup or
+freezes forever, it has no manners. Fix it with manners:</p>
+<pre><code>Make the page handle failures gracefully: if /api/polite is unreachable,
+errors, or returns junk, show &quot;The politeness service is taking a break —
+try again in a minute.&quot; — and give me a retry button. Also cap waits at
+10 seconds. Explain timeouts like I&#39;m new.
+</code></pre>
+<p>The finished drill teaches the real lesson: <strong>your app is only as calm as
+its worst day.</strong> Features that only work when everything works are demos;
+features that fail politely are products.</p>
+</section><section class="sec"><h2>Part C — The ingredient rules (10 min)</h2>
+<p>Every external service you&#39;ll ever add — maps, weather, email, AI — follows
+the same five rules. Print them in your head:</p>
+<ol>
+<li><strong>Keys live server-side.</strong> Browser = public square, forever, no exceptions.</li>
+<li><strong>No-peek is forever.</strong> You paste server keys into the host&#39;s panel; the
+AI sees empty variables and clean code.</li>
+<li><strong>Cap the blast radius on day one.</strong> Every API dashboard has usage limits
+and alerts — set them the day the key is born (101 · Challenge 2).</li>
+<li><strong>Expect the ingredient to be missing.</strong> Slow, down, rate-limited,
+out of credits — graceful message + retry is the standard plate.</li>
+<li><strong>Log what happened, in plain words.</strong> When the middleman fails at 2am
+(Challenge 6), the log is the witness statement.</li>
+</ol>
+<hr>
+</section><section class="sec sec-prompts"><h2>🤖 Prompts worth stealing</h2>
+<ul>
+<li><em>&quot;Could ANY of my keys end up in browser code? Audit the project and show
+me exactly what the browser can see.&quot;</em></li>
+<li><em>&quot;Add a timeout, a graceful failure message, and a retry to this API
+call — explain each like I&#39;m new.&quot;</em></li>
+<li><em>&quot;Before I add [service], tell me: what will it cost at 100 users, where
+do its keys live, and what happens when it goes down?&quot;</em></li>
+</ul>
+</section><section class="sec sec-pass"><h2>✅ You passed when…</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>A serverless function calls an external API and your page shows the result</li>
+<li><span class="cb" aria-hidden="true"></span>The API key exists ONLY in the host&#39;s environment variables — and a
+search of your project code finds no trace</li>
+<li><span class="cb" aria-hidden="true"></span>You broke the middleman 3 ways and the page stayed polite</li>
+<li><span class="cb" aria-hidden="true"></span>A timeout and retry exist — no infinite spinners</li>
+<li><span class="cb" aria-hidden="true"></span>Usage alerts are on at the API provider</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>API</td>
+<td>A service&#39;s menu: things you may ask it to do, and what comes back</td>
+</tr>
+<tr>
+<td>Serverless function</td>
+<td>Your small program running on the host&#39;s server, one address, no machine to babysit</td>
+</tr>
+<tr>
+<td>Middleman pattern</td>
+<td>Page → your server (holds keys) → big service → back. Keys never touch the browser</td>
+</tr>
+<tr>
+<td>Environment variables (server)</td>
+<td>The host&#39;s settings panel — the grown-up <code>.env</code></td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>&quot;Stop waiting after 10 seconds&quot; — the difference between a shrug and a freeze</td>
+</tr>
+<tr>
+<td>Graceful failure</td>
+<td>Breaking politely: a clear message, a retry, no soup</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Works locally, 401/403 after deploy.</strong> The server doesn&#39;t have the key —
+you set it on your machine but not in the host&#39;s panel. That&#39;s not a bug;
+it&#39;s the drawer being in a different building. Add it to Vercel&#39;s
+Environment Variables.</li>
+<li><strong>The function returns 500 with no clues.</strong> The server logs know. Ask:
+<em>&quot;Show me where Vercel keeps function logs and help me read the last
+error.&quot;</em> (Deep dive: Challenge 6.)</li>
+<li><strong>CORS errors appear.</strong> Foreign words for &quot;the browser blocked this
+request.&quot; Usually the page is calling the API directly instead of through
+your middleman. Paste the error — evidence first (101 · Challenge 4).</li>
+<li><strong>You catch yourself pasting the key into the page code &quot;just to test.&quot;</strong>
+No. The middleman exists so that sentence can never be finished. Test the
+middleman, not the key.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../05-the-30-file-app/">Challenge 5 — The 30-File App</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/03-take-money/"><span>Previous</span><strong>Take Money</strong></a>
+    <a class="next" href="../../challenges/05-the-30-file-app/"><span>Next</span><strong>The 30-File App</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

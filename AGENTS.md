@@ -17,9 +17,10 @@ first time.
 
 ## Structure
 
-- `README.md` — course home and map (also the website's landing content)
-- `NN-slug/CHALLENGE.md` — one challenge per numbered folder
-- `CHEATSHEET.md` — printable one-pagers per topic
+- `README.md` — 101 course home and map (also the website's landing content)
+- `NN-slug/CHALLENGE.md` — 101: one challenge per numbered folder
+- `201/` — the advanced track: `201/README.md` (map) + `201/challenges/NN-slug/`
+- `CHEATSHEET.md` — printable one-pagers per topic (101; a 201 sheet is not written yet)
 - `build.mjs` + `site/style.css` — static-site generator and design system
 - `docs/` — generated website (committed; GitHub Pages serves this folder)
 

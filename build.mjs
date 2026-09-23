@@ -22,6 +22,34 @@ for (const ch of CHALLENGES) {
   ch.title = src.match(/^# Challenge \d+ — (.+)$/m)[1];
 }
 
+// ---------- 201 track ----------
+
+const TRACK201 = {
+  label: 'Vibe Coding 201',
+  src: path.join(ROOT, '201', 'challenges'),
+  rel: '../../../',
+  titleSuffix: 'Vibe Coding 201',
+  href: (c) => `../../challenges/${c.slug}/`,
+  prevHome: ['../../index.html', '201 course home'],
+  nextEnd: ['../../../index.html', 'Vibe Coding 101'],
+  nav: (rel) => [
+    ['101 course', `${rel}index.html`],
+    ['201 map', `${rel}201/`],
+    ['Cheat sheets', `${rel}cheatsheet/`],
+  ],
+};
+
+const TRACK201_CHALLENGES = [
+  '01-app-memory', '02-sign-in-safely', '03-take-money', '04-apis-are-ingredients',
+  '05-the-30-file-app', '06-deep-debugging', '07-ship-like-a-pro', '08-capstone-product',
+].map((slug, i) => ({ slug, num: String(i + 1).padStart(2, '0') }));
+
+for (const ch of TRACK201_CHALLENGES) {
+  const src = fs.readFileSync(path.join(TRACK201.src, ch.slug, 'CHALLENGE.md'), 'utf8');
+  ch.title = src.match(/^# Challenge \d+ — (.+)$/m)[1];
+}
+TRACK201.list = TRACK201_CHALLENGES;
+
 marked.use({ gfm: true });
 
 // ---------- markdown post-processing ----------
@@ -76,7 +104,12 @@ function convert(src, rel = '') {
 
 // ---------- page chrome ----------
 
-function page({ rel, title, description, body, scripts = [] }) {
+function page({ rel, title, description, body, scripts = [], nav }) {
+  const links = nav ?? [
+    ['Course map', `${rel}index.html#course-map`],
+    ['Vibe Coding 201', `${rel}201/`],
+    ['Cheat sheets', `${rel}cheatsheet/`],
+  ];
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -96,8 +129,7 @@ function page({ rel, title, description, body, scripts = [] }) {
 <header class="topbar">
   <a class="brand" href="${rel}index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
   <nav class="topnav">
-    <a href="${rel}index.html#course-map">Course map</a>
-    <a href="${rel}cheatsheet/">Cheat sheets</a>
+    ${links.map(([l, h]) => `<a href="${h}">${l}</a>`).join('\n    ')}
   </nav>
 </header>
 <main id="main">
@@ -229,8 +261,24 @@ a11ce5d  reviewed the diff, said no
 
 // ---------- challenges ----------
 
-function buildChallenge(ch, idx) {
-  let src = fs.readFileSync(path.join(ROOT, ch.slug, 'CHALLENGE.md'), 'utf8');
+const TRACK101 = {
+  label: 'Intro to Vibe Coding',
+  src: ROOT,
+  rel: '../../',
+  titleSuffix: 'Intro to Vibe Coding',
+  list: CHALLENGES,
+  href: (c) => `../../challenges/${c.slug}/`,
+  prevHome: ['../../index.html', 'Course home'],
+  nextEnd: ['../../cheatsheet/', 'The cheat sheets'],
+  nav: (rel) => [
+    ['Course map', `${rel}index.html#course-map`],
+    ['Vibe Coding 201', `${rel}201/`],
+    ['Cheat sheets', `${rel}cheatsheet/`],
+  ],
+};
+
+function buildChallenge(ch, idx, track = TRACK101) {
+  let src = fs.readFileSync(path.join(track.src, ch.slug, 'CHALLENGE.md'), 'utf8');
   // the Mission paragraph may wrap across lines
   const mission = src.match(/^\*\*Mission:\*\* ([\s\S]*?)\n\n/m)[1].replace(/\n/g, ' ');
   const time = src.match(/^\*\*Time:\*\* (.+)$/m)[1];
@@ -240,16 +288,15 @@ function buildChallenge(ch, idx) {
     .replace(/^\*\*Time:\*\* .+$/m, '')
     .replace(/^---\n/m, '');
 
-  const prev = CHALLENGES[idx - 1];
-  const next = CHALLENGES[idx + 1];
-  const href = (c) => `../../challenges/${c.slug}/`;
+  const prev = track.list[idx - 1];
+  const next = track.list[idx + 1];
   const pager = `<nav class="pager">
     ${prev
-      ? `<a class="prev" href="${href(prev)}"><span>Previous</span><strong>${prev.title}</strong></a>`
-      : `<a class="prev" href="../../index.html"><span>Previous</span><strong>Course home</strong></a>`}
+      ? `<a class="prev" href="${track.href(prev)}"><span>Previous</span><strong>${prev.title}</strong></a>`
+      : `<a class="prev" href="${track.prevHome[0]}"><span>Previous</span><strong>${track.prevHome[1]}</strong></a>`}
     ${next
-      ? `<a class="next" href="${href(next)}"><span>Next</span><strong>${next.title}</strong></a>`
-      : `<a class="next" href="../../cheatsheet/"><span>Next</span><strong>The cheat sheets</strong></a>`}
+      ? `<a class="next" href="${track.href(next)}"><span>Next</span><strong>${next.title}</strong></a>`
+      : `<a class="next" href="${track.nextEnd[0]}"><span>Next</span><strong>${track.nextEnd[1]}</strong></a>`}
   </nav>`;
 
   const head = `<div class="level-head gridbg">
@@ -262,10 +309,53 @@ function buildChallenge(ch, idx) {
 </div>`;
 
   return page({
-    rel: '../../',
-    title: `Challenge ${ch.num}: ${ch.title} — Intro to Vibe Coding`,
+    rel: track.rel,
+    title: `Challenge ${ch.num}: ${ch.title} — ${track.titleSuffix}`,
     description: mission.replace(/[*_]/g, ''),
-    body: `${head}\n<div class="prose">\n${convert(src, '../../')}\n${pager}\n</div>`,
+    body: `${head}\n<div class="prose">\n${convert(src, track.rel)}\n${pager}\n</div>`,
+    nav: track.nav(track.rel),
+  });
+}
+
+// ---------- 201 track home ----------
+
+function build201Home() {
+  const rel = '../';
+  let src = fs.readFileSync(path.join(ROOT, '201', 'README.md'), 'utf8');
+
+  // pull the course-map table out and rebuild it as the level list
+  const heading = '## The course map';
+  const mapStart = src.indexOf(heading);
+  const mapEnd = src.indexOf('## The 201 Golden Rules');
+  const mapSrc = src.slice(mapStart, mapEnd);
+  src = src.slice(0, mapStart + heading.length) + '\n' + src.slice(mapEnd);
+
+  const rows = [...mapSrc.matchAll(/^\| (\d+) \| \[(.+?)\]\((.+?)\) \| (.+?) \| (.+?) \|$/gm)];
+  const levels = `<ol class="levels" id="course-map">
+${rows.map((r) => `  <li><a href="${r[3]}">
+    <span class="lvl-num" aria-hidden="true">${r[1].padStart(2, '0')}</span>
+    <span class="lvl-main"><span class="lvl-title">${r[2]}</span>
+    <span class="lvl-skill">${r[4]}</span></span>
+    <span class="lvl-time">${r[5]}</span>
+  </a></li>`).join('\n')}
+</ol>`;
+
+  src = src.replace(/^# .+$/m, '').replace(/^---\n/m, '');
+  let html = convert(src, rel);
+  html = html.replace('<h2>The course map</h2>', `<h2>The course map</h2>\n${levels}`);
+
+  const head = `<div class="level-head gridbg"><div class="level-meta">
+    <p class="level-chips"><span class="chip">Course 201</span><span class="chip">Follow-up to the 101</span></p>
+    <h1>Vibe Coding 201 — From Pages to Products</h1>
+    <p class="mission"><strong>Mission.</strong> An app that remembers things, has users, takes money — and survives its first disaster. The same loop, real stakes.</p>
+  </div></div>`;
+
+  return page({
+    rel,
+    title: 'Vibe Coding 201 — From Pages to Products',
+    description: 'The advanced course: databases, accounts, payments, APIs, architecture, deep debugging and shipping like a pro — for people who finished the 101.',
+    body: `${head}\n<div class="prose">\n${html}\n</div>`,
+    nav: TRACK201.nav(rel),
   });
 }
 
@@ -288,6 +378,16 @@ CHALLENGES.forEach((ch, i) => {
   fs.writeFileSync(path.join(dir, 'index.html'), html);
 });
 
+// 201 track
+fs.mkdirSync(path.join(DOCS, '201'), { recursive: true });
+fs.writeFileSync(path.join(DOCS, '201', 'index.html'), build201Home());
+TRACK201_CHALLENGES.forEach((ch, i) => {
+  const html = buildChallenge(ch, i, TRACK201);
+  const dir = path.join(DOCS, '201', 'challenges', ch.slug);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'index.html'), html);
+});
+
 let sheet = fs.readFileSync(path.join(ROOT, 'CHEATSHEET.md'), 'utf8');
 sheet = sheet.replace(/^# .+$/m, '').replace(/^---\n/m, '');
 fs.mkdirSync(path.join(DOCS, 'cheatsheet'), { recursive: true });
@@ -306,4 +406,4 @@ fs.writeFileSync(
   }),
 );
 
-console.log(`built: docs/ (${1 + CHALLENGES.length + 1} pages)`);
+console.log(`built: docs/ (${1 + CHALLENGES.length + 1 + 1 + TRACK201_CHALLENGES.length} pages)`);
