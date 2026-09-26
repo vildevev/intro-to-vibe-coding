@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Two patterns that turn O(n²) scans into O(n) passes: converging pointers that eliminate candidates provably, and a sliding window whose state is updated incrementally instead of recomputed. Both are recognizable in the first 60 seconds of a problem — and at senior level, that recognition is the signal being graded.">
+<title>Challenge 01: Two Pointers & Sliding Window — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">01</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 01</span><span class="chip">about 60 minutes</span></p>
+    <h1>Two Pointers & Sliding Window</h1>
+    <p class="mission"><strong>Mission.</strong> Two patterns that turn O(n²) scans into O(n) passes: converging pointers that eliminate candidates provably, and a sliding window whose state is updated incrementally instead of recomputed. Both are recognizable in the first 60 seconds of a problem — and at senior level, that recognition <em>is</em> the signal being graded.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The 60-second fork</h2>
+<p>Two candidates get &quot;longest substring with at most K distinct characters.&quot;
+Candidate A hears <em>contiguous</em> + <em>constraint</em> and says &quot;variable sliding
+window, count-dict state, O(n) time, O(k) space&quot; — then spends the round
+arguing whether the shrink loop is amortized constant. Candidate B starts a
+nested loop generating subarrays, stays silent for ten minutes, and offers
+&quot;maybe there&#39;s a smarter way&quot; at minute 18. Identical knowledge, opposite
+outcomes: A narrated a pattern and its complexity; B narrated a CPU burning.
+The interviewer can only grade what&#39;s spoken.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>Converging pointers</strong> — sorted pairs, palindromes, and the &quot;move the
+worse side&quot; elimination argument</li>
+<li><strong>Region pointers</strong> — same-direction indices that partition an array in place</li>
+<li><strong>Fixed-length windows</strong> — add one element, drop one, O(1) per position</li>
+<li><strong>Variable-length windows</strong> — grow until invalid, shrink until valid</li>
+<li>Choosing window <em>state</em> (sum, counts, last-seen) that supports O(1) updates</li>
+<li>Why the shrink loop is amortized O(1) — and saying so unprompted</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — Two pointers: eliminate, don&#39;t enumerate</h2>
+<p>The technique is two indices into one array where every move provably
+discards candidates you&#39;ll never need again. Sorted input → converge from
+both ends (Two Sum II, palindromes). Unsorted but with a &quot;worse side&quot; →
+still converge (move the shorter wall). Reordering in place → same-direction
+pointers carving regions with an invariant (Move Zeroes, Sort Colors).</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sorted array, &quot;pair that sums / compares to target&quot;</td>
+<td>Converge <code>left</code>/<code>right</code> from both ends</td>
+</tr>
+<tr>
+<td>&quot;Valid/longest palindrome&quot; in a string or list</td>
+<td>Converging pointers comparing ends inward</td>
+</tr>
+<tr>
+<td>&quot;Triplets with a sum property&quot;</td>
+<td>Sort once, fix outer element, two-pointer the rest</td>
+</tr>
+<tr>
+<td>&quot;Maximize width × min(height) between two lines&quot;</td>
+<td>Start widest; always move the shorter side</td>
+</tr>
+<tr>
+<td>In-place partition / reorder (zeroes, colors)</td>
+<td>Same-direction pointers + swap, regions by invariant</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — converging pointers:</strong></p>
+<pre><code>def two_pointer(nums):                 # sorted, or sort first
+    left, right = 0, len(nums) - 1
+    best = 0
+    while left &lt; right:
+        if pair_hits_target(nums[left], nums[right]):
+            return True                # or record and keep going
+        if too_small(nums[left], nums[right]):
+            left += 1                  # need a bigger value
+        else:
+            right -= 1                 # need a smaller value
+    return best
+</code></pre>
+<p><strong>Complexity:</strong> O(n) after an optional O(n log n) sort, O(1) space. The
+correctness argument is always one sentence: &quot;moving this pointer can only
+discard pairs that were already worse.&quot; Practice saying it — that sentence is
+what interviewers probe.</p>
+<p><strong>Drills (easy → hard):</strong> Two Sum II (sorted input) → Valid Palindrome →
+3Sum (sort, fix, dedupe) → Trapping Rain Water (process the side with the
+smaller running max).</p>
+</section><section class="sec"><h2>Pattern 2 — Sliding window: incremental state, not re-scanning</h2>
+<p>For <em>contiguous</em> subarrays/substrings. Fixed-length when the size is given;
+variable when a constraint defines validity. The state must support add,
+remove, and validity-check in O(1): a running sum, counter dict, set, or
+last-seen indices. If your first draft is a nested loop over subarrays,
+you&#39;re one refactor away from this pattern.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Max/min over every subarray of size k&quot;</td>
+<td>Fixed window: add <code>nums[end]</code>, drop <code>nums[start]</code></td>
+</tr>
+<tr>
+<td>&quot;Longest/shortest substring with a constraint&quot;</td>
+<td>Variable window, count-dict state</td>
+</tr>
+<tr>
+<td>Nested loop over all subarrays</td>
+<td>Incremental state, then window</td>
+</tr>
+<tr>
+<td>&quot;Pick k cards from the ends&quot;</td>
+<td>Reframe as a min/max window of size n − k</td>
+</tr>
+<tr>
+<td>Validity depends on counts (distinct, anagram)</td>
+<td>Counter dict; delete keys when count hits 0</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — variable window:</strong></p>
+<pre><code>def variable_window(s):
+    state = {}                         # counts / sum / last-seen indices
+    start, best = 0, 0
+    for end in range(len(s)):
+        add(s[end], state)             # extend right, O(1)
+        while invalid(state):          # shrink left until valid again
+            remove(s[start], state)
+            start += 1
+        best = max(best, end - start + 1)   # invariant: window valid here
+    return best
+</code></pre>
+<p><strong>Complexity:</strong> O(n) time — <code>end</code> moves n times, <code>start</code> moves at most n
+times, so the shrink loop is amortized O(1), not O(n) per step. Space O(k)
+for the state (alphabet size for strings). The state choice is the real
+difficulty: Character Replacement needs <code>max_freq</code>; no-repeats can jump
+<code>start</code> directly with last-seen indices instead of shrinking one-by-one.</p>
+<p><strong>Drills (easy → hard):</strong> Maximum Sum Subarray of Size K → Longest Substring
+Without Repeating Characters → Longest Repeating Character Replacement
+(<code>k + max_freq &gt;= len(window)</code>) → Minimum Window Substring.</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/sliding-window/overview">Hello Interview&#39;s sliding-window chapter</a> for animated traces of both variants.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
+interview with me on TWO POINTERS and SLIDING WINDOW.
+
+1. Pick ONE problem that maps to these patterns at senior difficulty.
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern it uses.
+2. Enforce a 30-minute timer. Warn me at 5 minutes left; stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted, and trace one example before I call it done.
+6. When time is up or I say done, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases — one line of evidence per score,
+   then the single highest-leverage improvement.
+
+Start with the problem statement. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You state the elimination argument for converging pointers in one sentence</li>
+<li><span class="cb" aria-hidden="true"></span>Fixed vs variable window — you choose in seconds and say why out loud</li>
+<li><span class="cb" aria-hidden="true"></span>The variable-window skeleton is on paper from memory in under 2 minutes</li>
+<li><span class="cb" aria-hidden="true"></span>You explain the amortized O(1) shrink loop without being asked</li>
+<li><span class="cb" aria-hidden="true"></span>3Sum duplicate-skipping works on the first try</li>
+<li><span class="cb" aria-hidden="true"></span>You volunteer &quot;O(n) time, O(k) space&quot; before the interviewer asks</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Two pointers</td>
+<td>Two indices moving under rules that provably discard candidates</td>
+</tr>
+<tr>
+<td>Converging pointers</td>
+<td>One index at each end, moving inward</td>
+</tr>
+<tr>
+<td>Window state</td>
+<td>The O(1)-updatable summary of the current window (sum, counts, last-seen)</td>
+</tr>
+<tr>
+<td>Invariant</td>
+<td>A property true before and after every iteration — name it and off-by-ones die</td>
+</tr>
+<tr>
+<td>Amortized O(1)</td>
+<td>Cheap on average across the run, even if individual steps cost more</td>
+</tr>
+<tr>
+<td>In-place</td>
+<td>Rearranging the input itself with O(1) extra space</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Blanking on the opener.</strong> Say the brute force aloud: &quot;all pairs, O(n²) —
+the waste is pairs that a sorted order eliminates.&quot; The improvement writes
+itself out of that sentence.</li>
+<li><strong>Wrong pattern.</strong> &quot;Max subarray sum&quot; with <em>negatives</em> and no fixed size is
+not a window — that&#39;s prefix sums (Challenge 2). Contiguous + constraint →
+window; any subarray → prefix.</li>
+<li><strong>Off-by-one at the edges.</strong> Fixed window: record only when
+<code>end - start + 1 == k</code>, after adding. Variable: record <em>after</em> the shrink
+loop, never before.</li>
+<li><strong>State leaks.</strong> A count that hits 0 must be deleted from the dict, or any
+<code>len(state)</code>-based validity check silently lies.</li>
+<li><strong>Silent coding.</strong> Narrate every pointer move: &quot;sum is 9 &lt; 13, so left
+advances.&quot; Commentary is the senior signal; silence reads as stuck.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../02-prefix-sum-and-intervals/">Challenge 2 — Prefix Sum &amp; Intervals</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../index.html"><span>Previous</span><strong>401 course home</strong></a>
+    <a class="next" href="../../challenges/02-prefix-sum-and-intervals/"><span>Next</span><strong>Prefix Sum & Intervals</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

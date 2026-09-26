@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Get fluent in the numbers that drive design decisions — modern hardware limits, QPS and storage arithmetic, the caching pattern table, and when sharding is actually warranted — so every scaling claim you make is anchored in math.">
+<title>Challenge 04: Thinking in Scale — System Design Interview Prep</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">04</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 04</span><span class="chip">about 60 minutes</span></p>
+    <h1>Thinking in Scale</h1>
+    <p class="mission"><strong>Mission.</strong> Get fluent in the numbers that drive design decisions — modern hardware limits, QPS and storage arithmetic, the caching pattern table, and when sharding is actually warranted — so every scaling claim you make is anchored in math.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 War story: sharding 10 gigabytes</h2>
+<p>The candidate draws their schema and says, with confidence, &quot;next, we shard the database by user ID.&quot; The interviewer asks the innocent-sounding question: &quot;How much data are we at?&quot; Pause. &quot;Ten million businesses at about a kilobyte each… about 10GB. Ten with reviews.&quot; Silence. The candidate just proposed the single most expensive, most operationally painful technique in the toolkit — for a dataset that fits on one cheap instance a hundred times over. Sharding-in-minute-eight is the tell of book learning. The same candidate often fears SSD latency (&quot;we must cache everything!&quot;) while quoting 2015 hardware limits. Both failures are cured the same way: knowing the actual numbers.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The 2026 numbers table: what a cache, database, app server, and queue can actually absorb</li>
+<li>Back-of-envelope QPS and storage math you can do out loud in 30 seconds</li>
+<li>The four cache patterns and the eviction policies that keep them honest</li>
+<li>When sharding is warranted — and the checklist for doing it right</li>
+</ul>
+</section><section class="sec"><h2>The numbers that matter now</h2>
+<p>Modern hardware would embarrass your textbooks. Servers ship with up to 4TB of RAM; databases hold tens of terabytes per instance; the constraint that kills designs is almost never storage.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Typical numbers (2026)</th>
+<th>Consider scaling when</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>In-memory cache</td>
+<td>~1ms reads; 100k+ ops/sec per instance; up to ~1TB</td>
+<td>Hit rate &lt; 80%, or ops/sec near 100k sustained</td>
+</tr>
+<tr>
+<td>SQL database</td>
+<td>1–5ms indexed reads; ~10–20k write TPS; tens of TB per instance (Aurora ~256 TiB)</td>
+<td>Sustained writes &gt; 10k TPS, &gt; ~50TB, or multi-region needs</td>
+</tr>
+<tr>
+<td>App server</td>
+<td>100k+ concurrent connections; 8–64 cores; 64–512GB RAM</td>
+<td>CPU or memory pinned above ~80%, latency breaches SLA</td>
+</tr>
+<tr>
+<td>Message queue</td>
+<td>~1M msgs/sec per broker; 1–5ms in-region</td>
+<td>Consumer lag keeps growing; ~200k partitions</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>&lt;1ms same datacenter; 1–2ms cross-zone; 50–150ms cross-region</td>
+<td>—</td>
+</tr>
+</tbody></table></div>
+<p>The latency ladder underneath those rows: RAM ~100ns, SSD indexed lookup ~1ms or less, spinning disk ~10ms (and mostly extinct), cross-region round trip 50–150ms — that last one is physics (light in fiber), which is why geography is a design constraint, not a tuning knob.</p>
+<p>Two traps these numbers kill:</p>
+<ul>
+<li><strong>Premature sharding.</strong> Do the multiplication before proposing it. 10M businesses × 1KB = 10GB; even 100GB fits comfortably on one instance. A single &quot;instance&quot; still means primary + replicas for availability — replication for HA and sharding for scale are different tools.</li>
+<li><strong>Overestimating latency.</strong> An indexed row lookup on SSD is sub-millisecond to low-milliseconds. Caching cheap lookups buys you little; cache the expensive queries instead.</li>
+</ul>
+</section><section class="sec"><h2>Back-of-envelope drills</h2>
+<p>Two formulas, done out loud, rounded aggressively:</p>
+<ul>
+<li><strong>QPS</strong> = DAU × actions per user per day ÷ 86,400 seconds, then × 2–10 for peak.</li>
+<li><strong>Storage</strong> = rows × bytes per row (round each row up generously).</li>
+</ul>
+<p>Worked example, spoken version: &quot;100M DAU, each reading 10 pages a day — that&#39;s 1B reads over 86,400 seconds, roughly 12k QPS average, call it 60k at peak. Writes: 100M users posting twice a day is 2k writes/sec — trivial. Storage: 100M posts × 1KB ≈ 100GB a year; a single database laughs.&quot; Every conclusion is now justified: reads need a cache strategy at peak, writes need nothing exotic.</p>
+<p>The flip side — when math <em>does</em> change the design: a trending-topics service needs to know how many distinct topics it&#39;s counting. If it&#39;s 10k, one in-memory heap works. If it&#39;s 100M, that heap must be sharded. That estimate isn&#39;t decoration; it&#39;s a fork in the design. If an estimate won&#39;t change anything, skip it and say so.</p>
+</section><section class="sec"><h2>Caching, properly</h2>
+<p>Where caching can live, outermost to innermost: browser → CDN → external cache (Redis — the interview default) → in-process memory (for tiny hot values like feature flags). When you propose one, walk five steps: the bottleneck (quantified), what to cache (frequent, rarely-changing, expensive to compute), the pattern, the eviction policy, and the failure modes.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Who writes the DB</th>
+<th>Trade-off</th>
+<th>Default?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Cache-aside</strong></td>
+<td>App, on cache miss</td>
+<td>Simplest; small stale window; miss costs extra latency</td>
+<td>Yes — say this one</td>
+</tr>
+<tr>
+<td><strong>Write-through</strong></td>
+<td>Cache writes synchronously to DB</td>
+<td>Reads always fresh; writes slower; may cache never-read data</td>
+<td>Only when reads must be fresh</td>
+</tr>
+<tr>
+<td><strong>Write-behind (write-back)</strong></td>
+<td>Cache flushes to DB asynchronously</td>
+<td>Very fast writes; data loss if the cache dies</td>
+<td>High write volume where loss is tolerable</td>
+</tr>
+<tr>
+<td><strong>Read-through</strong></td>
+<td>The cache itself fetches on miss</td>
+<td>Centralized logic; that&#39;s literally how a CDN works</td>
+<td>Rarely proposed by name</td>
+</tr>
+</tbody></table></div>
+<p>Eviction policies keep memory bounded: <strong>LRU</strong> evicts the least recently touched (the safe default), <strong>LFU</strong> tracks frequency (steady favorites like trending lists), <strong>FIFO</strong> ignores usage (rarely defensible), and <strong>TTL</strong> expires entries after a period — not a replacement for the others, but always combined with them. The failure modes every cache carries: a <strong>stampede</strong> when one hot key expires and thousands of requests hit the DB at once (fix: coalesce the rebuilds or refresh early), <strong>staleness</strong> (fix: invalidate on write, short TTL, or accept it), and <strong>hot keys</strong> that overload one cache node no matter how healthy the hit rate is (fix: replicate the key or keep it in-process). Each gets dissected in Challenge 5.</p>
+</section><section class="sec"><h2>Sharding, introduced</h2>
+<p>Partitioning splits a table inside one machine; sharding splits data across machines. Reach for it when a single instance genuinely hits a wall: write throughput above ~10k TPS sustained, storage beyond tens of terabytes, or a geographic requirement. Two decisions define it:</p>
+<p><strong>The shard key.</strong> High cardinality (user_id: millions of values; a boolean: two), even distribution (user_id again; country no), and aligned with queries (user-scoped queries hit exactly one shard). Sharding by creation date dumps every write on the newest shard — a self-inflicted hotspot.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>How it assigns shards</th>
+<th>Strength</th>
+<th>Weakness</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Range</strong></td>
+<td>user 1–1M → shard 1, next million → shard 2</td>
+<td>Simple; efficient range scans</td>
+<td>Recent-time hotspots; uneven access</td>
+</tr>
+<tr>
+<td><strong>Hash</strong> (default)</td>
+<td>hash(user_id) mod N</td>
+<td>Even distribution, always</td>
+<td>Resharding moves nearly everything — fix via consistent hashing</td>
+</tr>
+<tr>
+<td><strong>Directory</strong></td>
+<td>Lookup table maps each key to a shard</td>
+<td>Total flexibility; move hot users anywhere</td>
+<td>A lookup on every request + a new single point of failure</td>
+</tr>
+</tbody></table></div>
+<p><strong>The costs you must name.</strong> Hot spots (the celebrity whose data one shard serves 1000x harder than anyone else&#39;s), cross-shard queries (&quot;top 10 posts globally&quot; fans out to every shard — cache or precompute those), and the death of cross-shard transactions (no more ACID across machines — co-locate a user&#39;s data on one shard, or orchestrate multi-step operations with compensating actions). Modern databases (Cassandra, DynamoDB, MongoDB) shard by partition key automatically; Vitess/Citus bring it to Postgres/MySQL. In the room, &quot;we&#39;d shard by user_id with consistent hashing, and keep each user&#39;s data on one shard so transactions stay local&quot; is the whole answer.</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a> covers consistent hashing and CAP in the same depth as this material.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a system design interviewer who believes candidates who can&#39;t do the
+math can&#39;t do the design. You will make me prove scale-sense before any
+architecture.
+
+SETUP
+Ask me to pick: &quot;Design a trending topics service&quot;, &quot;Design a photo sharing
+app&quot;, or &quot;Design a leaderboard&quot;. Then set the clock: 40 minutes.
+
+PHASE 1 — NUMBERS GATE (first ~8 minutes)
+Refuse to discuss architecture until I have estimated, out loud:
+- Read and write QPS from DAU and per-user actions (average AND peak)
+- Storage for 5 years
+- Whether any of those numbers changes the design
+Demand the arithmetic, not just the answer: &quot;show me the multiplication.&quot;
+Then stress one number: &quot;10x peak traffic — does anything above change?&quot;
+Only once my numbers hold, let me proceed to the design.
+
+PHASE 2 — DESIGN, WITH TRAPS
+As I design, deploy these probes at the natural moment:
+- I propose a cache → &quot;Eviction policy? And what&#39;s your worst case when the
+  hottest key expires at once?&quot;
+- I propose sharding → &quot;Back up. Do the math — is a single database dead?&quot;
+- I quote a latency → &quot;Where did that number come from?&quot;
+- I skip consistency → &quot;What can be stale, and for how long?&quot;
+- I put everything in one DB → &quot;What breaks first: reads, writes, or storage?&quot;
+
+RULES
+Never give me numbers; make me derive them. Hints only if I ask, and give me
+units, not answers. At 40 minutes or when I say &quot;end interview&quot;, stop.
+
+SCORING
+Score 1-4 on Problem Navigation, Solution Design, Technical Excellence,
+Communication, with quoted evidence. Grade my numbers separately: any
+estimate off by 10x or more is a fail regardless of the design. Report my
+weakest area — arithmetic, cache reasoning, or scaling judgment — and which
+drill to repeat.
+
+Begin by asking me to pick a problem.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You can quote the numbers table from memory — cache, DB, app server, queue</li>
+<li><span class="cb" aria-hidden="true"></span>You can compute QPS and storage for any prompt in under 30 seconds, out loud</li>
+<li><span class="cb" aria-hidden="true"></span>You reach for cache-aside by default and can name the other three patterns and their costs</li>
+<li><span class="cb" aria-hidden="true"></span>You propose LRU + TTL as the eviction answer and can name stampede/staleness/hot-key</li>
+<li><span class="cb" aria-hidden="true"></span>You&#39;ve killed a premature sharding instinct with math at least once in a mock</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>QPS / TPS</td>
+<td>Queries (or transactions, writes) per second — the throughput unit</td>
+</tr>
+<tr>
+<td>DAU</td>
+<td>Daily active users; multiply by per-user actions to get daily traffic</td>
+</tr>
+<tr>
+<td>Cache-aside</td>
+<td>App checks cache, on miss reads DB and backfills the cache</td>
+</tr>
+<tr>
+<td>Write-through / write-behind</td>
+<td>Cache writes to DB synchronously vs asynchronously in the background</td>
+</tr>
+<tr>
+<td>LRU / LFU / TTL</td>
+<td>Evict least-recently-used / least-frequently-used / anything older than its expiry</td>
+</tr>
+<tr>
+<td>Cache stampede</td>
+<td>Hot key expires; simultaneous misses stampede the database</td>
+</tr>
+<tr>
+<td>Hot key</td>
+<td>One key taking wildly disproportionate traffic</td>
+</tr>
+<tr>
+<td>Shard key</td>
+<td>The column data is split on; must be high-cardinality, even, query-aligned</td>
+</tr>
+<tr>
+<td>Consistent hashing</td>
+<td>Hash-ring scheme so adding/removing shards moves only a fraction of data</td>
+</tr>
+<tr>
+<td>TiB</td>
+<td>Tebibyte, ~1.1 trillion bytes; the scale modern single instances reach</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Your mental arithmetic stalls under pressure.</strong> Round brutally: 86,400 seconds/day ≈ 100k, so &quot;1B reads/day ≈ 10k QPS&quot; is close enough and sounds better than a 20-second pause. State the rounding: &quot;call it 10k, order of magnitude.&quot;</li>
+<li><strong>You proposed sharding and got the &quot;how much data?&quot; question.</strong> Never bluff. Answer the number, then reverse: &quot;…which fits on one instance, so sharding is premature — the real constraint is read load, and I&#39;d add replicas first.&quot;</li>
+<li><strong>You added a cache to make &quot;fast&quot; things faster.</strong> If the lookup is already ~1ms on SSD, the cache adds a network hop for nothing. Re-aim it at the expensive query or drop it.</li>
+<li><strong>The interviewer asks &quot;what&#39;s your eviction policy?&quot; and you freeze.</strong> LRU with TTLs. Then one sentence on why (recent access predicts future access; TTL bounds staleness). Don&#39;t recite all four policies unprompted.</li>
+<li><strong>You&#39;re stuck choosing between two cache patterns.</strong> Default cache-aside, then say when you&#39;d upgrade: &quot;If reads must never see stale data, write-through; if writes dominate and some loss is acceptable, write-behind.&quot;</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../05-scaling-reads/">Challenge 5 — Scaling Reads</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/03-the-toolbox/"><span>Previous</span><strong>The Toolbox</strong></a>
+    <a class="next" href="../../challenges/05-scaling-reads/"><span>Next</span><strong>Scaling Reads</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

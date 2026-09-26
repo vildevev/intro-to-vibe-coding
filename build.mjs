@@ -22,33 +22,79 @@ for (const ch of CHALLENGES) {
   ch.title = src.match(/^# Challenge \d+ — (.+)$/m)[1];
 }
 
-// ---------- 201 track ----------
+// ---------- advanced tracks (201 / 301 / 401) ----------
 
-const TRACK201 = {
-  label: 'Vibe Coding 201',
-  src: path.join(ROOT, '201', 'challenges'),
-  rel: '../../../',
-  titleSuffix: 'Vibe Coding 201',
-  href: (c) => `../../challenges/${c.slug}/`,
-  prevHome: ['../../index.html', '201 course home'],
-  nextEnd: ['../../../index.html', 'Vibe Coding 101'],
-  nav: (rel) => [
-    ['101 course', `${rel}index.html`],
-    ['201 map', `${rel}201/`],
-    ['Cheat sheets', `${rel}cheatsheet/`],
-  ],
-};
-
-const TRACK201_CHALLENGES = [
-  '01-app-memory', '02-sign-in-safely', '03-take-money', '04-apis-are-ingredients',
-  '05-the-30-file-app', '06-deep-debugging', '07-ship-like-a-pro', '08-capstone-product',
-].map((slug, i) => ({ slug, num: String(i + 1).padStart(2, '0') }));
-
-for (const ch of TRACK201_CHALLENGES) {
-  const src = fs.readFileSync(path.join(TRACK201.src, ch.slug, 'CHALLENGE.md'), 'utf8');
-  ch.title = src.match(/^# Challenge \d+ — (.+)$/m)[1];
+function makeTrack(key, slugs, opts) {
+  const track = {
+    key,
+    label: key,
+    src: path.join(ROOT, key, 'challenges'),
+    rel: '../../../',
+    titleSuffix: opts.titleSuffix,
+    href: (c) => `../../challenges/${c.slug}/`,
+    prevHome: ['../../index.html', `${key} course home`],
+    nextEnd: opts.nextEnd,
+    homeTitle: opts.homeTitle,
+    homeChips: opts.homeChips,
+    homeMission: opts.homeMission,
+    list: slugs.map((slug, i) => ({ slug, num: String(i + 1).padStart(2, '0') })),
+  };
+  for (const ch of track.list) {
+    const srcPath = path.join(track.src, ch.slug, 'CHALLENGE.md');
+    ch.title = fs.existsSync(srcPath)
+      ? fs.readFileSync(srcPath, 'utf8').match(/^# Challenge \d+ — (.+)$/m)[1]
+      : `(drafting: ${ch.slug})`; // placeholder until the file lands
+  }
+  return track;
 }
-TRACK201.list = TRACK201_CHALLENGES;
+
+const TRACKS = [
+  makeTrack('201',
+    ['01-app-memory', '02-sign-in-safely', '03-take-money', '04-apis-are-ingredients',
+     '05-the-30-file-app', '06-deep-debugging', '07-ship-like-a-pro', '08-capstone-product'],
+    {
+      titleSuffix: 'Vibe Coding 201',
+      homeTitle: 'Vibe Coding 201 — From Pages to Products',
+      homeChips: ['Course 201', 'Build on the 101'],
+      homeMission: 'An app that remembers things, has users, takes money — and survives its first disaster. The same loop, real stakes.',
+      nextEnd: ['../../../index.html', 'Vibe Coding 101'],
+    }),
+  makeTrack('301',
+    ['01-the-interview-decoded', '02-the-delivery-framework', '03-the-toolbox', '04-thinking-in-scale',
+     '05-scaling-reads', '06-scaling-writes', '07-real-time-updates', '08-contention',
+     '09-multi-step-processes', '10-heavy-things', '11-proximity-services', '12-full-designs'],
+    {
+      titleSuffix: 'System Design Interview Prep',
+      homeTitle: 'System Design Interview Prep — 301',
+      homeChips: ['Course 301', 'For senior engineers'],
+      homeMission: 'A framework, the numbers, and the pattern library — delivered out loud under a 45-minute clock, with an AI mock interviewer on every challenge.',
+      nextEnd: ['../../../401/', 'Coding Interview Patterns — 401'],
+    }),
+  makeTrack('401',
+    ['01-two-pointers-and-sliding-window', '02-prefix-sum-and-intervals', '03-stack-and-linked-list',
+     '04-binary-search', '05-heaps', '06-dfs-and-bfs', '07-graphs-and-tries', '08-backtracking',
+     '09-greedy-and-matrices', '10-dynamic-programming'],
+    {
+      titleSuffix: 'Coding Interview Patterns',
+      homeTitle: 'Coding Interview Patterns — 401',
+      homeChips: ['Course 401', 'For senior engineers'],
+      homeMission: 'Sixteen patterns drilled to recognition speed: cues, templates you can rebuild under pressure, and a mock interviewer for every one.',
+      nextEnd: ['../../../index.html', 'Course home'],
+    }),
+];
+
+const trackByKey = Object.fromEntries(TRACKS.map((t) => [t.key, t]));
+
+// uniform top nav: all four tracks + cheat sheets, relative to the page
+function navFor(rel) {
+  return [
+    ['101', `${rel}index.html#course-map`],
+    ['201', `${rel}201/`],
+    ['301', `${rel}301/`],
+    ['401', `${rel}401/`],
+    ['Cheat sheets', `${rel}cheatsheet/`],
+  ];
+}
 
 marked.use({ gfm: true });
 
@@ -105,11 +151,7 @@ function convert(src, rel = '') {
 // ---------- page chrome ----------
 
 function page({ rel, title, description, body, scripts = [], nav }) {
-  const links = nav ?? [
-    ['Course map', `${rel}index.html#course-map`],
-    ['Vibe Coding 201', `${rel}201/`],
-    ['Cheat sheets', `${rel}cheatsheet/`],
-  ];
+  const links = nav ?? navFor(rel);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -262,7 +304,7 @@ a11ce5d  reviewed the diff, said no
 // ---------- challenges ----------
 
 const TRACK101 = {
-  label: 'Intro to Vibe Coding',
+  label: '101',
   src: ROOT,
   rel: '../../',
   titleSuffix: 'Intro to Vibe Coding',
@@ -270,11 +312,6 @@ const TRACK101 = {
   href: (c) => `../../challenges/${c.slug}/`,
   prevHome: ['../../index.html', 'Course home'],
   nextEnd: ['../../cheatsheet/', 'The cheat sheets'],
-  nav: (rel) => [
-    ['Course map', `${rel}index.html#course-map`],
-    ['Vibe Coding 201', `${rel}201/`],
-    ['Cheat sheets', `${rel}cheatsheet/`],
-  ],
 };
 
 function buildChallenge(ch, idx, track = TRACK101) {
@@ -313,20 +350,20 @@ function buildChallenge(ch, idx, track = TRACK101) {
     title: `Challenge ${ch.num}: ${ch.title} — ${track.titleSuffix}`,
     description: mission.replace(/[*_]/g, ''),
     body: `${head}\n<div class="prose">\n${convert(src, track.rel)}\n${pager}\n</div>`,
-    nav: track.nav(track.rel),
+    nav: navFor(track.rel),
   });
 }
 
-// ---------- 201 track home ----------
+// ---------- advanced track homes (201 / 301 / 401) ----------
 
-function build201Home() {
+function buildTrackHome(track) {
   const rel = '../';
-  let src = fs.readFileSync(path.join(ROOT, '201', 'README.md'), 'utf8');
+  let src = fs.readFileSync(path.join(ROOT, track.key, 'README.md'), 'utf8');
 
   // pull the course-map table out and rebuild it as the level list
   const heading = '## The course map';
   const mapStart = src.indexOf(heading);
-  const mapEnd = src.indexOf('## The 201 Golden Rules');
+  const mapEnd = src.indexOf('\n## ', mapStart + heading.length);
   const mapSrc = src.slice(mapStart, mapEnd);
   src = src.slice(0, mapStart + heading.length) + '\n' + src.slice(mapEnd);
 
@@ -345,17 +382,17 @@ ${rows.map((r) => `  <li><a href="${r[3]}">
   html = html.replace('<h2>The course map</h2>', `<h2>The course map</h2>\n${levels}`);
 
   const head = `<div class="level-head gridbg"><div class="level-meta">
-    <p class="level-chips"><span class="chip">Course 201</span><span class="chip">Follow-up to the 101</span></p>
-    <h1>Vibe Coding 201 — From Pages to Products</h1>
-    <p class="mission"><strong>Mission.</strong> An app that remembers things, has users, takes money — and survives its first disaster. The same loop, real stakes.</p>
+    <p class="level-chips"><span class="chip">${track.homeChips[0]}</span><span class="chip">${track.homeChips[1]}</span></p>
+    <h1>${track.homeTitle}</h1>
+    <p class="mission"><strong>Mission.</strong> ${track.homeMission}</p>
   </div></div>`;
 
   return page({
     rel,
-    title: 'Vibe Coding 201 — From Pages to Products',
-    description: 'The advanced course: databases, accounts, payments, APIs, architecture, deep debugging and shipping like a pro — for people who finished the 101.',
+    title: `${track.homeTitle} — getglod learn`,
+    description: track.homeMission,
     body: `${head}\n<div class="prose">\n${html}\n</div>`,
-    nav: TRACK201.nav(rel),
+    nav: navFor(rel),
   });
 }
 
@@ -378,15 +415,19 @@ CHALLENGES.forEach((ch, i) => {
   fs.writeFileSync(path.join(dir, 'index.html'), html);
 });
 
-// 201 track
-fs.mkdirSync(path.join(DOCS, '201'), { recursive: true });
-fs.writeFileSync(path.join(DOCS, '201', 'index.html'), build201Home());
-TRACK201_CHALLENGES.forEach((ch, i) => {
-  const html = buildChallenge(ch, i, TRACK201);
-  const dir = path.join(DOCS, '201', 'challenges', ch.slug);
-  fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, 'index.html'), html);
-});
+// advanced tracks: home + challenges
+for (const track of TRACKS) {
+  fs.mkdirSync(path.join(DOCS, track.key), { recursive: true });
+  fs.writeFileSync(path.join(DOCS, track.key, 'index.html'), buildTrackHome(track));
+  track.list.forEach((ch, i) => {
+    const srcPath = path.join(track.src, ch.slug, 'CHALLENGE.md');
+    if (!fs.existsSync(srcPath)) return; // still drafting
+    const html = buildChallenge(ch, i, track);
+    const dir = path.join(DOCS, track.key, 'challenges', ch.slug);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'index.html'), html);
+  });
+}
 
 let sheet = fs.readFileSync(path.join(ROOT, 'CHEATSHEET.md'), 'utf8');
 sheet = sheet.replace(/^# .+$/m, '').replace(/^---\n/m, '');
@@ -406,4 +447,4 @@ fs.writeFileSync(
   }),
 );
 
-console.log(`built: docs/ (${1 + CHALLENGES.length + 1 + 1 + TRACK201_CHALLENGES.length} pages)`);
+console.log(`built: docs/ (${1 + CHALLENGES.length + 1 + TRACKS.reduce((n, t) => n + 1 + t.list.length, 0)} pages)`);

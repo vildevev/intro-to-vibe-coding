@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The two traversals behind roughly half of all tree and graph questions. DFS commits to one path and backs out; BFS sweeps outward one distance-layer at a time. The graded skill is the first-minute decision — "shortest path" or "level anything" means BFS, nearly everything else means DFS — followed by a clean template with the right state: a return value, a passed-down parameter, or a visited set.">
+<title>Challenge 06: DFS & BFS — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">06</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 06</span><span class="chip">about 60 minutes</span></p>
+    <h1>DFS & BFS</h1>
+    <p class="mission"><strong>Mission.</strong> The two traversals behind roughly half of all tree and graph questions. DFS commits to one path and backs out; BFS sweeps outward one distance-layer at a time. The graded skill is the first-minute decision — &quot;shortest path&quot; or &quot;level anything&quot; means BFS, nearly everything else means DFS — followed by a clean template with the right state: a return value, a passed-down parameter, or a visited set.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The wrong traversal</h2>
+<p>Two candidates get &quot;minimum number of moves through a maze.&quot; Candidate A
+reaches for recursive DFS — the traversal they know cold — and builds
+something that works but wanders every dead end, then needs a second pass to
+keep the shortest route. Candidate B&#39;s first sentence is &quot;minimum moves, every
+move costs the same, so BFS: the first time I touch the exit is the answer —
+O(rows × cols).&quot; Fifteen lines later they&#39;re tracing an example. Same tool
+belt, different opening sentence — and the opening sentence is what gets
+scored. The fork: <em>any</em> path, all paths, or component structure → DFS;
+<em>shortest</em> path or anything per-level → BFS.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>Tree DFS</strong> — deciding what each recursive call returns before writing code</li>
+<li><strong>Grid DFS</strong> — the four-direction loop, flood fill, connected components,
+the boundary trick, and in-place marking</li>
+<li><strong>BFS</strong> — the queue, the level-size loop, multi-source seeding, and why
+first arrival is the shortest path in an unweighted graph</li>
+<li>The DFS-vs-BFS decision, stated out loud in one sentence</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — DFS: trees, then grids</h2>
+<p>Every tree DFS question reduces to one question: <em>what does each call return?</em>
+If your subtree&#39;s answer can be assembled from your children&#39;s answers, return
+it (max depth: <code>1 + max(children)</code>). If the question cares about the
+root-to-node path, pass that context down as parameters. When what a child can
+hand you isn&#39;t what the problem asks for — diameter wants a through-path,
+depth is all a child can return — keep a scoped accumulator and update it at
+every node. Complexity: O(n) time, O(h) space for the call stack (O(log n)
+balanced, O(n) skewed — say the distinction unprompted).</p>
+<p>A grid is the same pattern wearing a costume: cells are nodes, edges run
+up/down/left/right, and a visited marker (a set, or writing into the grid) is
+mandatory. An outer scan looking for an untouched interesting cell, plus a DFS
+that consumes everything reachable from it: the number of launches <em>is</em> the
+number of connected components. Flip the question at the border — instead of
+asking &quot;can this cell reach the edge?&quot; per cell, DFS <em>from</em> every edge cell
+and mark what you reach.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Max/min/count over every subtree&quot;</td>
+<td>Return the subtree answer; combine children</td>
+</tr>
+<tr>
+<td>Answer depends on the root-to-node path</td>
+<td>Pass state down via parameters (helper function)</td>
+</tr>
+<tr>
+<td>Question ≠ what a child can return (diameter, tilt)</td>
+<td>Return the reusable part; track the real answer in a scoped variable</td>
+</tr>
+<tr>
+<td>&quot;Count islands / provinces / regions&quot;</td>
+<td>Outer scan + flood fill per unvisited cell</td>
+</tr>
+<tr>
+<td>&quot;Cells touching the border&quot; (Surrounded Regions)</td>
+<td>DFS inward <em>from</em> border cells; flip the rest</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — tree DFS with all three channels:</strong></p>
+<pre><code>def solve(root):
+    best = 0                             # accumulator for the real answer
+    def dfs(node, state_from_root):      # path context passed DOWN
+        if node is None:
+            return identity              # same type as the normal return!
+        left = dfs(node.left, next_state)
+        right = dfs(node.right, next_state)
+        here = combine(left, right, node.val)
+        best = max(best, here)           # update the true answer
+        return upward_value              # what the parent can reuse
+    return dfs(root, initial_state)
+</code></pre>
+<p><strong>Template — the same skeleton on a grid (flood fill):</strong></p>
+<pre><code>def flood(r, c):                         # rows, cols, grid in scope
+    if not (0 &lt;= r &lt; rows and 0 &lt;= c &lt; cols): return
+    if grid[r][c] != LAND: return        # water, or already consumed
+    grid[r][c] = VISITED                 # mark in place — free visited set
+    for dr, dc in ((1,0),(-1,0),(0,1),(0,-1)):
+        flood(r + dr, c + dc)
+# count = how many times you launch flood() on an unvisited LAND cell
+</code></pre>
+<p><strong>Complexity:</strong> O(n) over nodes, or O(rows × cols) over cells — every unit is
+entered at most once. Space is the recursion depth: O(h) for trees, up to
+O(rows × cols) for an all-land snake grid, where an explicit stack sidesteps
+the call-stack limit. Classic bug: a base case returning <code>None</code> while
+recursive cases return numbers — decide the base case&#39;s type first.</p>
+<p><strong>Drills (easy → hard):</strong> Maximum Depth of Binary Tree → Validate Binary
+Search Tree (pass the (min, max) window down) → Number of Islands → Surrounded
+Regions (the boundary trick).</p>
+</section><section class="sec"><h2>Pattern 2 — BFS: levels and shortest paths</h2>
+<p>BFS is a queue plus one discipline: mark visited <strong>when enqueuing</strong>, never at
+pop time — otherwise cells re-enter the queue and every level count lies. The
+level trick is one line: snapshot <code>len(queue)</code> at the top of the while loop
+and process exactly that many. That snapshot buys two families of answers:
+per-level results (right side view = last node of each level) and shortest
+paths in unweighted graphs — BFS finishes every node at distance d before any
+node at d+1, so the first time the target appears, its level is its distance.
+Multi-source variant: seed the queue with <em>every</em> source at distance 0 first
+(everything rotten, every zero cell) and the same loop measures distance from
+the <em>set</em> rather than one point.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Minimum number of moves/steps&quot; (unweighted)</td>
+<td>BFS; first arrival is optimal</td>
+</tr>
+<tr>
+<td>&quot;Level by level / right side view / zigzag&quot;</td>
+<td>Level-size for-loop inside the while</td>
+</tr>
+<tr>
+<td>&quot;Time until everything is infected/rotten&quot;</td>
+<td>Multi-source BFS — seed all sources</td>
+</tr>
+<tr>
+<td>&quot;Distance from each cell to the nearest X&quot;</td>
+<td>Multi-source BFS from all X, fill a distance grid</td>
+</tr>
+<tr>
+<td>Any path / all paths / component structure</td>
+<td>DFS (Pattern 1), not BFS</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — BFS with levels and early exit:</strong></p>
+<pre><code>def shortest_steps(grid, start, target):
+    queue = deque([start])
+    visited = {start}                    # mark HERE, not at pop time
+    dist = 0
+    while queue:
+        for _ in range(len(queue)):      # exactly one level per sweep
+            node = queue.popleft()
+            if node == target:
+                return dist              # first touch = shortest, guaranteed
+            for nxt in neighbors(node):
+                if nxt not in visited:
+                    visited.add(nxt)
+                    queue.append(nxt)
+        dist += 1                        # finished a level = one step farther
+    return -1                            # queue drained, target unreachable
+</code></pre>
+<p><strong>Complexity:</strong> O(V + E) time, O(V) space for queue and visited set — O(rows ×
+cols) on a grid. Have the one-sentence proof ready (&quot;first arrival is shortest
+because levels complete in order&quot;); it&#39;s the favorite follow-up.</p>
+<p><strong>Drills (easy → hard):</strong> Binary Tree Level Order Traversal → Binary Tree
+Right Side View → Rotting Oranges (multi-source) → Word Ladder.</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/depth-first-search/overview">Hello Interview&#39;s DFS chapter</a> — their BFS chapter continues from it with animated traversals of both.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
+interview with me on DFS and BFS: binary trees, grids, connected components,
+level-order traversal, and shortest paths in unweighted graphs.
+
+1. Pick ONE problem that maps to these patterns at senior difficulty.
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern it uses.
+2. Enforce a 25-minute timer. Warn me at 5 minutes left; stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted, and trace one example before I call it done.
+6. When time is up or I say done, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases — one line of evidence per score,
+   then the single highest-leverage improvement.
+
+Start with the problem statement. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>&quot;What does each call return?&quot; is your first question on any tree problem</li>
+<li><span class="cb" aria-hidden="true"></span>You choose DFS vs BFS in under 60 seconds and say the reason out loud</li>
+<li><span class="cb" aria-hidden="true"></span>The flood-fill skeleton is on paper from memory, bounds check included</li>
+<li><span class="cb" aria-hidden="true"></span>The level-size for-loop appears unprompted when a question says &quot;level&quot;</li>
+<li><span class="cb" aria-hidden="true"></span>You mark visited at enqueue time and can say what breaks otherwise</li>
+<li><span class="cb" aria-hidden="true"></span>You state O(V + E) / O(rows × cols) and name the space (stack vs queue)</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DFS / BFS</td>
+<td>Depth-first (go deep, back out) vs breadth-first (one layer at a time)</td>
+</tr>
+<tr>
+<td>Return value</td>
+<td>The answer a recursive call hands its parent; choose it before coding</td>
+</tr>
+<tr>
+<td>Flood fill</td>
+<td>DFS/BFS that consumes an entire connected region from one start cell</td>
+</tr>
+<tr>
+<td>Connected component</td>
+<td>A maximal group of cells/nodes reachable from each other</td>
+</tr>
+<tr>
+<td>Level-size loop</td>
+<td>Snapshot of <code>len(queue)</code> that processes exactly one BFS layer</td>
+</tr>
+<tr>
+<td>Multi-source BFS</td>
+<td>Seeding the queue with several starts at distance 0</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Recursion limit blows up.</strong> A big all-land grid can outgrow the default
+call stack. Don&#39;t debug it live — rewrite the flood fill iteratively with an
+explicit stack and say why.</li>
+<li><strong>Visited set forgotten.</strong> Trees can&#39;t cycle; graphs and grids can. Say
+&quot;graph, not tree — adding visited&quot; the moment you spot it.</li>
+<li><strong>Base-case type mismatch.</strong> The base case must return the same type as the
+recursive case (<code>-inf</code>, not <code>None</code>). This bug survives every small test.</li>
+<li><strong>Marking visited at pop time.</strong> Duplicates pile into the queue and level
+counts and distances quietly go wrong.</li>
+<li><strong>DFS on a shortest-path question.</strong> It explores <em>a</em> path, not <em>the</em> path.
+Catch it in the first minute: &quot;minimum/shortest&quot; + unweighted → BFS.</li>
+<li><strong>Bounds checked after use.</strong> Check <code>0 &lt;= r &lt; rows and 0 &lt;= c &lt; cols</code>
+<em>before</em> touching <code>grid[r][c]</code> — the four-direction loop makes out-of-range
+the chapter&#39;s most common crash.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../07-graphs-and-tries/">Challenge 7 — Graphs &amp; Tries</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/05-heaps/"><span>Previous</span><strong>Heaps</strong></a>
+    <a class="next" href="../../challenges/07-graphs-and-tries/"><span>Next</span><strong>Graphs & Tries</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

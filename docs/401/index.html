@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Sixteen patterns drilled to recognition speed: cues, templates you can rebuild under pressure, and a mock interviewer for every one.">
+<title>Coding Interview Patterns — 401 — getglod learn</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../index.html#course-map">101</a>
+    <a href="../201/">201</a>
+    <a href="../301/">301</a>
+    <a href="../401/">401</a>
+    <a href="../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg"><div class="level-meta">
+    <p class="level-chips"><span class="chip">Course 401</span><span class="chip">For senior engineers</span></p>
+    <h1>Coding Interview Patterns — 401</h1>
+    <p class="mission"><strong>Mission.</strong> Sixteen patterns drilled to recognition speed: cues, templates you can rebuild under pressure, and a mock interviewer for every one.</p>
+  </div></div>
+<div class="prose">
+<p><em>A senior-engineer track: the 16 patterns behind nearly every coding interview
+question, drilled to recognition speed.</em></p>
+<p><strong>Who this is for:</strong> engineers facing leetcode-style interviews (and senior
+loops, where coding is still the gate). Not a &quot;grind 500 problems&quot; course —
+the insight it&#39;s built on is that interview questions are instances of a small
+number of <em>patterns</em>, and the skill being tested is recognition speed: seeing
+the problem, naming the pattern, executing the template.</p>
+<p><strong>How it works:</strong> 10 challenges covering all 16 patterns (related patterns are
+paired). Each challenge gives you the recognition cues, a template you can
+rebuild from memory, complexity bounds, and drills — including a copy-paste
+prompt that turns any AI chat into a mock interviewer that picks the problem,
+enforces time, and hints only when you&#39;re stuck.</p>
+<p><strong>Source note:</strong> the pattern taxonomy follows the same arc as
+<a href="https://www.hellointerview.com/learn">Hello Interview</a>&#39;s coding material —
+original explanations here; use their site for worked video solutions.</p>
+<section class="sec"><h2>The course map</h2>
+<ol class="levels" id="course-map">
+  <li><a href="challenges/01-two-pointers-and-sliding-window/">
+    <span class="lvl-num" aria-hidden="true">01</span>
+    <span class="lvl-main"><span class="lvl-title">Two Pointers & Sliding Window</span>
+    <span class="lvl-skill">Pairs, palindromes, subarrays with a window that grows and shrinks</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/02-prefix-sum-and-intervals/">
+    <span class="lvl-num" aria-hidden="true">02</span>
+    <span class="lvl-main"><span class="lvl-title">Prefix Sum & Intervals</span>
+    <span class="lvl-skill">Running totals, range queries, merge-and-sort intervals</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/03-stack-and-linked-list/">
+    <span class="lvl-num" aria-hidden="true">03</span>
+    <span class="lvl-main"><span class="lvl-title">Stack & Linked List</span>
+    <span class="lvl-skill">Monotonic stacks, fast/slow pointers, reversal in place</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/04-binary-search/">
+    <span class="lvl-num" aria-hidden="true">04</span>
+    <span class="lvl-main"><span class="lvl-title">Binary Search</span>
+    <span class="lvl-skill">Sorted space, boundary-finding, search-on-answer</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/05-heaps/">
+    <span class="lvl-num" aria-hidden="true">05</span>
+    <span class="lvl-main"><span class="lvl-title">Heaps</span>
+    <span class="lvl-skill">Top-K, streaming medians, scheduling by priority</span></span>
+    <span class="lvl-time">45 min</span>
+  </a></li>
+  <li><a href="challenges/06-dfs-and-bfs/">
+    <span class="lvl-num" aria-hidden="true">06</span>
+    <span class="lvl-main"><span class="lvl-title">DFS & BFS</span>
+    <span class="lvl-skill">Grids, trees, level-order, connected components</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/07-graphs-and-tries/">
+    <span class="lvl-num" aria-hidden="true">07</span>
+    <span class="lvl-main"><span class="lvl-title">Graphs & Tries</span>
+    <span class="lvl-skill">Representations, shortest paths, prefix trees, word search</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/08-backtracking/">
+    <span class="lvl-num" aria-hidden="true">08</span>
+    <span class="lvl-main"><span class="lvl-title">Backtracking</span>
+    <span class="lvl-skill">Choose-explore-unchoose: subsets, permutations, combinations</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/09-greedy-and-matrices/">
+    <span class="lvl-num" aria-hidden="true">09</span>
+    <span class="lvl-main"><span class="lvl-title">Greedy & Matrices</span>
+    <span class="lvl-skill">Exchange arguments, sorting proofs, spiral and rotate tricks</span></span>
+    <span class="lvl-time">45 min</span>
+  </a></li>
+  <li><a href="challenges/10-dynamic-programming/">
+    <span class="lvl-num" aria-hidden="true">10</span>
+    <span class="lvl-main"><span class="lvl-title">Dynamic Programming</span>
+    <span class="lvl-skill">The state, the recurrence, the memo — 1D to 2D</span></span>
+    <span class="lvl-time">90 min</span>
+  </a></li>
+</ol>
+</section><section class="sec"><h2>The Interview Rules</h2>
+<ol>
+<li><strong>Recognition first.</strong> 80% of the battle is the first 60 seconds: restate
+the problem, spot the pattern, say it out loud before you write anything.</li>
+<li><strong>Templates, not memorized solutions.</strong> For each pattern you own one
+skeleton you can rebuild under pressure — problems are variations; the
+skeleton is constant.</li>
+<li><strong>Complexity is part of the answer.</strong> Every solution gets its time/space
+stated unprompted, with the &quot;why.&quot;</li>
+<li><strong>Think out loud, always.</strong> Silence reads as being stuck. Narrate the
+brute force, then improve it — a verbal brute force is a passing answer;
+silent genius is unreadable and rare.</li>
+<li><strong>Tests are free points.</strong> Trace a small example before saying &quot;done.&quot;
+Interviewers weigh the check as a senior signal.</li>
+</ol>
+</section><section class="sec"><h2>Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>An AI chat for mock interviews (any strong model works)</li>
+<li><span class="cb" aria-hidden="true"></span>A language you&#39;ll interview in, picked once and kept (usually the one
+you know best, <em>not</em> the trendiest)</li>
+<li><span class="cb" aria-hidden="true"></span>A plain editor or CoderPad-style scratchpad — no autocomplete during drills</li>
+</ul>
+</section><section class="sec"><h2>FAQ</h2>
+<p><strong>Senior loops too?</strong> Yes — senior coding rounds ask the same patterns with
+more ambiguity and higher expectations on communication and edge cases. The
+drills here lean senior: state assumptions, handle edges, narrate trade-offs.</p>
+<p><strong>How many problems total?</strong> The drills reference ~40 classic problems by name.
+That&#39;s deliberately small: 40 problems <em>owned</em> (pattern named, template
+reproduced, complexity stated, edges handled) beat 500 skimmed.</p>
+<p><strong>Order matters?</strong> Mostly. DP last on purpose — it&#39;s the pattern that pays off
+from everything before it.</p>
+<hr>
+<p><em>Start here → <a href="challenges/01-two-pointers-and-sliding-window/">Challenge 1: Two Pointers &amp; Sliding Window</a></em></p>
+</section>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

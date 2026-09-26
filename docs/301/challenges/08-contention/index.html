@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Keep two users from winning the same resource at the same instant — the ladder from conditional writes through pessimistic and optimistic locking to distributed locks with TTLs, plus what to do when the whole world wants one row — by building a ticket-booking system's checkout flow.">
+<title>Challenge 08: Contention — System Design Interview Prep</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">08</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 08</span><span class="chip">about 60 minutes</span></p>
+    <h1>Contention</h1>
+    <p class="mission"><strong>Mission.</strong> Keep two users from winning the same resource at the same instant — the ladder from conditional writes through pessimistic and optimistic locking to distributed locks with TTLs, plus what to do when the whole world wants one row — by building a ticket-booking system&#39;s checkout flow.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 War story: seat A15, sold twice</h2>
+<p>&quot;Design a ticketing system.&quot; The candidate&#39;s booking service reads the available count, checks it&#39;s above zero, decrements, inserts a ticket, charges the card. Clean diagram, clean flow. The interviewer then fires two &quot;buy&quot; requests at the same millisecond and the count lands at minus one: both requests read 1, both passed the check, both wrote. That&#39;s the lost update — a read-modify-write with a gap between the read and the write, and another request slipped into the gap. It is the most predictable bug in system design interviews. Candidates don&#39;t lose points for having it in their first design; they lose points for not having four named ways to close the gap and an opinion on which one fits.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>Race condition anatomy: read-modify-write, the lost update, and compare-and-set</li>
+<li>The coordination ladder: conditional writes, pessimistic locks, optimistic versioning, serializable isolation, distributed locks</li>
+<li>The reservation pattern: a 10-minute hold without holding a database transaction open</li>
+<li>Hot partitions: when sharding, replicas, and load balancers all stop helping</li>
+</ul>
+</section><section class="sec"><h2>The race and the first fix</h2>
+<p>Contention is multiple requests competing for one resource at one moment. The cheapest fix is to stop checking in app code and make the write itself conditional — the database evaluates your guard atomically as part of the write:</p>
+<pre><code class="language-sql">UPDATE tickets
+SET status = &#39;sold&#39;, user_id = :user
+WHERE ticket_id = :id AND status = &#39;available&#39;;
+</code></pre>
+<p>One row updated means you won; zero means somebody beat you. That&#39;s compare-and-set, and every serious store speaks it: DynamoDB ConditionExpressions, Redis <code>SET NX</code>, HTTP <code>If-Match</code>. Two disciplines travel with it. First, guard the resource people actually fight over: a counter can promise &quot;a seat exists,&quot; not &quot;seat A15 exists&quot; — two buyers can both decrement a counter and both write A15. Give every ticket its own row and aim the conditional write at the row. Second, check the affected-row count: zero rows is not an error, and if you don&#39;t check, the next statement in your transaction happily runs anyway.</p>
+</section><section class="sec"><h2>The coordination ladder</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Use when</th>
+<th>Avoid when</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Conditional write</td>
+<td>the check is a predicate on the row you&#39;re writing</td>
+<td>the decision needs app logic between read and write</td>
+</tr>
+<tr>
+<td>Pessimistic lock (<code>SELECT FOR UPDATE</code>)</td>
+<td>read-decide-write a WHERE clause can&#39;t express (find 4 adjacent seats); high contention</td>
+<td>conflicts rare — every non-conflicting request pays the lock tax</td>
+</tr>
+<tr>
+<td>Optimistic (version column)</td>
+<td>same read-decide-write, collisions rare</td>
+<td>hot paths where losers retry in a loop and pile up</td>
+</tr>
+<tr>
+<td>Serializable isolation</td>
+<td>the invariant spans rows that never collide (write skew)</td>
+<td>hot paths — aborts throw away work; mostly relational-only</td>
+</tr>
+<tr>
+<td>Distributed lock with TTL</td>
+<td>the hold must outlive one transaction — a wait, an external call</td>
+<td>a plain transaction guard already covers it</td>
+</tr>
+</tbody></table></div>
+<p>Details worth saying out loud. Optimistic: read the version, write <code>WHERE version = :seen</code>, zero rows means retry — and use a dedicated incrementing counter, because business values can change and change back without your check noticing. Pessimistic: lock the smallest scope for the shortest time, and never do slow I/O inside the lock (a payment call held open serializes every buyer behind a third party&#39;s latency). Deadlocks come from inconsistent lock ordering — sort resources by a global key before locking, and treat the database&#39;s deadlock error as retryable. Write skew is the trap none of the row tools catch: two transactions each read the other&#39;s state, both decide validly, both commit, invariant broken — that needs SERIALIZABLE or folding the invariant onto a single row a guard can protect.</p>
+</section><section class="sec"><h2>Worked example: ticket checkout</h2>
+<p>Requirements: view events, search events, book tickets. The binding non-functionals: availability for browsing, absolute consistency for booking (a seat has one owner, ever), and 10M users descending on one event. Backbone: event and search services over a SQL database (read-heavy, cacheable — Challenge 5), a booking service with ACID transactions, a payment processor that reports back via webhook.</p>
+<p>Then the UX hole: a plain book-now flow means users fill in payment details and discover the seat is gone. Everyone has met the fix from the consumer side — the countdown timer. The reservation. Three ways to build it:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Mechanism</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Long-running DB lock</td>
+<td><code>SELECT FOR UPDATE</code> held across the whole checkout</td>
+<td>Bad: transactions are for milliseconds, not minutes; other buyers queue; a crash leaves the lock&#39;s fate murky</td>
+</tr>
+<tr>
+<td>Status + expiry + cron</td>
+<td>ticket flips to <code>reserved</code> with an <code>expires_at</code>; a cron flips stale ones back</td>
+<td>Works, but laggy: expired seats stay invisible until the cron runs — expensive at high demand</td>
+</tr>
+<tr>
+<td>Expiry as data</td>
+<td>reserve only if <code>available</code> OR (<code>reserved</code> AND expired), in one short transaction — or a Redis lock <code>SET NX EX 600</code></td>
+<td>Great: a lapsed hold reads as free inside the query itself; correctness needs no cleanup job</td>
+</tr>
+</tbody></table></div>
+<p>The Redis variant: <code>SET ticket:A15 :userId NX EX 600</code> is atomic and self-expiring, any web server can see it, and the database stays the final authority — if the lock double-grants (a holder stalls past TTL), the losing database write fails and an automatic refund follows. One subtlety interviewers love: the seat map must show held seats as taken. A Redis set of locked IDs leaks ghosts (set members don&#39;t expire when the lock keys do); a sorted set scored by expiry time fixes it — filter scores still in the future.</p>
+</section><section class="sec"><h2>When everyone wants one row</h2>
+<p>The Taylor Swift drop: millions of users, one seat map, one moment. Sharding splits load across keys — there&#39;s one key. Replicas spread reads — the fight is writes. Load balancers spread servers that all queue on the same row. The honest ladder: first ask whether the requirement can bend (likes and follows can be eventually consistent; ten identical items can be ten separate contests), then queue-based serialization — route all requests for that resource through a single worker, converting contention into ordering and capping throughput at one worker&#39;s pace, which beats a collapsed system. For the user-facing layer, a virtual waiting room meters admission out of a sorted queue so the seat map never sees the stampede.</p>
+<p>Go deeper on the full ticketmaster-class breakdown and the online-auction variant at <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a>.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are my system design interviewer. This session is a CONTENTION-heavy
+design: the core difficulty must be many clients racing for the same
+resources, and I must defend my coordination choices under fire.
+
+SETUP
+Offer one of: &quot;Design a ticket booking system&quot;, &quot;Design an online auction
+system&quot;, &quot;Design a flash-sale inventory system&quot;, or &quot;Design ride matching
+for a small driver pool&quot; — or take the problem I name if it&#39;s contention-
+heavy. Confirm, then run 45 minutes in real time with phase clocks
+(Requirements ~5, Entities ~2, API ~5, High-Level ~10-15, Deep Dives ~10).
+
+MANDATORY DEEP DIVES — pull me into at least two:
+1. &quot;Two users hit &#39;buy&#39; on the last item in the same millisecond. Trace
+   it through your design, line by line.&quot; (Push until the lost update is
+   impossible: conditional write, version check, or lock — and I check
+   affected-row counts.)
+2. &quot;You used [my chosen mechanism]. When is it the wrong choice?&quot; (Expect
+   the full ladder and the contention level that flips each one.)
+3. &quot;Design the seat hold / reservation. Why not just hold a database lock
+   for 10 minutes?&quot; (Expect TTL or expiry-as-data, and what the seat map
+   shows meanwhile.)
+4. &quot;10 million users descend on one event at 10:00:00. Walk me through
+   the first 60 seconds.&quot; (Expect hot-partition reasoning: relax the
+   requirement, serialize through a queue, or a waiting room.)
+5. If I lock multiple rows: &quot;Two transfers lock A then B; two others lock
+   B then A. What happens?&quot; (Expect ordered locking and deadlock-retry.)
+RULES
+Stay in character. If I reach for a distributed lock when a conditional
+write would do, stop me: &quot;What gap does this lock close that the database
+couldn&#39;t?&quot; If I never state what two concurrent winners looks like, make
+me trace it. Hints only on request, smallest nudge possible.
+
+SCORING
+After 45 minutes or &quot;end interview&quot;: score 1-4 on Problem Navigation,
+Solution Design, Technical Excellence, Communication — one quoted moment
+each. Then report: did I guard the contended resource itself (not a
+counter), did I match the tool to the contention level, and did I state
+what happens to the loser of every race. Assign me one drill to repeat.
+
+Ask me to pick a problem to start.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You can trace a lost update out loud, close it with a conditional write, and check the affected-row count</li>
+<li><span class="cb" aria-hidden="true"></span>You pick pessimistic vs optimistic from one fact: how often writers actually collide</li>
+<li><span class="cb" aria-hidden="true"></span>You can build a 10-minute reservation without holding a database transaction open</li>
+<li><span class="cb" aria-hidden="true"></span>You know expiry-as-data beats expiry-as-cron-job and can say why</li>
+<li><span class="cb" aria-hidden="true"></span>Your answer to &quot;everyone hits the same row at once&quot; is not &quot;add more servers&quot;</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Contention</td>
+<td>Multiple requests competing for the same resource at the same time</td>
+</tr>
+<tr>
+<td>Lost update</td>
+<td>Two read-modify-writes interleave and one silently overwrites the other</td>
+</tr>
+<tr>
+<td>Compare-and-set</td>
+<td>A write conditional on the old value still holding — the atom behind every fix here</td>
+</tr>
+<tr>
+<td>Pessimistic locking</td>
+<td>Lock rows upfront and decide while holding them; pay the lock on every request</td>
+</tr>
+<tr>
+<td>Optimistic concurrency</td>
+<td>Read a version, write only if unchanged, retry on conflict; cheap when collisions are rare</td>
+</tr>
+<tr>
+<td>Version column</td>
+<td>A counter bumped on every write — the value the optimistic check compares against</td>
+</tr>
+<tr>
+<td>Write skew</td>
+<td>Two transactions each valid against what they read, jointly breaking an invariant that spans rows</td>
+</tr>
+<tr>
+<td>Distributed lock</td>
+<td>Exclusive access held as data with a TTL, outliving any single transaction</td>
+</tr>
+<tr>
+<td>Hot partition</td>
+<td>Contention concentrated on one key, where sharding and replicas can&#39;t help</td>
+</tr>
+<tr>
+<td>Virtual waiting room</td>
+<td>A queue that meters admission to the booking flow ahead of the stampede</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>You hold a lock across a payment API call.</strong> Slow external I/O inside a lock serializes everyone behind a third party&#39;s latency. Reserve fast, pay outside the lock, confirm after.</li>
+<li><strong>Your guard protects a counter, not the seat.</strong> Two buyers pass <code>seats &gt; 0</code> and both claim A15. Give every contended thing its own row and guard that row.</li>
+<li><strong>You reach for Redis locks by default.</strong> If a conditional write or version check in the database you already run covers the gap, the lock is a new failure mode for nothing. Say why the hold outlives a transaction before introducing one.</li>
+<li><strong>A cron flips your expired reservations.</strong> Fine as cleanup, wrong as the mechanism: between expiry and the cron, seats show as taken. Put expiry in the read/write condition so a lapsed hold reads as free.</li>
+<li><strong>You claim the distributed lock makes double-booking impossible.</strong> TTL locks can double-grant when a holder stalls past expiry. The database&#39;s version check or row lock is what makes double-booking impossible; the lock is a UX reservation. Say both.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../09-multi-step-processes/">Challenge 9 — Multi-Step Processes</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/07-real-time-updates/"><span>Previous</span><strong>Real-Time Updates</strong></a>
+    <a class="next" href="../../challenges/09-multi-step-processes/"><span>Next</span><strong>Multi-Step Processes</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

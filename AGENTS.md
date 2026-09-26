@@ -19,10 +19,17 @@ first time.
 
 - `README.md` — 101 course home and map (also the website's landing content)
 - `NN-slug/CHALLENGE.md` — 101: one challenge per numbered folder
-- `201/` — the advanced track: `201/README.md` (map) + `201/challenges/NN-slug/`
-- `CHEATSHEET.md` — printable one-pagers per topic (101; a 201 sheet is not written yet)
-- `build.mjs` + `site/style.css` — static-site generator and design system
+- `201/` — advanced vibe-coding track (databases → product): `201/README.md` + `201/challenges/`
+- `301/` — system design interview prep (senior SWE audience): 12 challenges
+- `401/` — coding interview patterns (senior SWE audience): 16 patterns in 10 challenges
+- `CHEATSHEET.md` — printable one-pagers per topic (101; 201/301/401 sheets not written yet)
+- `build.mjs` + `site/style.css` — static-site generator (4-track `TRACKS` config) and design system
 - `docs/` — generated website (committed; GitHub Pages serves this folder)
+
+Track conventions: 101/201 teach non-technical learners; 301/401 are dense,
+senior-engineer interview-prep tracks (original text; curriculum arc follows
+Hello Interview — link out for depth, never republish scraped source text).
+Every 301/401 challenge ends with an AI mock-interviewer prompt.
 
 ## Commands
 

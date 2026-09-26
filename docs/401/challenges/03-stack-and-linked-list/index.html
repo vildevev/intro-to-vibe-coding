@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Two rounds where the data structure is the algorithm. Stacks handle nested and order-reversing problems — and the monotonic stack is the highest-leverage medium-tier trick there is. Linked lists test pure pointer surgery: fast/slow, in-place reversal, and the dummy node that deletes special cases from your code.">
+<title>Challenge 03: Stack & Linked List — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">03</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 03</span><span class="chip">about 60 minutes</span></p>
+    <h1>Stack & Linked List</h1>
+    <p class="mission"><strong>Mission.</strong> Two rounds where the data structure <em>is</em> the algorithm. Stacks handle nested and order-reversing problems — and the monotonic stack is the highest-leverage medium-tier trick there is. Linked lists test pure pointer surgery: fast/slow, in-place reversal, and the dummy node that deletes special cases from your code.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 Correct, quadratic, failed</h2>
+<p>&quot;Next greater element for every item.&quot; Candidate A: &quot;monotonic decreasing
+stack of indices — each index is pushed once and popped at most once, so
+O(n) amortized,&quot; then finishes with edge cases to spare. Candidate B writes
+the nested loop scanning rightward for every element: correct, untested at
+scale, O(n²). At senior level, &quot;correct but quadratic when a named linear
+pattern exists&quot; is a no-hire on coding. The stack wasn&#39;t the hard part;
+recognizing that &quot;next greater to the right&quot; has a shape was.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>Stacks for nested structure</strong> — brackets, decoding, saved parse state</li>
+<li><strong>Monotonic stacks</strong> — next greater/smaller, spans, histograms, in O(n)</li>
+<li><strong>Fast &amp; slow pointers</strong> — middle, cycle detection, gap-of-n</li>
+<li><strong>In-place reversal</strong> — the three-pointer rotation, without losing the tail</li>
+<li><strong>Dummy nodes</strong> — making the head a non-case</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — Stack: nested sequences and monotonic boundaries</h2>
+<p>Two distinct uses. <em>Nesting:</em> the most recently opened thing must close
+first — LIFO is the problem&#39;s own rule, so push opens, match closes, and a
+non-empty stack at the end means unclosed business. <em>Monotonic:</em> keep a
+stack of &quot;elements still waiting for their answer,&quot; sorted; when a new
+element answers the top&#39;s question, pop and record. Each element enters and
+leaves the stack once — that&#39;s the amortized O(n) argument, and it&#39;s the
+sentence interviewers want to hear.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Matching pairs, &quot;well-formed&quot;, nested brackets</td>
+<td>Stack: push opens, validate closes</td>
+</tr>
+<tr>
+<td>&quot;Next greater/smaller element to the right&quot;</td>
+<td>Monotonic stack of indices</td>
+</tr>
+<tr>
+<td>&quot;Largest rectangle / span bounded by shorter bars&quot;</td>
+<td>Monotonic stack: pop when the boundary appears</td>
+</tr>
+<tr>
+<td>Parsing with nested contexts (decode <code>k[...]</code>, undo)</td>
+<td>Stack of saved states — bookmark and restore</td>
+</tr>
+<tr>
+<td>Per-element contribution (subarray minimums)</td>
+<td>Monotonic stack gives left/right boundaries</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — monotonic stack (next greater):</strong></p>
+<pre><code>def next_greater(nums):
+    res = [-1] * len(nums)
+    stack = []                         # indices; their values decrease
+    for i, x in enumerate(nums):
+        while stack and x &gt; nums[stack[-1]]:
+            j = stack.pop()            # x answers the question for nums[j]
+            res[j] = i - j             # or res[j] = x — whatever is asked
+        stack.append(i)
+    return res
+</code></pre>
+<p><strong>Complexity:</strong> O(n) amortized time — n pushes, at most n pops — and O(n)
+space. Flip the comparison for next-smaller; scan right-to-left for
+previous-greater; store indices, not values, whenever the answer involves
+distances or spans.</p>
+<p><strong>Drills (easy → hard):</strong> Valid Parentheses → Daily Temperatures (next
+warmer day, in days) → Decode String (stack of saved strings + counts) →
+Largest Rectangle in Histogram (monotonic increasing stack).</p>
+</section><section class="sec"><h2>Pattern 2 — Linked list: three moves cover everything</h2>
+<p>Almost every linked-list question is a composition of three moves:
+<strong>fast &amp; slow pointers</strong> (middle, cycles, gap-of-n), <strong>in-place reversal</strong>
+(the prev/curr/next rotation), and a <strong>dummy node</strong> (give every node — even
+the head — a predecessor; build output lists with zero special cases).
+Reorder List = middle + reverse second half + interleave. Palindrome = the
+same, plus a value comparison. Recognize the composition, then assemble.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Detect a cycle&quot; / &quot;find the middle&quot;</td>
+<td>Fast &amp; slow pointers</td>
+</tr>
+<tr>
+<td>&quot;Remove the nth node from the end&quot;</td>
+<td>Two pointers with an n-gap, plus a dummy</td>
+</tr>
+<tr>
+<td>&quot;Reverse all or part of the list, in place&quot;</td>
+<td>prev/curr/next rotation; save next before overwriting</td>
+</tr>
+<tr>
+<td>&quot;Merge / build a new list from pieces&quot;</td>
+<td>Dummy head + tail pointer, append by rewiring</td>
+</tr>
+<tr>
+<td>Palindrome or reorder</td>
+<td>middle + reverse second half + compare/interleave</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — the two building blocks:</strong></p>
+<pre><code>def middle(head):                      # second middle when length is even
+    slow = fast = head
+    while fast and fast.next:
+        slow, fast = slow.next, fast.next.next
+    return slow
+
+def reverse(head):                     # in place; save next first
+    prev, curr = None, head
+    while curr:
+        curr.next, prev, curr = prev, curr, curr.next
+    return prev
+</code></pre>
+<p><strong>Complexity:</strong> every composition is O(n) time, O(1) space — that&#39;s the
+point of pointer surgery. Two cautions to volunteer: the reversal&#39;s
+assignment order matters (read <code>curr.next</code> before rewiring it), and the
+O(1)-space palindrome <em>mutates the input</em> — you&#39;d re-reverse to restore it
+in production code. Flagging that trade-off unprompted is a senior signal.</p>
+<p><strong>Drills (easy → hard):</strong> Linked List Cycle → Remove Nth Node From End of
+List → Reorder List (all three moves at once) → Reverse Nodes in k-Group.</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/stack/monotonic-stack">Hello Interview&#39;s monotonic-stack chapter</a> for animated pop sequences.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
+interview with me on STACKS (including monotonic stacks) and LINKED LISTS.
+
+1. Pick ONE problem that maps to these patterns at senior difficulty.
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern it uses.
+2. Enforce a 30-minute timer. Warn me at 5 minutes left; stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted, and trace one example before I call it done.
+6. When time is up or I say done, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases — one line of evidence per score,
+   then the single highest-leverage improvement.
+
+Start with the problem statement. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You can deliver the push-once-pop-once amortized O(n) argument</li>
+<li><span class="cb" aria-hidden="true"></span>Next-greater vs next-smaller vs previous-greater is one comparison flip each</li>
+<li><span class="cb" aria-hidden="true"></span>The reversal loop works first try, including single-node lists</li>
+<li><span class="cb" aria-hidden="true"></span>You reach for a dummy node before writing any <code>if head</code> special case</li>
+<li><span class="cb" aria-hidden="true"></span>Reorder List assembles middle + reverse + interleave without notes</li>
+<li><span class="cb" aria-hidden="true"></span>You flag that O(1)-space list tricks mutate the input</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LIFO</td>
+<td>Last in, first out — the stack contract</td>
+</tr>
+<tr>
+<td>Monotonic stack</td>
+<td>A stack kept sorted (values rising or falling) so each pop answers a pending question</td>
+</tr>
+<tr>
+<td>Amortized O(n)</td>
+<td>Total work bounded by n even though single steps vary — the push/pop accounting</td>
+</tr>
+<tr>
+<td>Fast &amp; slow pointers</td>
+<td>Two cursors at 1x and 2x; meet inside a cycle, land on the middle</td>
+</tr>
+<tr>
+<td>Dummy (sentinel) node</td>
+<td>A throwaway node before the head so every real node has a predecessor</td>
+</tr>
+<tr>
+<td>In-place</td>
+<td>Rewiring with O(1) extra memory</td>
+</tr>
+<tr>
+<td>Pointer surgery</td>
+<td>Reassigning <code>next</code> references to restructure the list without copying</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Blanking.</strong> Sort the problem by shape: does something nest (stack),
+reverse order (stack), or involve relinking (the three list moves)? Naming
+the shape out loud restarts the clock.</li>
+<li><strong>Wrong pattern.</strong> Counting brackets instead of stacking them passes
+interleavings like <code>( [ ) ]</code> that are invalid. Counts can&#39;t see order.</li>
+<li><strong>Off-by-one on the head.</strong> Deleting the head breaks code with no
+predecessor. That is the dummy node&#39;s entire job — use it from the start.</li>
+<li><strong>Lost tail on reversal.</strong> Overwriting <code>curr.next</code> before reading it
+orphans the rest of the list. If your loop runs once and stops, that&#39;s it.</li>
+<li><strong>Monotonic stack feels like magic.</strong> Trace a 6-element array by hand once
+— push, pop, record. The invariant (&quot;waiting elements, kept sorted&quot;) is
+only believable after one trace.</li>
+<li><strong>Silence during rewiring.</strong> Say which pointer you&#39;re reassigning and why.
+Linked lists are graded on narration as much as correctness.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../04-binary-search/">Challenge 4 — Binary Search</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/02-prefix-sum-and-intervals/"><span>Previous</span><strong>Prefix Sum & Intervals</strong></a>
+    <a class="next" href="../../challenges/04-binary-search/"><span>Next</span><strong>Binary Search</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

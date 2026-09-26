@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Two short, sharp topics. Greedy algorithms make one locally-optimal choice and never reconsider — legitimate only when provable, and the proof is either a one-sentence exchange argument or a counterexample that sends you to DP. Matrix problems are the opposite of data-structure-heavy: pure index manipulation — spiral bounds, transpose-plus-reverse rotations, in-place markers — where the difficulty is off-by-ones, not ideas.">
+<title>Challenge 09: Greedy & Matrices — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">09</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 09</span><span class="chip">about 45 minutes</span></p>
+    <h1>Greedy & Matrices</h1>
+    <p class="mission"><strong>Mission.</strong> Two short, sharp topics. Greedy algorithms make one locally-optimal choice and never reconsider — legitimate only when provable, and the proof is either a one-sentence exchange argument or a counterexample that sends you to DP. Matrix problems are the opposite of data-structure-heavy: pure index manipulation — spiral bounds, transpose-plus-reverse rotations, in-place markers — where the difficulty is off-by-ones, not ideas.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 Greedy, unproven</h2>
+<p>&quot;Longest increasing subsequence — you can just walk it, right? Extend whenever
+the next number is bigger.&quot; Candidate A&#39;s greedy works on the sample input,
+and then the interviewer writes five numbers where the best subsequence starts
+with a <em>smaller</em> value than A&#39;s opening pick — and A&#39;s answer collapses. Asked
+to defend the approach, A has nothing: no argument, no counterexample test,
+just a gut feeling that survived one example. Candidate B opens differently:
+&quot;my greedy choice is — give the smallest sufficient resource first. Proof
+sketch: exchange argument — take any optimal solution, swap my choice in, and
+the objective can only stay equal or improve.&quot; Same algorithm family, but B
+has a defense, and a defense is what separates a greedy solution from a lucky
+one. When the defense fails, that&#39;s not the end — it&#39;s the diagnosis:
+counterexample found means DP (Challenge 10).</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The greedy shape: sort by a key, sweep with O(1) running state, decide once</li>
+<li>The <strong>exchange argument</strong> — your one-sentence proof kit for greedy choices</li>
+<li>The <strong>counterexample test</strong>: how to disprove a greedy in five numbers</li>
+<li>Running-extreme sweeps: min-so-far, max-reach, greedy resets and level boundaries</li>
+<li><strong>Spiral order</strong> with four shrinking bounds and two guards</li>
+<li><strong>Rotate 90°</strong> = transpose + reverse; in-place zero-marking with row/col sentinels</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — The greedy shape: sort, sweep, decide once</h2>
+<p>Nearly every interview greedy is the same three moves: sort by some key so the
+&quot;best next choice&quot; is always at the front, sweep once carrying one or two
+running variables (min price so far, farthest reach, current interval end),
+and commit to each choice immediately. The running variables ARE the state —
+if you need the whole history, it isn&#39;t greedy anymore. The classic sweep
+tracks the cheapest buy so far and the best profit so far; each day,
+profit-if-sold-today is price minus that running min, and no later decision
+can change yesterday&#39;s numbers.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Maximize count / minimize cost&quot;, one pass feels enough</td>
+<td>Sort + sweep + exchange argument</td>
+</tr>
+<tr>
+<td>&quot;Best single transaction&quot; (buy low, sell high)</td>
+<td>Running min; best = max(price − min so far)</td>
+</tr>
+<tr>
+<td>&quot;Can you reach the end?&quot; with per-position reach</td>
+<td>Track max reach; stuck when <code>i &gt; max_reach</code></td>
+</tr>
+<tr>
+<td>&quot;Fewest jumps to the end&quot;</td>
+<td>Greedy on level boundaries (BFS without the queue)</td>
+</tr>
+<tr>
+<td>&quot;Start over when the tank runs dry&quot; (circular route)</td>
+<td>Greedy reset: every earlier start is dead too</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — the running-extreme sweep:</strong></p>
+<pre><code>def best_single_transaction(prices):
+    min_so_far = inf                     # cheapest buy up to today
+    best = 0                             # best profit found so far
+    for price in prices:
+        min_so_far = min(min_so_far, price)
+        best = max(best, price - min_so_far)
+    return best
+</code></pre>
+<p><strong>Complexity:</strong> O(n) time, O(1) space — or O(n log n) when a sort leads. The
+proof sentence for this template: &quot;for every sell day, the optimal partner is
+the cheapest earlier day, and the running min is exactly that — so one pass
+inspects every (buy, sell) pair that could win.&quot;</p>
+<p><strong>Drills (easy → hard):</strong> Best Time to Buy and Sell Stock → Assign Cookies →
+Jump Game (max-reach) → Gas Station (greedy reset).</p>
+</section><section class="sec"><h2>Pattern 2 — Prove it or drop it: greedy vs DP</h2>
+<p>A greedy claim needs one of two artifacts. The <strong>exchange argument</strong>: take any
+optimal solution, swap its first choice for yours, and show the objective can&#39;t
+get worse — repeat, and greedy is optimal. It&#39;s usually one sentence keyed to
+the sort key: &quot;sorting by earliest end time can never hurt, because any
+solution using a later-ending interval can swap in the earlier one and free up
+<em>more</em> room.&quot; The <strong>counterexample test</strong> runs when no argument comes:
+hand-craft five items that break the rule. Found one? Stop — that&#39;s a DP
+problem wearing a greedy costume; Longest Increasing Subsequence is the
+canonical kill. The litmus question: does my choice constrain the future
+<em>structurally</em> (options change shape) or only additively (a budget ticks
+down)? Additive-only → greedy plausible; structural → DP.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>You can state the choice in one sentence</td>
+<td>Try the exchange argument on it</td>
+</tr>
+<tr>
+<td>Choices only consume a budget additively</td>
+<td>Greedy plausible — prove it</td>
+</tr>
+<tr>
+<td>An early choice changes what&#39;s possible later</td>
+<td>DP (Challenge 10)</td>
+</tr>
+<tr>
+<td>&quot;Can I find a small failing example?&quot; — yes</td>
+<td>Greedy is dead; don&#39;t patch it</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — the greedy-or-DP fork:</strong></p>
+<pre><code>def classify(problem):
+    # 1. State the choice in one sentence:
+    #    &quot;Always take the ___-est / smallest / earliest ___ first.&quot;
+    # 2. Pick the sort key that puts that choice at the front.
+    # 3. Exchange argument: &quot;swap any other choice in —
+    #    the objective can&#39;t improve.&quot;  Holds? Greedy it is:
+    #    one sweep, O(n log n) if sorted, O(1) extra space.
+    # 4. No argument? Hunt a counterexample on 5 hand-picked items.
+    #    Found one? Recurse the honest way: DP (Challenge 10).
+    return &quot;greedy with proof&quot; | &quot;dynamic programming&quot;
+</code></pre>
+<p><strong>Complexity:</strong> greedy wins are dramatic — O(n log n) or O(n) where DP would
+take O(n²) or worse — but only worth claiming <em>after</em> the proof. In an
+interview the order is fixed: name the choice, attempt the proof, then code.
+Coding first and defending later is how the unproven-greedy war story happens.</p>
+<p><strong>Drills (easy → hard):</strong> Non-overlapping Intervals (earliest-end exchange) →
+Partition Labels (last-occurrence boundaries) → Two City Scheduling (exchange
+argument on the cost difference) → Candy (two counter-directional sweeps).</p>
+</section><section class="sec"><h2>Pattern 3 — Matrix tricks: no data structure, just indices</h2>
+<p>Three templates cover the classic matrix round. <strong>Spiral order:</strong> four
+boundaries (<code>top, bottom, left, right</code>), peel top row → right column → bottom
+row → left column, shrinking a boundary after each peel, with two guards so a
+single leftover row or column isn&#39;t walked twice. <strong>Rotate 90° clockwise in
+place:</strong> transpose (swap across the main diagonal), then reverse each row —
+counter-clockwise is transpose + reverse each <em>column</em>. <strong>Set Matrix Zeroes in
+O(1) space:</strong> the first row and first column double as markers (&quot;this row/col
+must be zeroed&quot;), which forces sequencing discipline — snapshot whether they
+originally held zeros, mark the interior using them, zero the interior from
+the markers, and zero the markers themselves last.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Traverse in spiral / boundary order&quot;</td>
+<td>Four shrinking bounds, four peels per loop</td>
+</tr>
+<tr>
+<td>&quot;Rotate 90° in place&quot;</td>
+<td>Transpose + reverse rows (CW) or columns (CCW)</td>
+</tr>
+<tr>
+<td>&quot;Zero rows/cols in place, O(1) extra space&quot;</td>
+<td>First row/col as markers; snapshot them first</td>
+</tr>
+<tr>
+<td>&quot;Diagonal traverse / anti-diagonals&quot;</td>
+<td>Cells on one diagonal share <code>r − c</code> (or <code>r + c</code>)</td>
+</tr>
+<tr>
+<td>Grid + reachability/regions</td>
+<td>It&#39;s a graph — flood fill (Challenge 6)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — spiral via boundary shrink:</strong></p>
+<pre><code>def spiral(matrix):
+    top, bottom, left, right = 0, len(matrix) - 1, 0, len(matrix[0]) - 1
+    out = []
+    while top &lt;= bottom and left &lt;= right:
+        out += matrix[top][left:right + 1]              # top row, →
+        top += 1
+        out += [r[right] for r in matrix[top:bottom + 1]]  # right col, ↓
+        right -= 1
+        if top &lt;= bottom:                               # guard: row remains?
+            out += matrix[bottom][left:right + 1][::-1] # bottom row, ←
+            bottom -= 1
+        if left &lt;= right:                               # guard: col remains?
+            out += [r[left] for r in matrix[top:bottom + 1]][::-1]
+            left += 1
+    return out
+</code></pre>
+<p><strong>Complexity:</strong> all three tricks are O(m·n) time; spiral uses O(1) extra space
+beyond the output, and rotate and set-zeroes are O(1) extra space outright —
+the constraint the problem statement usually makes explicit. Before saying
+&quot;done,&quot; trace a 1×n, an n×1, and a 3×3; the guards exist precisely for those.</p>
+<p><strong>Drills (easy → hard):</strong> Spiral Matrix → Rotate Image → Set Matrix Zeroes →
+Diagonal Traverse.</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/greedy/overview">Hello Interview&#39;s greedy chapter</a> — their matrices chapter lives alongside it.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
+interview with me on GREEDY ALGORITHMS and MATRIX manipulation: exchange
+arguments, greedy resets, in-place matrix transforms.
+
+1. Pick ONE problem that maps to these patterns at senior difficulty.
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern it uses.
+2. Enforce a 30-minute timer. Warn me at 5 minutes left; stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted, and trace one example before I call it done.
+   If I propose a greedy, demand my proof or my counterexample test
+   before accepting it.
+6. When time is up or I say done, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases — one line of evidence per score,
+   then the single highest-leverage improvement.
+
+Start with the problem statement. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>Every greedy claim arrives with an exchange argument or a counterexample</li>
+<li><span class="cb" aria-hidden="true"></span>&quot;Counterexample found&quot; instantly routes you to DP, not to patching</li>
+<li><span class="cb" aria-hidden="true"></span>The running-extreme sweep (min-so-far / max-reach) is reflexive</li>
+<li><span class="cb" aria-hidden="true"></span>Spiral bounds + both guards reproduce from memory</li>
+<li><span class="cb" aria-hidden="true"></span>Rotate direction (CW = transpose + reverse rows) needs no pause</li>
+<li><span class="cb" aria-hidden="true"></span>Set-zeroes sequencing — snapshot, mark, zero interior, zero markers — survives 3×3 and 1×n traces</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Greedy choice</td>
+<td>The locally-best option, committed to without revisiting</td>
+</tr>
+<tr>
+<td>Greedy choice property</td>
+<td>Local best ⇒ global best; the thing you must prove</td>
+</tr>
+<tr>
+<td>Exchange argument</td>
+<td>Proof by swapping any alternative in and showing no improvement</td>
+</tr>
+<tr>
+<td>Counterexample</td>
+<td>A small input where the greedy pick demonstrably loses</td>
+</tr>
+<tr>
+<td>Running extreme</td>
+<td>One variable tracking min/max-so-far; the greedy sweep&#39;s whole state</td>
+</tr>
+<tr>
+<td>Transpose</td>
+<td>Reflect across the main diagonal: <code>m[i][j] ↔ m[j][i]</code></td>
+</tr>
+<tr>
+<td>Sentinel / marker</td>
+<td>Repurposing existing cells (first row/col) to store metadata</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Greedy without a defense.</strong> &quot;It works on the example&quot; is not an argument.
+Produce the exchange sentence or run the counterexample test — out loud,
+before coding.</li>
+<li><strong>Wrong sort key.</strong> Scheduling intervals: sort by start vs by end changes
+the whole algorithm; earliest-end is the one with the clean exchange
+argument.</li>
+<li><strong>Spiral double-counts the middle.</strong> On odd shapes the leftover single row
+or column gets walked twice without the two guards. Trace 3×3 and 1×5.</li>
+<li><strong>Rotated into a mirror.</strong> Clockwise is transpose + reverse each row; if you
+reversed columns instead, you produced the counter-clockwise image.</li>
+<li><strong>Set-zeroes destroys its own evidence.</strong> Zeroing the first row before
+scanning the interior wipes the markers you&#39;re about to read. The order is
+load-bearing: snapshot → mark → zero interior → zero markers.</li>
+<li><strong>Mutating while scanning without a plan.</strong> In-place tricks all interact
+with iteration order; decide what &quot;already processed&quot; looks like before the
+first loop, and test the corner shapes.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../10-dynamic-programming/">Challenge 10 — Dynamic Programming</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/08-backtracking/"><span>Previous</span><strong>Backtracking</strong></a>
+    <a class="next" href="../../challenges/10-dynamic-programming/"><span>Next</span><strong>Dynamic Programming</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

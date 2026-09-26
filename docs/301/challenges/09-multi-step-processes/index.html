@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Make a sequence of steps spanning services, waits, and flaky networks survive crashes and retries — sagas with compensations, durable execution, exactly-once effects, outbox/CDC, and dead-letter queues — by building a payment system that never loses or double-charges a cent.">
+<title>Challenge 09: Multi-Step Processes — System Design Interview Prep</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">09</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 09</span><span class="chip">about 60 minutes</span></p>
+    <h1>Multi-Step Processes</h1>
+    <p class="mission"><strong>Mission.</strong> Make a sequence of steps spanning services, waits, and flaky networks survive crashes and retries — sagas with compensations, durable execution, exactly-once effects, outbox/CDC, and dead-letter queues — by building a payment system that never loses or double-charges a cent.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 War story: charged, then gone</h2>
+<p>An order flow written as one function: charge the card, reserve inventory, create the shipping label, email the confirmation. It passes every demo. Then a deploy lands mid-request: a customer is charged, the process dies before reserving inventory, and on restart nothing remembers the charge happened. Support issues a refund, engineering ships a &quot;stuck orders&quot; dashboard, and the oncall rotation starts reconciling rows by hand at 2am. Multi-step failure is not an edge case — it&#39;s the everyday case for any workflow touching more than one system, and interviewers probe it because it separates candidates who have operated such systems from candidates who have only drawn them.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>Why multi-step processes break: crashes mid-flow, callbacks landing anywhere, the dual-write problem</li>
+<li>Sagas: compensations, choreography vs orchestration, and why two-phase commit loses across service boundaries</li>
+<li>Durable execution: deterministic workflows, idempotent activities, recovery by replay</li>
+<li>The payment system: idempotency keys, timeouts that aren&#39;t failures, webhooks, DLQs</li>
+</ul>
+</section><section class="sec"><h2>Why multi-step is hard</h2>
+<p>Two failure classes break the innocent version. First, a crash mid-sequence: the server dies between steps, in-memory progress evaporates, and nobody can say whether to retry, continue, or unwind. Second, callback routing: external systems answer minutes later via webhook, which lands on whichever stateless server happens to be free — a host that knows nothing about this in-flight order. Patching each ad hoc (checkpoint rows after every step, hand-rolled claim logic, pollers) interleaves infrastructure concerns into business logic and still misses the big one: compensation — undoing steps that already committed when a later step fails.</p>
+</section><section class="sec"><h2>The saga</h2>
+<p>A saga is a sequence of local steps, each with a matching compensating action. Run forward; on failure, walk backward firing compensations — shipping failed after the charge? Release inventory, refund. The guarantee is not &quot;all or nothing,&quot; it&#39;s &quot;whatever happened can be undone,&quot; with a visible window of inconsistency (the order sits in <code>pending</code> while charged-but-not-shipped). That window is the price, and it&#39;s cheap, because the alternative doesn&#39;t exist across services you don&#39;t control.</p>
+<p><strong>Why not two-phase commit?</strong> 2PC holds every participant locked while the slowest one decides, a stalled coordinator stalls everyone, and — fatal for real flows — the payment network will not run prepare/commit on your command. Interview shorthand: 2PC when atomicity stays inside systems you control; the saga the moment external systems or long waits appear.</p>
+<p><strong>The dual-write problem and the outbox.</strong> &quot;Write to the database, then publish an event&quot; is two writes that can fail independently — and usually the event is the one that gets lost. Fix: write the event to an outbox table in the same transaction and publish from there, or skip the app entirely and let change data capture stream every committed change out of the database&#39;s own log. Either way, if the state change committed, the event exists.</p>
+<p><strong>Coordination:</strong> choreography (no coordinator — workers react to events on a log and emit the next ones; the flow is implicit, great for loosely-coupled teams, hard to see or change past mid-complexity) vs orchestration (one coordinator owns the sequence and calls the steps — central visibility, and the coordinator must be crash-safe, which is the hard part).</p>
+</section><section class="sec"><h2>Durable execution</h2>
+<p>Workflow engines (Temporal, AWS Step Functions) sell you a crash-safe orchestrator instead of a hand-built one. The model is two rules: workflow code must be <em>deterministic</em>; activities — the steps that touch the world — must be <em>idempotent</em>. Recovery is replay: every activity result is recorded to a history, and a crashed workflow re-executes from the top with recorded results handed back instead of re-firing side effects. Determinism makes replay land exactly where the crash interrupted. Long waits (a human approving, a webhook) use signals: the persisted workflow holds no thread while waiting days. Versioning matters too — in-flight executions pinned to old code run old logic, or changes gate behind a deterministic patch check.</p>
+</section><section class="sec"><h2>Worked example: the payment system</h2>
+<p>Entities: Merchant; PaymentIntent — the intention plus its state machine (<code>created → processing → succeeded/failed</code>); Transaction — one money-movement attempt, many per intent (retries, refunds). API: create intent, submit a charge, poll status — plus webhooks pushing status changes to merchant servers.</p>
+<p>The deep dives that decide the interview:</p>
+<ol>
+<li><strong>Idempotency keys.</strong> Networks retry, users double-click, webhooks re-deliver. The client sends a key per logical operation; the server stores it and returns the original result on repeats. The check-then-act still has a crack — record <code>IN_PROGRESS</code> before the side effect and <code>COMPLETED</code> after, and route the ambiguous middle to reconciliation rather than blind retry.</li>
+<li><strong>Timeouts don&#39;t mean failure.</strong> A timed-out charge may still succeed at the bank. Mark it <code>pending_verification</code>, persist every attempt with the network&#39;s reference ID, and reconcile later against the network&#39;s API or its daily settlement files. Treating timeout as failure double-charges; treating it as success ships goods nobody paid for.</li>
+<li><strong>Durability as an event stream.</strong> Mutable rows overwrite history; application-written audit records get forgotten by whichever code path has the bug. CDC from the operational database into an append-only log gives an immutable, complete history — audit, reconciliation, and webhook delivery all become consumers of the same stream.</li>
+<li><strong>Webhooks are server-to-server push</strong> — not SSE or WebSockets, which serve clients. Delivery means exponential-backoff retries, signed payloads the merchant verifies, and a dead-letter queue: after a handful of failed attempts, park the event for inspection instead of retrying forever. A growing DLQ is an alert, not a landfill.</li>
+<li><strong>Exactly-once, precisely stated.</strong> Delivery across a network is at-least-once, full stop. Exactly-once <em>effects</em> come from at-least-once attempts plus idempotent handling. Saying it that exactly is itself a senior signal.</li>
+</ol>
+<p>Go deeper on the full payment-system walkthrough — and webhook delivery as its own design problem — at <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a>.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are my system design interviewer. This session is a WORKFLOW /
+MULTI-STEP design: the problem must hinge on coordinating several flaky
+steps where partial failure matters — payments, fulfillment, or anything
+where &quot;if step X fails, undo step Y&quot; is the core challenge.
+
+SETUP
+Offer one of: &quot;Design a payment system (Stripe-like)&quot;, &quot;Design order
+fulfillment for an e-commerce platform&quot;, &quot;Design a money-transfer system&quot;,
+or &quot;Design a document-signing flow with human approval steps&quot; — or take
+the problem I name if it&#39;s workflow-shaped. Confirm, then run 45 minutes
+in real time with phase clocks (Requirements ~5, Entities ~2, API ~5,
+High-Level ~10-15, Deep Dives ~10).
+
+MANDATORY DEEP DIVES — pull me into at least two:
+1. &quot;Your server crashes after step 2 of 4. On restart, what does it know,
+   and what happens next?&quot; (Push for durable progress and either resume-
+   forward or compensate-backward — not a shrug.)
+2. &quot;The external network call times out. Did the payment happen or not?&quot;
+   (Expect: timeout is not failure, a pending state, a recorded attempt
+   with a reference ID, later reconciliation.)
+3. &quot;Walk me through your retry story end to end. What prevents a customer
+   being charged twice?&quot; (Expect idempotency keys, at-least-once attempts
+   plus idempotent effects, and DLQs for jobs that keep failing.)
+4. &quot;How do you undo a completed charge when a later step fails?&quot; (Expect
+   compensations treated as seriously as forward steps: retries,
+   idempotency, human escape hatch.)
+5. If I hand-roll state machines: &quot;What would a workflow engine do for
+   you, and when would you NOT use one?&quot; (Expect deterministic workflows,
+   idempotent activities, replay — and when a simple queue is enough.)
+RULES
+Stay in character. If I say &quot;exactly-once delivery&quot;, make me restate it
+precisely. If my flow has three or more steps and no failure story, ask
+&quot;what happens if this step crashes?&quot; Hints only on request, smallest
+nudge possible.
+
+SCORING
+After 45 minutes or &quot;end interview&quot;: score 1-4 on Problem Navigation,
+Solution Design, Technical Excellence, Communication — one quoted moment
+each. Then report: did I give a failure story for every step unprompted,
+did I handle ambiguous outcomes (timeouts) explicitly, and did I know
+when NOT to reach for a workflow engine. Assign me one drill to repeat.
+
+Ask me to pick a problem to start.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You can name the two multi-step failure classes unprompted: crash mid-flow and callback routing</li>
+<li><span class="cb" aria-hidden="true"></span>You can explain why 2PC loses across service boundaries in under a minute</li>
+<li><span class="cb" aria-hidden="true"></span>You can trace a crash-and-replay: recorded steps skipped, side effects not re-fired</li>
+<li><span class="cb" aria-hidden="true"></span>Your timeouts produce a pending state plus reconciliation, never an assumed failure</li>
+<li><span class="cb" aria-hidden="true"></span>You say &quot;at-least-once attempts, exactly-once effects&quot; without being corrected</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Saga</td>
+<td>A sequence of local steps, each with a compensating action that undoes it on later failure</td>
+</tr>
+<tr>
+<td>Compensation</td>
+<td>The reverse of a committed step — refund the charge, release the inventory</td>
+</tr>
+<tr>
+<td>Choreography</td>
+<td>Coordination by events: each worker reacts and emits the next event; no coordinator exists</td>
+</tr>
+<tr>
+<td>Orchestration</td>
+<td>One coordinator owns the sequence and invokes each step</td>
+</tr>
+<tr>
+<td>Durable execution</td>
+<td>Workflows that persist state and resume after crashes via replay of recorded results</td>
+</tr>
+<tr>
+<td>Idempotency key</td>
+<td>A client-supplied identifier making repeated requests return the original result</td>
+</tr>
+<tr>
+<td>Outbox pattern</td>
+<td>Writing the event to publish inside the same transaction as the state change, so neither exists without the other</td>
+</tr>
+<tr>
+<td>CDC</td>
+<td>Change data capture: streaming every committed database change from its log to consumers</td>
+</tr>
+<tr>
+<td>Webhook</td>
+<td>A server-to-server HTTP callback delivering status changes, with retries</td>
+</tr>
+<tr>
+<td>DLQ</td>
+<td>Dead-letter queue: where jobs/events go after repeated failure, for inspection instead of infinite retry</td>
+</tr>
+<tr>
+<td>Exactly-once effect</td>
+<td>The guarantee that matters: duplicate attempts are harmless because handling is idempotent</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Your workflow lives in memory.</strong> The first crash erases it. Progress must be persisted — by hand or by an engine — or there is nothing to resume.</li>
+<li><strong>You treat a timeout as a failure and mark it failed.</strong> The charge may still land; the user retries; double charge. Uncertainty is a state: pending, recorded, reconciled later.</li>
+<li><strong>You publish events after committing.</strong> Two independent writes means one gets lost eventually. Outbox or CDC — if it committed, the event exists.</li>
+<li><strong>Your compensations are afterthoughts.</strong> A refund can fail exactly like a charge. Give them retries, idempotency, and a human path for the ones that still won&#39;t go through.</li>
+<li><strong>You bolt a workflow engine onto a two-step flow.</strong> Engines cost operations overhead and a learning curve. A queue and one worker is the right answer for single-step async work — knowing when NOT to is the seniority signal.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../10-heavy-things/">Challenge 10 — Heavy Things</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/08-contention/"><span>Previous</span><strong>Contention</strong></a>
+    <a class="next" href="../../challenges/10-heavy-things/"><span>Next</span><strong>Heavy Things</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

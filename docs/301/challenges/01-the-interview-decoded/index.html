@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Know what the interviewer is actually scoring before you open your mouth: the two formats you'll face, the four competencies on every rubric, and what mechanically separates a senior hire from a mid-level one — so your 45 minutes produce evidence instead of vibes.">
+<title>Challenge 01: The Interview, Decoded — System Design Interview Prep</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">01</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 01</span><span class="chip">about 45 minutes</span></p>
+    <h1>The Interview, Decoded</h1>
+    <p class="mission"><strong>Mission.</strong> Know what the interviewer is actually scoring before you open your mouth: the two formats you&#39;ll face, the four competencies on every rubric, and what mechanically separates a senior hire from a mid-level one — so your 45 minutes produce evidence instead of vibes.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 War story: the flawless design that got a no</h2>
+<p>A strong mid-level candidate gets &quot;Design Instagram&quot; and asks zero questions. Forty minutes of beautiful drawing: photo service, feed service, CDN, done. Nothing technical is wrong — and that is the problem. They never scoped the problem, never ranked features, never stated a trade-off, never left the interviewer a door to walk through. The rubric has four boxes; the interviewer could fill in evidence for one. Written feedback: &quot;executes a known design well; can&#39;t yet lead an ambiguous one.&quot; The candidate didn&#39;t lack knowledge. They lacked signal. This challenge is about what signal looks like from the other side of the table.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The two formats that cover most system design loops (and the three that don&#39;t)</li>
+<li>The 4-competency rubric hiding behind every company&#39;s &quot;internal rubric&quot;</li>
+<li>What &quot;senior&quot; means mechanically: fast through the basics, deliberate about depth</li>
+<li>How to tell which competency the interviewer is probing right now</li>
+</ul>
+</section><section class="sec"><h2>The formats</h2>
+<p>System design interviews test one thing: can you take an ambiguously stated, high-level problem and decompose it into working infrastructure? There is rarely a single right answer — what&#39;s being tested is navigation, trade-off reasoning, and communication. Where you&#39;ll sit in the loop:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Format</th>
+<th>The prompt sounds like</th>
+<th>You&#39;ll draw</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Product design</strong> (most common)</td>
+<td>&quot;Design Uber&quot;, &quot;Design a news feed&quot;</td>
+<td>Services, datastores, caches — a whole system</td>
+</tr>
+<tr>
+<td><strong>Infrastructure design</strong> (most common)</td>
+<td>&quot;Design a rate limiter&quot;, &quot;Design a distributed message queue&quot;</td>
+<td>One focused component, deeper internals</td>
+</tr>
+<tr>
+<td>Low-level design / OOP</td>
+<td>&quot;Design a parking garage&quot; (class model)</td>
+<td>Objects and interfaces — different interview, different prep</td>
+</tr>
+<tr>
+<td>ML system design</td>
+<td>&quot;Design a recommendation ranking service&quot;</td>
+<td>Model + data pipelines, not just infra</td>
+</tr>
+<tr>
+<td>Frontend design</td>
+<td>&quot;Design a collaborative editor UI&quot;</td>
+<td>Components and state, not servers</td>
+</tr>
+</tbody></table></div>
+<p>Entry-level roles usually skip this interview entirely. Mid-level: it&#39;s common. Senior: it&#39;s the norm, and it carries disproportionate weight in the hiring decision — for senior candidates, this is the interview where the level gets decided.</p>
+</section><section class="sec"><h2>The 4-competency rubric</h2>
+<p>Companies rename these constantly. Underneath, every rubric touches the same four things:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Competency</th>
+<th>What they&#39;re watching for</th>
+<th>Fastest way to fail it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Problem Navigation</strong></td>
+<td>Scope a vague problem, rank what matters, keep moving</td>
+<td>Grinding trivial parts; freezing on one piece; never delivering a working system</td>
+</tr>
+<tr>
+<td><strong>Solution Design</strong></td>
+<td>Each piece solved coherently; the pieces fit together</td>
+<td>Spaghetti design; ignoring scale and performance entirely</td>
+</tr>
+<tr>
+<td><strong>Technical Excellence</strong></td>
+<td>Current tech, applied with recognized patterns</td>
+<td>Antiquated assumptions (&quot;databases die at 100GB&quot;); tech dropped in with no reason</td>
+</tr>
+<tr>
+<td><strong>Communication</strong></td>
+<td>Clear narration, collaborative under challenge</td>
+<td>Silence; talking over probes; getting defensive when pushed</td>
+</tr>
+</tbody></table></div>
+<p>Reading it live:</p>
+<ul>
+<li><strong>Navigation is where most candidates lose the offer.</strong> It&#39;s the least taught and most evaluated competency. Spend 20 minutes on authentication for a news feed and you failed navigation, no matter how good the auth design was.</li>
+<li><strong>They are hunting for memorized answers.</strong> When you sound rehearsed, expect doubt-the-answer probes: &quot;Are you sure?&quot;, &quot;What if I told you it&#39;s 10x that?&quot; Reasoning out loud is the antidote.</li>
+<li>Interviewer behavior is a compass. Clarifying questions = they&#39;re testing Communication. &quot;Why not X?&quot; = Solution Design under challenge. &quot;How does it behave at 100x?&quot; = Technical Excellence. &quot;We&#39;re at minute 20&quot; = Navigation just failed.</li>
+</ul>
+</section><section class="sec"><h2>What &quot;senior&quot; means here</h2>
+<p>Both levels are expected to deliver a complete working design. The difference is pacing and ownership:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th></th>
+<th>Mid-level</th>
+<th>Senior</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Basics (requirements → API → design)</td>
+<td>Solid and thorough — that&#39;s the whole show</td>
+<td>Fast, almost routine; the show starts after</td>
+</tr>
+<tr>
+<td>Deep dives</td>
+<td>Waits for the interviewer to point at weaknesses</td>
+<td>Finds bottlenecks unprompted and leads 1–2 of them</td>
+</tr>
+<tr>
+<td>Trade-offs</td>
+<td>Names them when asked</td>
+<td>States the cost of every choice without being asked</td>
+</tr>
+<tr>
+<td>Probes</td>
+<td>Responds well</td>
+<td>Treats probes as collaboration and adjusts the design live</td>
+</tr>
+</tbody></table></div>
+<p>If you&#39;re <strong>staff+</strong>: the game changes again. Pure depth reads as mid-level dressed up. Staff signal is judgment about what <em>not</em> to build, non-obvious trade-offs, production-operation concerns (failure modes, migrations, cost), and steering the interview itself. Read a dedicated staff-level guide before a staff loop — the standard playbook can undersell you.</p>
+</section><section class="sec"><h2>The 45-minute shape (preview)</h2>
+<p>Everything after this challenge hangs on one skeleton: Requirements ~5 min, core entities ~2, API ~5, high-level design ~10–15, deep dives ~10. Challenge 2 turns it into a drill.</p>
+<p>Go deeper on any of this at <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a> — the closest public material to what interviewers are actually trained on.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are an experienced system design interviewer at a large tech company.
+Today you are running a RUBRIC DIAGNOSTIC, not a full interview: a compressed
+15-minute design conversation used to measure my baseline on the four
+competencies — Problem Navigation, Solution Design, Technical Excellence,
+Communication.
+
+SETUP
+1. Ask me to confirm I&#39;m ready, then give me ONE of these prompts (your pick):
+   &quot;Design a bike-share service&quot;, &quot;Design a pastebin&quot;, or
+   &quot;Design a rate limiter for a public API&quot;.
+2. Compress the clock: say &quot;We have 15 minutes — I care about how you think,
+   not a complete system.&quot;
+3. Keep me talking. You should speak less than 20% of the time.
+
+DURING — run these moves, in this order, once each:
+- After my first minute, ask: &quot;What are you choosing NOT to build today?&quot;
+- Challenge one decision: &quot;Why that over the obvious alternative?&quot;
+- Inject one constraint: &quot;Footnote: it needs to handle 10x traffic on Mondays.&quot;
+- If I go silent or wander, just ask: &quot;What&#39;s the most important open question
+  right now?&quot;
+- Never give hints unless I explicitly ask for one.
+
+SCORING (after 15 minutes, or when I say &quot;end&quot;)
+Drop character. Score each competency 1-4 with one quoted moment as evidence:
+- Problem Navigation: did I scope, prioritize, and keep moving?
+- Solution Design: were the pieces coherent and complete enough to ship?
+- Technical Excellence: were tech choices justified and current?
+- Communication: did I narrate reasoning, take feedback, adjust?
+Then tell me: my weakest competency, the single highest-leverage habit to
+build, and which challenge of this course I should run next. Offer to re-run
+the diagnostic with a different problem for a second data point.
+
+Begin by asking if I&#39;m ready to start the clock.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You can name the 4 competencies and one failure mode of each, unprompted</li>
+<li><span class="cb" aria-hidden="true"></span>You can say in one sentence how a senior run differs from a mid-level one</li>
+<li><span class="cb" aria-hidden="true"></span>You&#39;ve read or watched one real system design interview and could name which competency each phase demonstrated</li>
+<li><span class="cb" aria-hidden="true"></span>You&#39;ve run the mock diagnostic and know your weakest competency</li>
+<li><span class="cb" aria-hidden="true"></span>You can decode an interviewer probe (&quot;are you sure?&quot;) as a signal, not an insult</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Rubric</td>
+<td>The scored checklist your interviewer fills in; usually maps to the 4 competencies</td>
+</tr>
+<tr>
+<td>Signal</td>
+<td>Observable evidence a rubric box can be checked. Silence produces none</td>
+</tr>
+<tr>
+<td>Deep dive</td>
+<td>The last ~10 minutes, where one hard sub-problem gets full treatment</td>
+</tr>
+<tr>
+<td>Hire signal</td>
+<td>A behavior that moves a rubric score up; interviewers write these down as quotes</td>
+</tr>
+<tr>
+<td>Yellow flag</td>
+<td>A behavior suggesting memorized material or immature judgment — probed, not always fatal</td>
+</tr>
+<tr>
+<td>LLD</td>
+<td>Low-level design interview: class structures and code-level modeling, not this</td>
+</tr>
+<tr>
+<td>Staff+</td>
+<td>Levels above senior; the interview expectations change, not just increase</td>
+</tr>
+<tr>
+<td>DAU</td>
+<td>Daily active users — the unit most scale requirements are quoted in</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>The interviewer gives no feedback the whole time.</strong> Normal — they&#39;re scoring, not coaching. Don&#39;t fish for validation; narrate your reasoning instead so the rubric fills itself.</li>
+<li><strong>You get a question you&#39;ve literally seen before.</strong> Don&#39;t recite the memorized solution — that&#39;s exactly what they probe for. Deliver it as if reasoning from scratch, and let them redirect you.</li>
+<li><strong>The interviewer interrupts you mid-sentence.</strong> That&#39;s a redirect, not an attack: they&#39;re managing the clock or steering to a signal they still need. Take it, adjust, keep moving.</li>
+<li><strong>You felt great and still got a no.</strong> Self-assessed comfort isn&#39;t rubric evidence. Re-run the mock diagnostic below and score yourself against the four boxes, not against how the conversation felt.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../02-the-delivery-framework/">Challenge 2 — The Delivery Framework</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../index.html"><span>Previous</span><strong>301 course home</strong></a>
+    <a class="next" href="../../challenges/02-the-delivery-framework/"><span>Next</span><strong>The Delivery Framework</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

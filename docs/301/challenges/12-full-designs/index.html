@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Run the entire 45 minutes like a senior candidate — full pacing, deliberate deep-dive selection from the pattern library you built in Challenges 2–11, two complete timed mocks, and a self-review rubric — because knowledge you can't deliver inside the format scores zero in the room.">
+<title>Challenge 12: Full Designs — System Design Interview Prep</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">12</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 12</span><span class="chip">about 2–3 hours</span></p>
+    <h1>Full Designs</h1>
+    <p class="mission"><strong>Mission.</strong> Run the entire 45 minutes like a senior candidate — full pacing, deliberate deep-dive selection from the pattern library you built in Challenges 2–11, two complete timed mocks, and a self-review rubric — because knowledge you can&#39;t deliver inside the format scores zero in the room.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 War story: the candidate who knew everything</h2>
+<p>They had read every breakdown in existence. Given &quot;Design a news feed,&quot; they spent 12 minutes on requirements — thorough, quantified, genuinely excellent — 8 more polishing the API, and started drawing the system at minute 22. At &quot;five minutes left&quot; they were still on the happy path. Not one deep dive happened. The feedback wrote the archetype: &quot;strong knowledge, weak delivery.&quot; The arithmetic of the format is brutal: one 45-minute take, a rubric that scores what you said rather than what you know, and every minute overspent on phases 1–3 is stolen from the deep dives where the senior signals live. This challenge is the dress rehearsal — same clock, same format, twice, with a rubric in between.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The senior pacing plan, minute by minute, and what &quot;fast through the basics&quot; actually means</li>
+<li>A signal table mapping problem phrases to the deep dive they&#39;re begging for</li>
+<li>Two full timed mocks — how to run them and what to fix between them</li>
+<li>A self-review rubric mapped to the four scored competencies</li>
+</ul>
+</section><section class="sec"><h2>The 45 minutes, senior pacing</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Minutes</th>
+<th>Phase</th>
+<th>The senior note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0–5</td>
+<td>Requirements</td>
+<td>top-3 functional, quantified non-functional; ask about scale early</td>
+</tr>
+<tr>
+<td>5–7</td>
+<td>Entities</td>
+<td>nouns only; names count as a mini naming test</td>
+</tr>
+<tr>
+<td>7–12</td>
+<td>API</td>
+<td>one sentence of protocol justification; endpoints become your checklist</td>
+</tr>
+<tr>
+<td>12–25</td>
+<td>High-level</td>
+<td>endpoint by endpoint, narrating data flow; park risks visibly</td>
+</tr>
+<tr>
+<td>25–40</td>
+<td>Deep dives</td>
+<td>the interview is won here — two dives, led by you</td>
+</tr>
+<tr>
+<td>40–45</td>
+<td>Wrap</td>
+<td>monitoring, next steps, &quot;with more time I&#39;d...&quot;</td>
+</tr>
+</tbody></table></div>
+<p>The senior delta over Challenge 2&#39;s framework isn&#39;t new phases — it&#39;s velocity. Basics at recall speed, zero deliberation, so the deep dives inherit 15 protected minutes. Two tripwires: if you&#39;re past minute 25 without a complete happy path, cut scope rather than speed up; and if an interviewer probe derails you, fold it back in aloud (&quot;that changes the write path — let me update the plan&quot;) instead of abandoning your structure.</p>
+</section><section class="sec"><h2>Choosing your deep dives: the signal table</h2>
+<p>Listen for the phrases — each names its pattern:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>The problem says</th>
+<th>Your deep dive</th>
+<th>From</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;live&quot;, &quot;real-time&quot;, &quot;instantly&quot;, presence</td>
+<td>delivery mechanism + the second hop + fan-out</td>
+<td>Challenge 7</td>
+</tr>
+<tr>
+<td>&quot;two users&quot;, &quot;only one&quot;, &quot;simultaneously&quot;, limited stock</td>
+<td>locks, versioning, TTL reservations</td>
+<td>Challenge 8</td>
+</tr>
+<tr>
+<td>&quot;if step X fails&quot;, refunds, multi-service flows</td>
+<td>saga, idempotency keys, outbox/CDC</td>
+<td>Challenge 9</td>
+</tr>
+<tr>
+<td>files, video, &quot;might take minutes&quot;, untrusted code</td>
+<td>presigned URLs, multipart, async workers</td>
+<td>Challenge 10</td>
+</tr>
+<tr>
+<td>&quot;near me&quot;, drivers, maps, delivery zones</td>
+<td>spatial index + post-filter</td>
+<td>Challenge 11</td>
+</tr>
+<tr>
+<td>reads dwarf writes, &quot;viral&quot;</td>
+<td>cache ladder, hot keys, stampedes</td>
+<td>Challenge 5</td>
+</tr>
+<tr>
+<td>write firehose, &quot;10M events/sec&quot;</td>
+<td>partitioning, batching, queues</td>
+<td>Challenge 6</td>
+</tr>
+<tr>
+<td>numbers that would change the design</td>
+<td>back-of-envelope, spoken out loud</td>
+<td>Challenge 4</td>
+</tr>
+</tbody></table></div>
+<p>Take two: one you&#39;re strong on, one the problem is visibly about. Announce the choice — &quot;the two interesting problems here are the write path and the hot-key problem&quot; — that single sentence is Communication signal and invites the interviewer into the part you prepared for.</p>
+</section><section class="sec"><h2>A synthesis sketch: the news feed in 25 minutes</h2>
+<p>One design to see the whole library at work. Entities User, Follow, Post; API covers post, follow, paged feed. The naive read assembles a feed from every followed user&#39;s posts — say it won&#39;t scale and park it. Deep dive one, fan-out: precompute feeds on write with async workers behind a queue, then go hybrid — mega-accounts skip the fan-out entirely and their posts merge in at read time, because per-account choice beats one-size-fits-all. Deep dive two, hot keys: a viral post hammers one cache shard; replicate cache instances instead of sharding so N instances share the heat with no coordination. Storage math stays quiet unless it changes a decision. Notice every fix arrived from a numbered challenge — that&#39;s what the library is for.</p>
+</section><section class="sec"><h2>The two timed mocks</h2>
+<p>Run them at least a day apart; each is a full 45 minutes plus 15 minutes of review. <strong>Mock A — product-style:</strong> a feed, a ticketing system, a chat app, ride-hailing. <strong>Mock B — infra-style:</strong> metrics monitoring, a rate limiter, a web crawler — note the framing shifts there: data-flow step first, APIs second. Use the mock prompt below; it picks problems you won&#39;t have rehearsed. After each mock, score yourself against the rubric before reading the AI&#39;s scores, then fix exactly one habit before the next — not five. The goal is for the second mock to feel boring.</p>
+</section><section class="sec"><h2>Self-review rubric</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Competency</th>
+<th>Ask yourself</th>
+<th>A pass looks like</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Problem Navigation</td>
+<td>Did I confirm scope and pick a top-3, or try to design everything?</td>
+<td>explicit in/out of scope; each functional requirement maps to an endpoint</td>
+</tr>
+<tr>
+<td>Solution Design</td>
+<td>Could someone implement from my drawing alone?</td>
+<td>complete happy path before complexity; every box and arrow justified</td>
+</tr>
+<tr>
+<td>Technical Excellence</td>
+<td>Did every choice carry a trade-off and, where relevant, a number?</td>
+<td>&quot;X because Y, costing Z&quot;; estimates only where they&#39;d change a decision</td>
+</tr>
+<tr>
+<td>Communication</td>
+<td>Did I narrate while drawing and lead the deep dives?</td>
+<td>no silent stretches; parked risks actually returned to; probes answered, structure kept</td>
+</tr>
+</tbody></table></div>
+<p>Score 1–4 per competency per mock and track the trajectory. One consistent weakness across both mocks is a drill with a numbered challenge, not a mystery — go back and re-run that challenge&#39;s mock.</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a> has full-length video walkthroughs of complete designs — watch them after your first mock, never before, so you calibrate against your own take rather than memorizing someone else&#39;s.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are my system design interviewer at a top tech company. This is a
+FULL 45-minute mock — the capstone rehearsal. You own the clock absolutely.
+
+SETUP
+1. Ask my target level (mid / senior / staff) and a product vs infra
+   preference. Then YOU pick the problem — something level-appropriate you
+   have a strong opinion about (feed, chat, ticketing, payments, file
+   storage, ride-hailing, metrics monitoring, crawler, rate limiter...).
+   Do not reveal which patterns it tests. Confirm the problem, start the
+   clock, and enforce it hard: announce elapsed time at 5, 15, 25, 35 and
+   43 minutes (&quot;5 minutes in — requirements should be wrapping&quot;). At 45
+   minutes, or when I say &quot;end interview&quot;, stop immediately, mid-sentence
+   if needed.
+
+DURING THE INTERVIEW
+- Requirements: if my functional list exceeds top-3, push me to cut. If
+  any non-functional is unquantified, ask &quot;what number?&quot;
+- Entities/API: hold me to ~2 and ~5 minutes respectively.
+- High-level design: make me go endpoint by endpoint and narrate data
+  flow. If I reach for caches, queues, or shards before a complete happy
+  path: &quot;Park it — deep dives later.&quot;
+- Deep dives (from ~minute 25): choose the 2 most interesting problems in
+  MY design and probe hard, 2-3 escalating follow-ups each (&quot;what breaks
+  at 100x?&quot;, &quot;what happens if this crashes?&quot;, &quot;what did that choice
+  cost?&quot;). If I stall 2 minutes, offer: &quot;hint, or move on?&quot; Hints only on
+  request, smallest possible nudge.
+- Stay in character. No coaching, no confirming correctness beyond a
+  poker-faced &quot;go on&quot; or &quot;hm, what about when X?&quot;
+
+AFTER THE CLOCK
+Drop character. Score 1-4 on each competency, each with one quoted moment
+of mine as evidence:
+- Problem Navigation: scoping, prioritization, requirement-to-endpoint map
+- Solution Design: complete working system, justified components
+- Technical Excellence: trade-offs stated, numbers where they matter,
+  depth on 2+ deep dives
+- Communication: narration, structure, responsiveness under probing
+Then debrief: (1) which phases ran over and what it cost, (2) which deep
+dives I took vs which the problem was begging for, (3) the ONE habit to
+drill before my next mock, (4) a verdict — hire / lean hire / lean no /
+no — plus the two sentences you&#39;d write in real interview feedback.
+Finally, show me the self-review rubric (scope, implementability,
+trade-offs-with-numbers, narration) and make me score myself on the same
+four competencies before revealing your scores and any gaps.
+
+Start by asking my level and product-vs-infra preference.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You&#39;ve delivered two complete 45-minute designs under a hard timer, out loud, and finished the deep dives both times</li>
+<li><span class="cb" aria-hidden="true"></span>You can name a problem&#39;s two deep dives within the first 10 minutes — and say why those two</li>
+<li><span class="cb" aria-hidden="true"></span>Your requirements-to-endpoints mapping has no gaps in either mock</li>
+<li><span class="cb" aria-hidden="true"></span>You scored yourself on the rubric before reading the AI&#39;s scores, and know your one recurring weakness</li>
+<li><span class="cb" aria-hidden="true"></span>The second mock felt boring — you ran the track instead of improvising</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pacing plan</td>
+<td>The minute-by-minute budget that guarantees deep dives get 15 protected minutes</td>
+</tr>
+<tr>
+<td>Signal</td>
+<td>A phrase in the problem statement that names the pattern the interviewer wants probed</td>
+</tr>
+<tr>
+<td>Deep-dive selection</td>
+<td>Choosing two problems in your own design to harden — breadth was phases 1–4, this is depth</td>
+</tr>
+<tr>
+<td>Hybrid design</td>
+<td>Mixing strategies per account or per case (fan-out on write for most, on read for mega-accounts)</td>
+</tr>
+<tr>
+<td>Mock loop</td>
+<td>Mock, self-score, fix one habit, repeat — the only cycle that moves the verdict</td>
+</tr>
+<tr>
+<td>Rubric</td>
+<td>The four scored competencies: Problem Navigation, Solution Design, Technical Excellence, Communication</td>
+</tr>
+<tr>
+<td>Lean hire / lean no</td>
+<td>The interviewer&#39;s actual output: a recommendation plus evidence, not a grade</td>
+</tr>
+<tr>
+<td>Calibrate</td>
+<td>Comparing your delivered design against a full worked take — after you&#39;ve done your own</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>You&#39;re drawing the happy path at minute 25.</strong> Cut scope, don&#39;t rush: finish the single most important endpoint end to end, then deep-dive it. A complete narrow system beats a wide sketch.</li>
+<li><strong>The interviewer&#39;s probe blew up your plan.</strong> Fold it back in aloud and keep the structure — &quot;that changes the write path; updating the plan&quot; is a Communication score, not a loss.</li>
+<li><strong>You took zero deep dives because time evaporated.</strong> Audit where it went; it&#39;s almost always requirements or API polish. Next mock, cap those phases visibly and write the minute marks down.</li>
+<li><strong>You can&#39;t tell which patterns a problem wants.</strong> Run the signal table against the problem statement out loud in your prep — the phrases nearly always announce the deep dives.</li>
+<li><strong>Both mocks exposed the same weakness.</strong> Stop mocking; go re-run the numbered challenge that owns that skill, including its own mock prompt, then come back.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../../../401/">Coding Interview Patterns — 401</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/11-proximity-services/"><span>Previous</span><strong>Proximity Services</strong></a>
+    <a class="next" href="../../../401/"><span>Next</span><strong>Coding Interview Patterns — 401</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

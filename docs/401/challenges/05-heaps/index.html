@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Heaps are the interview's "track a running extreme" tool. Three shapes cover the chapter: a bounded heap for top-K, two balanced heaps for a streaming median, and a k-way heap for merging sorted streams. The structure itself is standard library — the interview is knowing which heap holds what, at what cost, and saying so.">
+<title>Challenge 05: Heaps — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">05</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 05</span><span class="chip">about 45 minutes</span></p>
+    <h1>Heaps</h1>
+    <p class="mission"><strong>Mission.</strong> Heaps are the interview&#39;s &quot;track a running extreme&quot; tool. Three shapes cover the chapter: a bounded heap for top-K, two balanced heaps for a streaming median, and a k-way heap for merging sorted streams. The structure itself is standard library — the interview is knowing which heap holds what, at what cost, and saying so.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 Better than sorting</h2>
+<p>&quot;k closest points to the origin, n is large — and yes, you can beat
+sorting.&quot; Candidate A: &quot;max-heap of size k keyed on squared distance; O(n
+log k), O(k) memory, works on a stream,&quot; and never materializes the
+distances. Candidate B computes all distances, sorts, slices — correct, but
+O(n log n) when beating O(n log n) was the assignment, and the interviewer
+had just said so. The heap&#39;s win isn&#39;t only the log factor: it declares
+<em>bounded memory and streaming-friendly</em> out loud, which is exactly the
+systems instinct senior loops probe for.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>Heap operation costs: push/pop O(log n), peek O(1), heapify O(n)</li>
+<li><strong>Top-K</strong>: a size-k min-heap for the k largest — and why the direction flips</li>
+<li><strong>Two heaps</strong>: balanced halves for a running median</li>
+<li><strong>Merge-K</strong>: one heap of k heads drains k sorted streams in O(N log k)</li>
+<li>Tuple keys, tiebreakers, and the negation trick for max-heaps</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — Top-K with a bounded heap</h2>
+<p>The counterintuitive part: for the k <em>largest</em>, keep a <em>min</em>-heap of size k.
+The root is the weakest element you&#39;re still keeping, so it&#39;s the natural
+eviction target when something better arrives. For the k smallest / k
+closest, flip to a max-heap (negate values in Python&#39;s <code>heapq</code>). If asked to
+beat O(n log n), this is the answer — and if the data is a stream, it&#39;s the
+only answer that doesn&#39;t store everything.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;k largest / smallest / most frequent&quot;</td>
+<td>Bounded heap of size k</td>
+</tr>
+<tr>
+<td>&quot;Beat O(n log n) on top-k&quot;</td>
+<td>O(n log k): keep the heap at exactly k</td>
+</tr>
+<tr>
+<td>kth largest after each stream insert</td>
+<td>Same bounded heap; root is the running answer</td>
+</tr>
+<tr>
+<td>&quot;k closest points&quot;</td>
+<td>Max-heap on distance — skip the sqrt, squares suffice</td>
+</tr>
+<tr>
+<td>Ties on the primary key</td>
+<td>Push tuples: <code>(key, tiebreaker)</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — kth largest via bounded min-heap:</strong></p>
+<pre><code>def kth_largest(nums, k):          # min-heap keeps the k largest so far
+    heap = []
+    for x in nums:
+        if len(heap) &lt; k:
+            heapq.heappush(heap, x)
+        elif x &gt; heap[0]:
+            heapq.heapreplace(heap, x)   # evict the weakest in one sift
+    return heap[0]                 # weakest kept = kth largest
+</code></pre>
+<p><strong>Complexity:</strong> O(n log k) time, O(k) space; <code>heapreplace</code> does the
+pop-then-push in a single sift. For reference: push and pop are O(log n),
+peek is O(1), heapify on an existing array is O(n). Those four costs,
+recited cold, are half of what interviewers check about heaps.</p>
+<p><strong>Drills (easy → hard):</strong> Kth Largest Element in an Array → Top K Frequent
+Elements (counter + heap) → K Closest Points to Origin → Find K Closest
+Elements (heap, or the Challenge-4 boundary search).</p>
+</section><section class="sec"><h2>Pattern 2 — Two heaps and merge-K</h2>
+<p><strong>Two heaps (running median).</strong> Split the stream: a max-heap <code>lower</code> holds
+the smaller half, a min-heap <code>upper</code> the larger half, sizes kept within one.
+The median is the top of the bigger heap, or the average of both tops.
+Insert O(log n), median O(1) — versus re-sorting, O(n log n) per query.</p>
+<p><strong>Merge-K.</strong> One min-heap holds the current head of each of the k sorted
+lists, as <code>(value, list_id, node)</code>. Pop the min, append it, push that list&#39;s
+next element. Every element passes through the heap exactly once: O(N log k)
+for N total elements, O(k) space — the same primitive behind &quot;smallest range
+covering one element from each of k lists.&quot;</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Median after each insertion / of a stream&quot;</td>
+<td>Two balanced heaps</td>
+</tr>
+<tr>
+<td>&quot;Merge k sorted lists&quot;</td>
+<td>Min-heap of k heads</td>
+</tr>
+<tr>
+<td>Repeated min/max while the data mutates</td>
+<td>Heap, not a rescan</td>
+</tr>
+<tr>
+<td>&quot;Smallest range covering one element per list&quot;</td>
+<td>k-way heap, track window bounds</td>
+</tr>
+<tr>
+<td>Priority scheduling under constraints</td>
+<td>Heap ordered by the constraint&#39;s key</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — two-heap median:</strong></p>
+<pre><code>def push(x):                       # lower = max-heap (negated), upper = min
+    if not lower or x &lt;= -lower[0]:
+        heapq.heappush(lower, -x)
+    else:
+        heapq.heappush(upper, x)
+    if len(lower) &gt; len(upper) + 1:
+        heapq.heappush(upper, -heapq.heappop(lower))
+    elif len(upper) &gt; len(lower):
+        heapq.heappush(lower, -heapq.heappop(upper))
+
+def median():                      # sizes differ by at most 1
+    return -lower[0] if len(lower) &gt; len(upper) else (-lower[0] + upper[0]) / 2
+</code></pre>
+<p><strong>Complexity:</strong> insert O(log n), median O(1), space O(n). The invariant to
+state aloud: &quot;<code>lower</code> is never more than one larger than <code>upper</code>.&quot; If the
+rebalance order feels arbitrary, trace inserting 5, 2, 8, 3 by hand once.</p>
+<p><strong>Drills (easy → hard):</strong> Kth Smallest Element in a Sorted Matrix (heap of
+list heads) → Merge k Sorted Lists → Find Median from Data Stream → Sliding
+Window Median (median + lazy deletion).</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/heap/overview">Hello Interview&#39;s heap chapter</a> for animated push/pop traces.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
+interview with me on HEAPS: top-K problems, two-heap medians, and merge-K.
+
+1. Pick ONE problem that maps to these patterns at senior difficulty.
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern it uses.
+2. Enforce a 25-minute timer. Warn me at 5 minutes left; stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted, and trace one example before I call it done.
+6. When time is up or I say done, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases — one line of evidence per score,
+   then the single highest-leverage improvement.
+
+Start with the problem statement. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You justify &quot;k largest → min-heap&quot; without pausing</li>
+<li><span class="cb" aria-hidden="true"></span>The four operation costs (push/pop/peek/heapify) are reflexes</li>
+<li><span class="cb" aria-hidden="true"></span>heapreplace vs heappushpop vs push-then-pop: you know which you mean</li>
+<li><span class="cb" aria-hidden="true"></span>Two-heap median: the balancing invariant is stated before coding</li>
+<li><span class="cb" aria-hidden="true"></span>Merge-K: you say O(N log k) and where each factor comes from</li>
+<li><span class="cb" aria-hidden="true"></span>Tuple keys with tiebreakers are your default, not an afterthought</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Min-heap / max-heap</td>
+<td>Array-backed tree whose root is the min (or max); sibling order unspecified</td>
+</tr>
+<tr>
+<td>Heap property</td>
+<td>Every node ≤ (min-heap) or ≥ (max-heap) its children</td>
+</tr>
+<tr>
+<td>Heapify</td>
+<td>Linear-time conversion of an arbitrary array into a heap</td>
+</tr>
+<tr>
+<td>Bounded heap</td>
+<td>A heap capped at size k — the top-K workhorse</td>
+</tr>
+<tr>
+<td>Two heaps</td>
+<td>Max-heap of the lower half + min-heap of the upper half, balanced to ±1</td>
+</tr>
+<tr>
+<td>k-way merge</td>
+<td>Draining k sorted streams through one shared heap</td>
+</tr>
+<tr>
+<td>Tuple key</td>
+<td><code>(key, tiebreaker)</code> ordering that makes comparisons total</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Blanking.</strong> Ask what you need at every instant: the current min? the k
+best so far? the middle? Each sentence maps to one of the three shapes.</li>
+<li><strong>Wrong heap direction.</strong> k <em>largest</em> wants a <em>min</em>-heap — the root is the
+weakest kept element, hence the eviction target. Say the reason aloud and
+the direction can&#39;t flip in your head mid-problem.</li>
+<li><strong>Off-by-one on balance.</strong> The median breaks silently when one heap leads
+by two. Trace one even-length and one odd-length insert before saying done.</li>
+<li><strong>Forgetting to negate.</strong> Python&#39;s <code>heapq</code> is min-only; every max-heap
+push <em>and</em> pop needs the sign flip. One missed negation produces wrong
+answers that look like logic bugs.</li>
+<li><strong>Sort as a reflex.</strong> If the interviewer says &quot;beat sorting&quot; or the data
+is streaming, sorting is a reject even when correct. Lead with the heap.</li>
+<li><strong>Tuples comparing wrong.</strong> If a tuple&#39;s second element can&#39;t be compared
+(objects), add an integer tiebreaker before it — or the push throws
+mid-solution.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../06-dfs-and-bfs/">Challenge 6 — DFS &amp; BFS</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/04-binary-search/"><span>Previous</span><strong>Binary Search</strong></a>
+    <a class="next" href="../../challenges/06-dfs-and-bfs/"><span>Next</span><strong>DFS & BFS</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

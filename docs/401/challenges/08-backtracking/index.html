@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Systematic enumeration: a DFS over an implicit solution-space tree, where every call chooses an option, explores what that choice makes possible, and un-chooses it on the way out. Backtracking is exponential by nature — the interview grades three things: how fast you draw the tree, whether you mutate one shared path instead of copying at every step, and whether you prune branches that provably cannot succeed.">
+<title>Challenge 08: Backtracking — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">08</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 08</span><span class="chip">about 60 minutes</span></p>
+    <h1>Backtracking</h1>
+    <p class="mission"><strong>Mission.</strong> Systematic enumeration: a DFS over an implicit <em>solution-space tree</em>, where every call chooses an option, explores what that choice makes possible, and un-chooses it on the way out. Backtracking is exponential by nature — the interview grades three things: how fast you draw the tree, whether you mutate one shared path instead of copying at every step, and whether you prune branches that provably cannot succeed.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The copy you didn&#39;t need</h2>
+<p>Two candidates enumerate subsets of a 25-element array. Candidate A builds each
+candidate as <code>path + [x]</code> — a fresh list at every call. Correct output, but
+thousands of throwaway lists per second, and the follow-up (&quot;walk me through
+your memory profile?&quot;) has no good answer. Candidate B keeps <em>one</em> path list,
+appends on the way down, pops on the way up, and copies only when recording a
+finished solution — then says &quot;time is output-sized anyway: 2²⁵ subsets, each
+up to 25 elements; the shared path keeps the constant down.&quot; Same outputs,
+opposite engineering. And the third failure mode is silent: skip the <code>pop()</code>
+and the path never shrinks — results come back duplicated and garbage-padded,
+a bug no two-element test input will ever catch.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>Solution-space trees</strong> — nodes are partial solutions, edges are decisions</li>
+<li>The <strong>choose → explore → un-choose</strong> skeleton with one shared mutable path</li>
+<li>The three canonical shapes — subsets, permutations, combinations — and the
+one-line difference (record-at-entry vs used-set vs start index)</li>
+<li><strong>Pruning</strong>: validity filters before recursing, sort-then-break, mark-and-restore</li>
+<li>Complexity as output size — saying O(n·2ⁿ) with the &quot;why&quot; attached</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — The skeleton: choose, explore, un-choose</h2>
+<p>Almost no backtracking problem gives you a tree; you build it as you go. Each
+recursive call is one node, each loop iteration is one edge, and the parameters
+are exactly the state needed to know which options remain. The discipline that
+holds under pressure: one shared path list; append is <em>choose</em>, the loop of
+recursive calls is <em>explore</em>, pop is <em>un-choose</em>; every recorded answer is a
+copy (<code>path[:]</code>), because the shared path keeps mutating after you record it.
+With this skeleton cold, every problem in the chapter becomes two questions:
+what are the options, and what&#39;s the base case?</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Return ALL valid X&quot;</td>
+<td>Backtracking; &quot;count/best X only&quot; is probably DP (Challenge 10)</td>
+</tr>
+<tr>
+<td>&quot;Generate every combination/ordering/arrangement&quot;</td>
+<td>DFS over the solution-space tree</td>
+</tr>
+<tr>
+<td>Constraint kills partial solutions early</td>
+<td>Prune in the loop, not inside the recursion</td>
+</tr>
+<tr>
+<td>Grid/path with &quot;no cell twice&quot;</td>
+<td>Mark-and-restore IS the choose/un-choose</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — the backtracking skeleton:</strong></p>
+<pre><code>def backtrack(path, start):
+    if is_complete(path):                # base case: record a COPY
+        results.append(path[:])
+        return
+    for option in options(path, start):
+        if not valid(option, path):      # prune BEFORE recursing
+            continue
+        path.append(option)              # choose — mutate in place
+        backtrack(path, next_start(option))
+        path.pop()                       # un-choose — exact inverse
+</code></pre>
+<p><strong>Complexity:</strong> (nodes in the solution tree) × (work per node); the recorded
+output usually dominates. State it that way — &quot;exponential because the output
+is exponential&quot; reads as understanding, whereas a bare &quot;O(2ⁿ)&quot; reads as hoping.
+Space is tree depth for the path plus the call stack, plus the output.</p>
+<p><strong>Drills (easy → hard):</strong> Letter Combinations of a Phone Number → Subsets →
+Permutations → Combination Sum.</p>
+</section><section class="sec"><h2>Pattern 2 — The three canonical shapes</h2>
+<p>Subsets, permutations, and combinations differ in exactly two decisions: <em>when
+to record</em> and <em>what limits the loop</em>. Subsets: every node is an answer, so
+record at entry — no base case beyond &quot;keep walking.&quot; Permutations: order
+matters and there&#39;s no natural &quot;later&quot; index, so the loop scans everything and
+a <code>used</code> set excludes what&#39;s already on the path. Combinations of size k:
+subsets&#39; start-index loop, but record only when <code>len(path) == k</code>. Reuse
+allowed (Combination Sum)? Recurse with <code>i</code>, not <code>i + 1</code>. Duplicates in the
+input? Sort first, then skip <code>nums[i] == nums[i-1]</code> when <code>i &gt; start</code> — that
+skips duplicate <em>siblings</em> without killing legitimate duplicate <em>depths</em>.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;All subsets / the power set&quot;</td>
+<td>Record at every node; loop from <code>start</code></td>
+</tr>
+<tr>
+<td>&quot;All permutations / orderings&quot;</td>
+<td><code>used</code> set, loop over everything</td>
+</tr>
+<tr>
+<td>&quot;All combinations of size k&quot;</td>
+<td>Start-index loop; record at <code>len(path) == k</code></td>
+</tr>
+<tr>
+<td>Elements reusable</td>
+<td>Recurse with <code>i</code> (not <code>i + 1</code>)</td>
+</tr>
+<tr>
+<td>Duplicate inputs, unique outputs required</td>
+<td>Sort; skip equal values at the same level</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — subsets via the start-index loop:</strong></p>
+<pre><code>def subsets(nums):
+    result, path = [], []
+    def dfs(start):
+        result.append(path[:])           # EVERY node is a valid subset
+        for i in range(start, len(nums)):
+            path.append(nums[i])         # choose
+            dfs(i + 1)                   # explore — i+1: never look back
+            path.pop()                   # un-choose
+    dfs(0)
+    return result
+</code></pre>
+<p><strong>Complexity:</strong> subsets O(n·2ⁿ) — 2ⁿ subsets, each copied at O(n); permutations
+O(n·n!); combinations O(k·C(n,k)). The senior sentence: &quot;this is optimal up to
+constants because the output itself has that size&quot; — output-size bounds are
+the complexity argument interviewers actually probe here.</p>
+<p><strong>Drills (easy → hard):</strong> Subsets → Permutations → Combinations → Subsets II
+(sort + sibling-skip).</p>
+</section><section class="sec"><h2>Pattern 3 — Pruning: cut the tree before you grow it</h2>
+<p>The exponential tree is only the worst case; constraint checks applied at the
+loop level shrink it in practice, and naming them is the difference between
+&quot;brute force&quot; and &quot;exhaustive search with pruning.&quot; Three moves cover most
+problems. Validity as loop filters: Generate Parentheses admits &quot;(&quot; while
+<code>open &lt; n</code> and &quot;)&quot; while <code>close &lt; open</code> — each rule an <code>if</code> that never
+recurses into a doomed subtree. Sort-then-break: Combination Sum sorts so the
+first candidate exceeding the remaining target lets you <code>break</code> — everything
+after is worse. Mark-and-restore on grids: writing <code>#</code> into the cell is
+<em>choose</em>, restoring it is <em>un-choose</em>, and the grid doubles as the visited
+set. Pair a grid hunt with a trie (Challenge 7) and the prune becomes &quot;no
+dictionary word shares this prefix&quot; — whole subtrees die on the first dead
+letter.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Well-formed / valid X only&quot;</td>
+<td>Encode validity as loop filters</td>
+</tr>
+<tr>
+<td>Grid + word, no cell reused</td>
+<td>Mark cell, recurse 4 ways, restore</td>
+</tr>
+<tr>
+<td>&quot;Sum to target&quot;, positive inputs</td>
+<td>Sort; break when the option overshoots</td>
+</tr>
+<tr>
+<td>Matching a dictionary while walking</td>
+<td>Trie-backed pruning on the prefix</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — mark-and-restore grid word search:</strong></p>
+<pre><code>def exists(board, word):
+    rows, cols = len(board), len(board[0])
+    def dfs(r, c, i):
+        if i == len(word): return True
+        if not (0 &lt;= r &lt; rows and 0 &lt;= c &lt; cols): return False
+        if board[r][c] != word[i]: return False
+        board[r][c] = &quot;#&quot;                # choose: mark (grid = visited set)
+        found = any(dfs(r + dr, c + dc, i + 1)
+                    for dr, dc in ((1,0),(-1,0),(0,1),(0,-1)))
+        board[r][c] = word[i]            # un-choose: restore, win or lose
+        return found
+    return any(dfs(r, c, 0)
+               for r in range(rows) for c in range(cols))
+</code></pre>
+<p><strong>Complexity:</strong> O(rows·cols · 3^L) — 3, not 4, because the mark prevents
+stepping back onto the cell you came from (the very first step has 4 options).
+Restoring the cell on <em>both</em> branches keeps that bound honest; a missing
+restore turns &quot;no reuse on this path&quot; into &quot;no reuse ever,&quot; which silently
+rejects valid answers.</p>
+<p><strong>Drills (easy → hard):</strong> Word Search → Generate Parentheses (two filter
+rules) → Combination Sum (sort + break + reuse) → N-Queens (diagonal sets).</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/backtracking/overview">Hello Interview&#39;s backtracking chapter</a> for animated solution-space trees.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
+interview with me on BACKTRACKING: subsets, permutations, combinations,
+constrained generation, and grid word search.
+
+1. Pick ONE problem that maps to these patterns at senior difficulty.
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern it uses.
+2. Enforce a 30-minute timer. Warn me at 5 minutes left; stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted (attribute the exponent to the output size), and
+   trace one example before I call it done.
+6. When time is up or I say done, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases — one line of evidence per score,
+   then the single highest-leverage improvement.
+
+Start with the problem statement. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You sketch two levels of the solution-space tree before writing code</li>
+<li><span class="cb" aria-hidden="true"></span>One shared path + pop; <code>path[:]</code> copies appear only when recording</li>
+<li><span class="cb" aria-hidden="true"></span>Subsets vs permutations vs combinations is a one-line answer each</li>
+<li><span class="cb" aria-hidden="true"></span>You say O(n·2ⁿ) / O(n·n!) unprompted and credit the output size</li>
+<li><span class="cb" aria-hidden="true"></span>Mark-and-restore happens on every branch, including failures</li>
+<li><span class="cb" aria-hidden="true"></span>Sort + skip-equal-siblings is reflex the moment inputs repeat</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Backtracking</td>
+<td>DFS over implicit candidate solutions; undo each choice on the way out</td>
+</tr>
+<tr>
+<td>Solution-space tree</td>
+<td>The tree of partial solutions; nodes = calls, edges = decisions</td>
+</tr>
+<tr>
+<td>Choose / explore / un-choose</td>
+<td>Mutate state, recurse, exactly reverse the mutation</td>
+</tr>
+<tr>
+<td>Pruning</td>
+<td>Refusing to recurse into subtrees that provably can&#39;t succeed</td>
+</tr>
+<tr>
+<td>Start index</td>
+<td>Loop lower bound that stops combinations from reordering earlier picks</td>
+</tr>
+<tr>
+<td>Mark-and-restore</td>
+<td>Temporarily overwriting a cell as the visited marker, then restoring it</td>
+</tr>
+<tr>
+<td>Sibling skip</td>
+<td>Skipping a duplicate value at one tree level to avoid duplicate outputs</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>A choose without its un-choose.</strong> Every mutation needs an exact inverse on
+the way out. Missing pops leave the path growing forever and results full of
+junk — test with input size 3, not 1.</li>
+<li><strong>Recording a reference instead of a copy.</strong> <code>results.append(path)</code> stores
+the one shared list; by the end it&#39;s dozens of copies of the final state.
+<code>path[:]</code>, every time.</li>
+<li><strong>Wrong loop start.</strong> <code>i + 1</code> = each element once; <code>i</code> = reuse allowed; full
+loop + <code>used</code> set = permutations. Say which you picked and why — the
+interviewer is checking whether <code>i + 1</code> was a choice or a guess.</li>
+<li><strong>Pruned too late.</strong> Validating inside the recursion wastes a whole level per
+doomed path; filter in the for-loop so the branch never spawns.</li>
+<li><strong>Backtracking where counting was asked.</strong> &quot;How many valid X?&quot; doesn&#39;t need
+the X&#39;s — enumerating them is exponential work a DP table (Challenge 10)
+does in polynomial time. Listen for &quot;count&quot; vs &quot;list.&quot;</li>
+<li><strong>Exponential presented as an apology.</strong> Lead with &quot;the output has 2ⁿ
+elements, so exponential is the floor&quot; — that framing turns the scary bound
+into evidence you know what you&#39;re doing.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../09-greedy-and-matrices/">Challenge 9 — Greedy &amp; Matrices</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/07-graphs-and-tries/"><span>Previous</span><strong>Graphs & Tries</strong></a>
+    <a class="next" href="../../challenges/09-greedy-and-matrices/"><span>Next</span><strong>Greedy & Matrices</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

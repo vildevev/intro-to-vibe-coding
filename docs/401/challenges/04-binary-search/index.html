@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Binary search is not "find a number in a sorted array." It is a boundary-finder over any monotone space: sorted arrays, rotated arrays, ranges of candidate answers, even the value space of a matrix. Senior loops mostly ask the last two — the input looks unsorted, and the sorted thing is the answer space.">
+<title>Challenge 04: Binary Search — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">04</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 04</span><span class="chip">about 60 minutes</span></p>
+    <h1>Binary Search</h1>
+    <p class="mission"><strong>Mission.</strong> Binary search is not &quot;find a number in a sorted array.&quot; It is a boundary-finder over any <em>monotone</em> space: sorted arrays, rotated arrays, ranges of candidate answers, even the value space of a matrix. Senior loops mostly ask the last two — the input looks unsorted, and the sorted thing is the answer space.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The phrase that pays</h2>
+<p>&quot;Split the array into k contiguous parts, minimizing the largest part-sum.&quot;
+Candidate A locks onto &quot;minimize the maximum&quot;: feasibility of a candidate
+answer is monotone, so binary search the answer range [max, sum] with a
+greedy O(n) check — done in 15 minutes with a traced example. Candidate B
+suspects DP, starts building a recurrence over (index, parts), and runs out
+of time mid-table. &quot;Minimize the maximum&quot; / &quot;maximize the minimum&quot; is a
+two-word flag for search-on-answer. Missing the flag costs the whole round.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>Classic search</strong> — the <code>left &lt;= right</code> equality shape</li>
+<li><strong>Boundary search</strong> — first-true with <code>left &lt; right</code> and <code>hi = mid</code></li>
+<li><strong>Rotated arrays</strong> — one half is always sorted; test the target against it</li>
+<li><strong>Search on answer</strong> — binary searching a monotone predicate over a value range</li>
+<li>Feasibility checks: greedy, O(n) per probe, monotonicity proven aloud</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — Sorted-space binary search: equality and boundaries</h2>
+<p>Two loop shapes, and mixing them is where off-by-ones breed. Equality
+search: <code>while left &lt;= right</code>, <code>mid ± 1</code> on both exits, return on hit.
+Boundary search: <code>while left &lt; right</code>, feasible → <code>hi = mid</code> (mid might <em>be</em>
+the answer), infeasible → <code>lo = mid + 1</code>, return <code>lo</code>. Rotated arrays use
+the equality shape plus one extra test: compare <code>nums[left]</code> to <code>nums[mid]</code>
+to find which half is sorted, then check the target against that half&#39;s
+range before discarding the other.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sorted array, find target or insertion point</td>
+<td>Classic equality search</td>
+</tr>
+<tr>
+<td>&quot;First/last occurrence&quot;, &quot;first element ≥ x&quot;</td>
+<td>Boundary search on a predicate</td>
+</tr>
+<tr>
+<td>&quot;Sorted array, rotated at an unknown pivot&quot;</td>
+<td>Find the sorted half; discard the other</td>
+</tr>
+<tr>
+<td>O(log n) demanded on an array problem</td>
+<td>Binary search in disguise</td>
+</tr>
+<tr>
+<td>&quot;Peak element&quot;, bitonic shape</td>
+<td>Compare mid to mid+1; keep the rising side</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — boundary search (first index where predicate is true):</strong></p>
+<pre><code>def first_true(lo, hi, ok):        # ok: F F F T T T over [lo..hi]
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if ok(mid):
+            hi = mid               # mid works — keep it, search left
+        else:
+            lo = mid + 1           # mid fails — discard it
+    return lo                      # first True; caller validates empties
+</code></pre>
+<p><strong>Complexity:</strong> O(log n) time, O(1) space. The discipline: pick one shape
+per problem, define <code>ok</code> precisely, and state the invariant — &quot;everything
+left of <code>lo</code> is false, everything right of <code>hi</code> is true.&quot; That sentence makes
+the terminating state obvious and the off-by-ones checkable.</p>
+<p><strong>Drills (easy → hard):</strong> Binary Search → Find First and Last Position of
+Element in Sorted Array (two boundary runs) → Find Minimum in Rotated Sorted
+Array → Search in Rotated Sorted Array.</p>
+</section><section class="sec"><h2>Pattern 2 — Search on answer: binary search where nothing is sorted</h2>
+<p>The upgrade. If a candidate answer&#39;s feasibility is monotone — false below
+the optimum, true at and above it — the <em>answer space</em> is sorted, and binary
+search applies to any space with that shape: harvest rates, shipping
+capacities, subarray-sum ceilings, even the kth-smallest value in a matrix
+with sorted rows and columns (count elements ≤ mid in O(n) with a staircase
+walk from the bottom-left). The feasibility check is usually greedy and
+O(n); total cost is O(n log(hi − lo)).</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Minimize the maximum / maximize the minimum&quot;</td>
+<td>Search on answer</td>
+</tr>
+<tr>
+<td>&quot;Minimum speed/capacity/rate to finish within a limit&quot;</td>
+<td>Monotone feasibility over a value range</td>
+</tr>
+<tr>
+<td>Brute force would be O(range × n)</td>
+<td>Compress the range factor to log</td>
+</tr>
+<tr>
+<td>kth smallest with sorted rows/columns</td>
+<td>Binary search the value; count ≤ mid fast</td>
+</tr>
+<tr>
+<td>&quot;Can we do X within budget Y?&quot;</td>
+<td>Feasibility predicate + binary search</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — minimize the maximum split:</strong></p>
+<pre><code>def minimize_max_split(nums, k):
+    def feasible(cap):                 # monotone in cap
+        chunks, running = 1, 0
+        for x in nums:
+            if running + x &gt; cap:
+                chunks, running = chunks + 1, x
+            else:
+                running += x
+        return chunks &lt;= k
+    lo, hi = max(nums), sum(nums)      # tight bounds — justify aloud
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if feasible(mid): hi = mid
+        else: lo = mid + 1
+    return lo
+</code></pre>
+<p><strong>Complexity:</strong> O(n log(hi − lo)) time, O(1) extra space. The bounds are
+part of the answer: <code>lo = max(nums)</code> because no split can dodge the largest
+element, <code>hi = sum(nums)</code> because one chunk is always legal. Deriving those
+two lines aloud is worth more than the binary search itself.</p>
+<p><strong>Drills (easy → hard):</strong> Koko Eating Bananas (min speed) → Capacity to Ship
+Packages Within D Days (min weight) → Split Array Largest Sum (the template,
+verbatim) → Kth Smallest Element in a Sorted Matrix (count-based feasibility).</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/binary-search/overview">Hello Interview&#39;s binary-search chapter</a> for rotated-array and search-on-answer walkthroughs.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
+interview with me on BINARY SEARCH, including search-on-answer problems
+where the input is not sorted but a feasibility predicate is monotone.
+
+1. Pick ONE problem that maps to these patterns at senior difficulty.
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern it uses.
+2. Enforce a 30-minute timer. Warn me at 5 minutes left; stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted, and trace one example before I call it done.
+6. When time is up or I say done, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases — one line of evidence per score,
+   then the single highest-leverage improvement.
+
+Start with the problem statement. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You keep the two loop shapes separate and can say when each applies</li>
+<li><span class="cb" aria-hidden="true"></span>You state the invariant (&quot;left of lo false, right of hi true&quot;) before coding</li>
+<li><span class="cb" aria-hidden="true"></span>Rotated arrays: the sorted-half test is a reflex</li>
+<li><span class="cb" aria-hidden="true"></span>&quot;Minimize the maximum&quot; triggers search-on-answer in under a minute</li>
+<li><span class="cb" aria-hidden="true"></span>You derive lo/hi bounds aloud instead of defaulting to 0 and infinity</li>
+<li><span class="cb" aria-hidden="true"></span>You state O(n log(range)) and name where each factor comes from</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Search space</td>
+<td>The candidates still possible — your pointers bound it</td>
+</tr>
+<tr>
+<td>Boundary search</td>
+<td>Finding the first/last index where a predicate flips</td>
+</tr>
+<tr>
+<td>Predicate (<code>ok</code>)</td>
+<td>A yes/no feasibility test; binary search needs it monotone</td>
+</tr>
+<tr>
+<td>Monotone</td>
+<td>Once true, stays true (or vice versa) as the candidate grows — the precondition</td>
+</tr>
+<tr>
+<td>Search on answer</td>
+<td>Binary searching candidate <em>values</em> rather than array positions</td>
+</tr>
+<tr>
+<td>Feasibility check</td>
+<td>The greedy O(n) probe deciding which half survives</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Blanking.</strong> Ask: is any quantity here monotone? If yes, you can binary
+search <em>it</em> even when the array is chaos. Saying that aloud is half the
+answer.</li>
+<li><strong>Wrong shape.</strong> Mixing <code>left &lt;= right</code> with <code>hi = mid</code> loops forever or
+skips the answer. Pick the shape, write the invariant next to it.</li>
+<li><strong>Off-by-one on mid.</strong> <code>hi = mid</code> pairs with <code>while lo &lt; hi</code> and no
+<code>mid ± 1</code>; <code>while left &lt;= right</code> pairs with <code>mid ± 1</code> on both branches.
+The pairs go together — write them as a pair.</li>
+<li><strong>Non-monotone predicate.</strong> If <code>ok</code> isn&#39;t monotone, binary search returns
+garbage silently. Verify the monotonicity claim out loud before coding.</li>
+<li><strong>Bounds too loose.</strong> <code>lo = 0, hi = 10**18</code> works but signals guesswork.
+Tight bounds (<code>max</code>, <code>sum</code>) show you understood the problem&#39;s physics.</li>
+<li><strong>Skipping the trace.</strong> Binary search bugs are invisible until you trace
+one 5-element example by hand. Do it before saying done.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../05-heaps/">Challenge 5 — Heaps</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/03-stack-and-linked-list/"><span>Previous</span><strong>Stack & Linked List</strong></a>
+    <a class="next" href="../../challenges/05-heaps/"><span>Next</span><strong>Heaps</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

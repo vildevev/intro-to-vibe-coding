@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The capstone. DP is not a collection of memorized solutions — it's a method with four steps written before any code: define the state as an English sentence, derive the recurrence from the choices it implies, pin the base cases, then implement top-down (memo) or bottom-up (table). Every pattern before this one funnels here: backtracking's call tree is DP's brute force, greedy's counterexamples route here, and the complexity instincts from nine challenges tell you whether the state count is survivable.">
+<title>Challenge 10: Dynamic Programming — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">10</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 10</span><span class="chip">about 90 minutes</span></p>
+    <h1>Dynamic Programming</h1>
+    <p class="mission"><strong>Mission.</strong> The capstone. DP is not a collection of memorized solutions — it&#39;s a method with four steps written before any code: define the <em>state</em> as an English sentence, derive the <em>recurrence</em> from the choices it implies, pin the <em>base cases</em>, then implement top-down (memo) or bottom-up (table). Every pattern before this one funnels here: backtracking&#39;s call tree is DP&#39;s brute force, greedy&#39;s counterexamples route here, and the complexity instincts from nine challenges tell you whether the state count is survivable.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 Two hundred problems, no method</h2>
+<p>Candidate A has grinded every classic DP problem on every list that exists —
+Coin Change, House Robber, all of them, solutions memorized cold. Then the
+interviewer asks something one degree off the canon, and A freezes: there&#39;s no
+remembered solution to recall, and A never learned to <em>build</em> one. Meanwhile
+Candidate B, who has done a fraction of the problems, writes four comment
+lines in the first five minutes: &quot;state: <code>best(i)</code> = answer for the first i
+items; recurrence: max(skip, take); base: <code>best(0)</code> = 0; fill order:
+ascending.&quot; From those four lines the code is mechanical, because every DP
+solution is the same four lines wearing different clothes. The exam isn&#39;t &quot;do
+you know this problem&quot; — it&#39;s &quot;can you run the method on a problem you&#39;ve
+never seen.&quot;</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The four-line precode: <strong>state, recurrence, base cases, fill order</strong></li>
+<li><strong>Memoization</strong> (top-down): brute force first, then two lines of cache</li>
+<li><strong>Bottom-up</strong>: the loop version, and when it&#39;s the better default</li>
+<li>The <strong>1D → 2D jump</strong>: grids, string pairs, and constraint dimensions</li>
+<li>The <strong>state template library</strong> — knapsack, LIS, string-pair, grid-path</li>
+<li><strong>Space optimization</strong> (rolling row / last-k variables), and why DP closes the course</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — The method: state, recurrence, base, order</h2>
+<p>Do not write code first. Write four sentences as comments. (1) <em>State</em>: a full
+English sentence with an index in it — &quot;<code>best(i)</code> = the maximum haul from the
+first i houses.&quot; Vague states are where all DP bugs are born. (2) <em>Recurrence</em>:
+the choices at each state, as a max/min/sum over earlier states — &quot;house i:
+skip it (<code>best(i−1)</code>) or take it (<code>best(i−2) + value[i−1]</code>).&quot; (3) <em>Base cases</em>:
+the smallest inputs answered directly. (4) <em>Fill order</em>: which states must
+exist before which. Then top-down is mechanical: take the brute-force
+recursion your recurrence describes and add two lines — check the memo before
+recursing, store the result before returning. Complexity becomes arithmetic:
+number of states × work per state.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Maximize / minimize / count the ways&quot; over a sequence</td>
+<td>DP; write the four lines first</td>
+</tr>
+<tr>
+<td>Brute-force recursion is exponential</td>
+<td>Overlapping subproblems — memoize it</td>
+</tr>
+<tr>
+<td>Greedy counterexample found (Challenge 9)</td>
+<td>DP is the fallback — start at the state</td>
+</tr>
+<tr>
+<td>&quot;How many distinct ways to reach/build X&quot;</td>
+<td>Counting DP: sum the branches</td>
+</tr>
+<tr>
+<td>Earlier choices poison later ones</td>
+<td>The signature DP smell — no greedy fix</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — top-down memo over a 1D state:</strong></p>
+<pre><code>def solve(items):
+    memo = {}
+    def dp(i):                        # dp(i) == &lt;state sentence here&gt;
+        if i in memo:
+            return memo[i]
+        if i &lt;= 1:                    # base cases: smallest states
+            return base_value(i)
+        take = dp(i - 2) + value_of_taking(i)
+        skip = dp(i - 1)
+        memo[i] = max(take, skip)     # max / min / sum — per the ask
+        return memo[i]
+    return dp(len(items))
+</code></pre>
+<p><strong>Complexity:</strong> O(n) time — n states, O(1) work each — and O(n) space for the
+memo plus the call stack. The unmemoized brute force is O(2ⁿ); quoting both
+numbers (&quot;2ⁿ without the memo, n × O(1) with it&quot;) is the whole complexity
+story of the pattern.</p>
+<p><strong>Drills (easy → hard):</strong> Climbing Stairs → House Robber → Coin Change (min
+over take-branches) → Longest Increasing Subsequence (state = best <em>ending
+exactly at</em> i).</p>
+</section><section class="sec"><h2>Pattern 2 — Memo vs bottom-up, then the 1D → 2D jump</h2>
+<p>Top-down is the interview default: the brute force is easier to get right, the
+memo is two added lines, and it only computes states actually reachable.
+Convert to bottom-up when asked — or when space matters, because &quot;replace the
+table with the last k variables&quot; reads naturally off the loop. The real
+difficulty spike is dimensionality, and it comes from exactly three sources.
+<strong>Grids</strong>: <code>dp[i][j]</code> = answer for cell (i, j); the recurrence reads the
+neighbors you could have arrived from (Unique Paths: from above + from the
+left; first row and column are base cases). <strong>String pairs</strong>: <code>dp[i][j]</code> over
+prefixes of <em>both</em> strings — match moves diagonally, mismatch takes the min
+over the three neighbors (Edit Distance, Longest Common Subsequence).
+<strong>Constraint dimensions</strong>: the state needs a second coordinate to stay honest —
+(item index, capacity left) for knapsacks, (node, stops remaining) for the
+K-stops flight problem.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Answer for a <em>position</em> in one sequence</td>
+<td>1D: <code>dp[i]</code> from a window of earlier states</td>
+</tr>
+<tr>
+<td>Answer for a <em>cell</em> in a grid</td>
+<td>2D: <code>dp[i][j]</code> from arrival neighbors</td>
+</tr>
+<tr>
+<td>Two strings in the problem</td>
+<td><code>dp[i][j]</code> = prefixes of both; diagonal on match</td>
+</tr>
+<tr>
+<td>Budget, capacity, or &quot;at most k&quot; constraint</td>
+<td>Add that dimension to the state</td>
+</tr>
+<tr>
+<td>Recurrence reads only the previous row</td>
+<td>Rolling row / two variables for near-O(1) space</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — 2D bottom-up over a grid:</strong></p>
+<pre><code>def grid_dp(rows, cols):
+    dp = [[0] * cols for _ in range(rows)]
+    dp[0][0] = seed
+    for j in range(1, cols): dp[0][j] = base_from_left   # first row
+    for i in range(1, rows): dp[i][0] = base_from_top    # first col
+    for i in range(1, rows):
+        for j in range(1, cols):
+            dp[i][j] = combine(dp[i - 1][j],    # from above
+                               dp[i][j - 1],    # from the left
+                               dp[i - 1][j - 1])# diagonal, if the ask needs it
+    return dp[rows - 1][cols - 1]
+</code></pre>
+<p><strong>Complexity:</strong> O(rows × cols) states × O(1) each = O(rows × cols) time and
+space; when the recurrence touches only the previous row, one row plus a carry
+variable does the same job — offer that unprompted, it&#39;s a favorite follow-up.</p>
+<p><strong>Drills (easy → hard):</strong> Unique Paths → Decode Ways (counting with validity
+gates) → Word Break (state = prefix length; choices = dictionary words) →
+Edit Distance (the string-pair 2D).</p>
+</section><section class="sec"><h2>Pattern 3 — The state template library — and why DP comes last</h2>
+<p>Six state shapes cover nearly every interview DP. Learning them as <em>states</em> —
+not as solutions — means an unseen problem only has to match a shape, not a
+problem ID; the unbounded-knapsack template below is the workhorse. And this
+is why DP closes the course: backtracking (Challenge 8) <em>is</em> the brute force
+whose call tree you memoize — same states, repeats removed; greedy (Challenge
+9) fails its counterexample test and hands the problem here; and the
+recognition reflexes from every earlier challenge tell you within a minute
+whether the state space is polynomial or hopeless. The senior narration is the
+pipeline itself: brute force out loud → which states repeat? → memo →
+bottom-up → squeeze space.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Best/count for the first i items, no constraint</td>
+<td>1D linear: <code>dp[i]</code> from <code>dp[i−1]</code>, <code>dp[i−2]</code></td>
+</tr>
+<tr>
+<td>…subject to capacity/budget w</td>
+<td>Knapsack: <code>dp[i][w]</code>, items outer, capacity inner</td>
+</tr>
+<tr>
+<td>&quot;Fewest items to total exactly x&quot;, reusable items</td>
+<td>Unbounded knapsack: <code>dp[x] = 1 + min(dp[x − c])</code></td>
+</tr>
+<tr>
+<td>&quot;Best subsequence ending at i&quot;</td>
+<td><code>dp[i]</code> over all j &lt; i (LIS); O(n²)</td>
+</tr>
+<tr>
+<td>Answer over prefixes of two strings</td>
+<td><code>dp[i][j]</code>: match → diagonal; else min/max of neighbors</td>
+</tr>
+<tr>
+<td>Paths to cell (i, j)</td>
+<td><code>dp[i][j] = up + left</code>; obstacles contribute 0</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — unbounded knapsack (Coin Change shape):</strong></p>
+<pre><code>def coin_change(coins, amount):
+    dp = [inf] * (amount + 1)        # dp[x] = fewest coins totaling x
+    dp[0] = 0                        # base: zero coins make zero
+    for x in range(1, amount + 1):   # budget outer…
+        for c in coins:              # …choices inner
+            if c &lt;= x and dp[x - c] + 1 &lt; dp[x]:
+                dp[x] = dp[x - c] + 1
+    return dp[amount] if dp[amount] != inf else -1
+</code></pre>
+<p><strong>Complexity:</strong> O(amount × len(coins)) time, O(amount) space — states × work
+per state, the same arithmetic as always. Name the family out loud (&quot;1D
+unbounded knapsack&quot;) — vocabulary for the state, not the problem, is what
+transfers to the unseen question.</p>
+<p><strong>Drills (easy → hard):</strong> Coin Change → Longest Common Subsequence → Partition
+Equal Subset Sum (0/1 knapsack) → Maximal Square (min-of-three-neighbors).</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/dynamic-programming/overview">Hello Interview&#39;s dynamic programming chapter</a> for worked builds from brute force to optimized.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run a DP capstone
+mock: TWO back-to-back dynamic programming problems, back to back, no break.
+
+1. Pick problem ONE at senior difficulty on an unseen-feeling DP variant
+   (mix 1D, 2D, knapsack, or string-pair across the two problems).
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern or the state.
+2. Enforce a 30-minute timer PER problem. Warn me at 5 minutes left;
+   stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted, and trace one example before I call it done.
+6. GRADE PATTERN-RECOGNITION SPEED explicitly: time from problem
+   statement to a correct state definition, in minutes, for each problem.
+7. After both problems, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases, pattern-recognition speed —
+   one line of evidence per score per problem, then the single
+   highest-leverage improvement across the pair.
+
+Start with problem one. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>State / recurrence / base / order exist as four comment lines before code</li>
+<li><span class="cb" aria-hidden="true"></span>&quot;#states × work per state&quot; is your default complexity sentence</li>
+<li><span class="cb" aria-hidden="true"></span>Brute force → memo is mechanical: check cache, store result, return</li>
+<li><span class="cb" aria-hidden="true"></span>1D vs 2D decided in the first minute — with the second dimension named</li>
+<li><span class="cb" aria-hidden="true"></span>You offer the rolling-row / last-k-variables space cut unprompted</li>
+<li><span class="cb" aria-hidden="true"></span>Two unseen problems in 30 minutes each: state defined inside 5 minutes</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>State</td>
+<td>The subproblem your table entry solves, defined precisely enough to index</td>
+</tr>
+<tr>
+<td>Recurrence relation</td>
+<td>The answer for one state written in terms of earlier states</td>
+</tr>
+<tr>
+<td>Memoization</td>
+<td>Caching each state&#39;s result on first computation (top-down)</td>
+</tr>
+<tr>
+<td>Top-down / bottom-up</td>
+<td>Recursion + cache, vs loop from base cases to the answer</td>
+</tr>
+<tr>
+<td>Overlapping subproblems</td>
+<td>The same states computed repeatedly — DP&#39;s reason to exist</td>
+</tr>
+<tr>
+<td>Optimal substructure</td>
+<td>The optimal answer assembles from optimal sub-answers</td>
+</tr>
+<tr>
+<td>Knapsack</td>
+<td>State = (items considered, budget remaining); the cost/value workhorse</td>
+</tr>
+<tr>
+<td>Rolling row</td>
+<td>Keeping only the previous row/last k values when the recurrence allows it</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>A vague state.</strong> &quot;dp[i] is… the answer-ish thing&quot; produces off-by-ones and
+wrong recurrences. Write the full English sentence with the index in it; if
+you can&#39;t, you don&#39;t have a state yet.</li>
+<li><strong>Fill order violated.</strong> Bottom-up reads states that must already exist —
+<code>dp[i]</code> depends on <code>dp[i−1]</code>, <code>dp[i−2]</code> → loop ascending. One wrong
+direction and you read zeros.</li>
+<li><strong>Index convention drift.</strong> &quot;First i items&quot; (table size n+1) and &quot;item at
+index i&quot; (size n) are both fine — mixed in one solution they cause most DP
+crashes. Pick one, write it in a comment, keep it.</li>
+<li><strong>Right structure, wrong combiner.</strong> Maximize → <code>max</code>, minimize → <code>min</code>,
+count ways → <code>sum</code>. Mixing them yields plausible-looking wrong answers that
+pass eyeball tests on tiny inputs.</li>
+<li><strong>Memo never written.</strong> Compute the value, store it… and forget to return
+it, or store after the return. The cache stays empty and the runtime stays
+exponential — check the memo is populated before declaring victory.</li>
+<li><strong>Pattern-matching instead of state-building.</strong> &quot;This looks like Coin
+Change, so the answer is probably—&quot; is the trap of this challenge&#39;s war
+story. Run the four lines on THIS problem; shapes only help after the state
+is written.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../../../301/challenges/12-full-designs/">Full system design mocks — 301 Challenge 12</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/09-greedy-and-matrices/"><span>Previous</span><strong>Greedy & Matrices</strong></a>
+    <a class="next" href="../../../index.html"><span>Next</span><strong>Course home</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

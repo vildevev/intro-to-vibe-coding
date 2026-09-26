@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Two skills with one theme: build the structure before you search it. Graph questions rarely hand you a graph — you model one (adjacency list, indegrees, edges between routes), then apply the algorithm the problem selects: topological sort for dependencies, BFS/Dijkstra for shortest paths, Union-Find for live connectivity. Tries are the same instinct for strings: pay once for shared prefixes, and every later word/prefix query becomes an O(L) walk.">
+<title>Challenge 07: Graphs & Tries — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">07</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 07</span><span class="chip">about 60 minutes</span></p>
+    <h1>Graphs & Tries</h1>
+    <p class="mission"><strong>Mission.</strong> Two skills with one theme: build the structure before you search it. Graph questions rarely hand you a graph — you model one (adjacency list, indegrees, edges between routes), then apply the algorithm the problem selects: topological sort for dependencies, BFS/Dijkstra for shortest paths, Union-Find for live connectivity. Tries are the same instinct for strings: pay once for shared prefixes, and every later word/prefix query becomes an O(L) walk.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The graph you have to build</h2>
+<p>A prerequisites-shaped question lands: courses, dependencies, &quot;can you finish
+them all?&quot; Candidate A treats it as an array problem and starts inventing sort
+rules. Candidate B&#39;s second sentence is &quot;this is a directed graph —
+dependencies are edges, &#39;can I finish&#39; asks whether the graph has a cycle, so
+Kahn&#39;s algorithm, O(V + E).&quot; The harder half of that answer was the modeling:
+naming nodes, naming edges, letting a standard algorithm fall out. The next
+trap is subtler — in a bus-routes question the natural node is the <em>route</em>,
+not the <em>stop</em>, and the candidate who models stops builds a graph twice as
+hard to search. Interviewers weight the modeling sentences more than the code
+that follows, because the code is a template and the model is a decision.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>Building a graph from raw input: adjacency list vs matrix, and the default</li>
+<li><strong>Topological sort</strong> via Kahn&#39;s algorithm — cycle detection falls out free</li>
+<li>Picking a shortest-path algorithm by edge weight: BFS, Dijkstra, Bellman-Ford</li>
+<li><strong>Union-Find</strong>: the mental model and when it beats repeated DFS</li>
+<li><strong>Tries</strong> — <code>children</code> dict + end-of-word flag, O(L) operations, and how
+they prune word-in-grid searches</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — Graphs: build it, then sort it or search it</h2>
+<p>Model first, out loud: nodes, edges, adjacency list (<code>node -&gt; neighbors</code>, the
+default) or matrix (V×V, dense graphs only). Then the algorithm selects
+itself. For dependencies — prerequisites, build order, &quot;valid ordering&quot; —
+it&#39;s Kahn&#39;s algorithm: count indegrees, seed a queue with the zeros, pop a
+node into the order, decrement its neighbors&#39; indegrees, enqueue anything that
+hits zero. If the finished order is shorter than the node count, the remainder
+is stuck in a cycle — the check <em>is</em> the answer to the feasibility variant.
+Need connectivity without an ordering → Union-Find: two operations (<code>find</code>
+with path compression, <code>union</code> by rank), effectively O(1) amortized, and the
+right tool when unions and connectivity queries interleave; one sentence to
+hold onto: a union-find is a forest where each tree is one component.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Prerequisites / build order / course scheduling&quot;</td>
+<td>Topological sort (Kahn&#39;s)</td>
+</tr>
+<tr>
+<td>&quot;Does a valid ordering exist?&quot;</td>
+<td>Kahn&#39;s; short order ⇒ cycle</td>
+</tr>
+<tr>
+<td>&quot;Recover a hidden alphabet from sorted words&quot;</td>
+<td>Edges from adjacent word pairs, then topo sort</td>
+</tr>
+<tr>
+<td>Unions + &quot;are these connected?&quot; interleaved</td>
+<td>Union-Find, not a DFS per query</td>
+</tr>
+<tr>
+<td>&quot;Minimum cost/time&quot; over weighted edges</td>
+<td>Dijkstra — see below</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — Kahn&#39;s algorithm:</strong></p>
+<pre><code>def topo_sort(n, edges):
+    graph = defaultdict(list)
+    indeg = [0] * n
+    for u, v in edges:                    # directed edge u -&gt; v
+        graph[u].append(v)
+        indeg[v] += 1
+    queue = deque(u for u in range(n) if indeg[u] == 0)
+    order = []
+    while queue:
+        u = queue.popleft()
+        order.append(u)
+        for v in graph[u]:
+            indeg[v] -= 1
+            if indeg[v] == 0:
+                queue.append(v)
+    return order if len(order) == n else []   # short = cycle exists
+</code></pre>
+<p><strong>Shortest paths: pick by edge weight.</strong> One question decides the algorithm.
+All edges equal → BFS, O(V + E) (Challenge 6). Non-negative weights →
+Dijkstra, O((V + E) log V): greedily settle the cheapest unsettled node from a
+min-heap, then relax its edges — push <code>(d + w, v)</code> when a cheaper route
+appears, and skip stale heap entries at pop time (<code>if d &gt; dist[u]: continue</code>).
+Negative weights break that greedy guarantee → Bellman-Ford, O(V·E), mostly
+discussed rather than coded. Have Dijkstra&#39;s one-liner ready: &quot;with
+non-negative weights, the cheapest unsettled node can&#39;t be improved by a
+detour, so settling it is safe.&quot;</p>
+<p><strong>Complexity:</strong> Kahn&#39;s is O(V + E) time and space — every node enqueued once,
+every edge relaxed once. Dijkstra adds the log factor from the heap. Drills
+(easy → hard): Course Schedule → Course Schedule II (return the order) →
+Network Delay Time (Dijkstra; answer = max distance) → Cheapest Flights Within
+K Stops (add a stops dimension to the state).</p>
+</section><section class="sec"><h2>Pattern 2 — Tries: pay for the prefix once</h2>
+<p>A trie node is two fields: a <code>children</code> map from character to node, and an
+<code>is_end</code> flag. Insert and search both walk L characters — O(L) per operation,
+independent of how many words are stored. That&#39;s the value proposition: shared
+prefixes stored once, &quot;does any word start with p&quot; answered by a walk rather
+than a scan, and autocomplete as walk-to-the-prefix plus a DFS collecting
+everything marked <code>is_end</code>. On a single membership query a hash set wins; the
+trie earns its keep when queries are many, prefix-flavored, or need to <em>prune</em>
+— the grid word hunt (Word Search II) keeps the dictionary in a trie so the
+DFS abandons a cell-path the moment it stops being a prefix of any word.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;Autocomplete / all words starting with…&quot;</td>
+<td>Trie: walk the prefix, DFS the subtree</td>
+</tr>
+<tr>
+<td>&quot;Search with wildcard characters&quot;</td>
+<td>Trie DFS branching on the wildcard</td>
+</tr>
+<tr>
+<td>Word list + letter grid</td>
+<td>Trie + backtracking from every cell (Challenge 8)</td>
+</tr>
+<tr>
+<td>Many queries over one dictionary</td>
+<td>Build the trie once — O(total characters)</td>
+</tr>
+<tr>
+<td>One membership query, ever</td>
+<td>A set; don&#39;t build infrastructure</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — the trie core:</strong></p>
+<pre><code>class TrieNode:
+    def __init__(self):
+        self.children = {}               # char -&gt; TrieNode
+        self.is_end = False              # a word terminates here
+
+def insert(root, word):
+    node = root
+    for ch in word:
+        node = node.children.setdefault(ch, TrieNode())
+    node.is_end = True
+
+def search(root, word):                  # startsWith: delete the last line
+    node = root
+    for ch in word:
+        if ch not in node.children:
+            return False
+        node = node.children[ch]
+    return node.is_end
+</code></pre>
+<p><strong>Complexity:</strong> O(L) per insert/search/delete where L is the word length;
+space O(total characters) worst case — no shared prefixes means every
+character gets a node. Deletion is the bonus round: unmark <code>is_end</code>, then walk
+back up removing nodes that are neither word-ends nor parents. Drills (easy →
+hard): Implement Trie (Prefix Tree) → Design Add and Search Words Data
+Structure (the wildcard) → Search Suggestions System → Word Search II.</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/graphs/overview">Hello Interview&#39;s graphs chapter</a> — their trie chapter follows the same format.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
+interview with me on GRAPHS and TRIES: modeling graphs from raw input,
+topological sort, shortest-path algorithm selection, and prefix trees.
+
+1. Pick ONE problem that maps to these patterns at senior difficulty.
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern it uses.
+2. Enforce a 25-minute timer. Warn me at 5 minutes left; stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted, and trace one example before I call it done.
+   Push one follow-up on my graph modeling choice: what are the nodes,
+   what are the edges, and why.
+6. When time is up or I say done, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases — one line of evidence per score,
+   then the single highest-leverage improvement.
+
+Start with the problem statement. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>&quot;Let me define the graph: nodes are…, edges are…&quot; precedes your code</li>
+<li><span class="cb" aria-hidden="true"></span>Kahn&#39;s algorithm is on paper from memory, cycle test included</li>
+<li><span class="cb" aria-hidden="true"></span>You ask &quot;what do edges cost?&quot; before naming any shortest-path algorithm</li>
+<li><span class="cb" aria-hidden="true"></span>The Dijkstra skeleton (heap, stale-entry skip, relax) rebuilds from notes</li>
+<li><span class="cb" aria-hidden="true"></span>The TrieNode class (children + is_end) takes under two minutes</li>
+<li><span class="cb" aria-hidden="true"></span>You can say when Union-Find beats DFS: interleaved unions and queries</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Adjacency list / matrix</td>
+<td><code>node -&gt; neighbors</code> (the default) vs a V×V grid (dense graphs only)</td>
+</tr>
+<tr>
+<td>Indegree</td>
+<td>Number of incoming edges; zero means &quot;nothing blocks me&quot;</td>
+</tr>
+<tr>
+<td>Topological sort</td>
+<td>An ordering of a DAG where every edge points forward</td>
+</tr>
+<tr>
+<td>Dijkstra&#39;s algorithm</td>
+<td>Greedy shortest paths on non-negative weights via a min-heap</td>
+</tr>
+<tr>
+<td>Union-Find</td>
+<td>Forest structure tracking merged components; find + union, near O(1)</td>
+</tr>
+<tr>
+<td>Trie</td>
+<td>Prefix tree; nodes hold children maps and an end-of-word flag</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Modeling the wrong node.</strong> Bus-routes problems want routes as nodes (with
+a stop → routes map), not stops. State the choice; a wrong model poisons
+everything downstream and no algorithm fixes it.</li>
+<li><strong>Directed vs undirected confusion.</strong> A prerequisite <code>[a, b]</code> points one
+way. Adding both directions turns a cycle detector into mush.</li>
+<li><strong>Trusting a partial topological order.</strong> Kahn&#39;s silently returns a short
+order on a cycle. Check <code>len(order) == n</code> — that check <em>is</em> the answer to
+the feasibility variant.</li>
+<li><strong>Dijkstra on negative weights.</strong> The greedy settlement guarantee dies and
+answers come out plausible-but-wrong. Name Bellman-Ford and move on.</li>
+<li><strong>search vs startsWith mixed up.</strong> Only <code>search</code> checks <code>is_end</code>;
+<code>startsWith</code> succeeds whenever the walk survives. One boolean, two contracts.</li>
+<li><strong>Matrix by default.</strong> An adjacency matrix on a sparse graph burns O(V²)
+memory and iteration. Default to the list; say the trade-off if asked.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../08-backtracking/">Challenge 8 — Backtracking</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/06-dfs-and-bfs/"><span>Previous</span><strong>DFS & BFS</strong></a>
+    <a class="next" href="../../challenges/08-backtracking/"><span>Next</span><strong>Backtracking</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

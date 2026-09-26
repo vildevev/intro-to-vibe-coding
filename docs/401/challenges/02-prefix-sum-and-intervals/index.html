@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Two patterns about ranges. Prefix sum converts "aggregate over nums[i..j]" into one subtraction — and, with a hash map, counts subarrays by their sum. Intervals convert scheduling chaos into sort-then-compare-neighbors. Shared instinct: preprocess so every query or comparison is O(1).">
+<title>Challenge 02: Prefix Sum & Intervals — Coding Interview Patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">02</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 02</span><span class="chip">about 60 minutes</span></p>
+    <h1>Prefix Sum & Intervals</h1>
+    <p class="mission"><strong>Mission.</strong> Two patterns about ranges. Prefix sum converts &quot;aggregate over nums[i..j]&quot; into one subtraction — and, with a hash map, counts subarrays by their sum. Intervals convert scheduling chaos into sort-then-compare-neighbors. Shared instinct: preprocess so every query or comparison is O(1).</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 The wrong-tool giveaway</h2>
+<p>&quot;Count the subarrays that sum to k&quot; — with negative numbers in the input.
+Candidate A says immediately: &quot;prefix sums with a running total and a map of
+prefix counts; the negatives rule out a sliding window.&quot; Candidate B reached
+for the window because it worked last round, and spent twenty minutes
+fighting shrink conditions that cannot work. Pattern recognition is also
+pattern <em>exclusion</em>: knowing the window needs validity that&#39;s monotone as it
+grows, and that sums with negatives aren&#39;t, is the entire diagnosis. A
+finished with tests traced; B never got a working answer.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li><strong>Prefix sums</strong> — O(1) range aggregates from one linear preprocessing pass</li>
+<li><strong>Prefix + hash map</strong> — counting subarrays by sum, negatives and all</li>
+<li><strong>Sorting intervals by start</strong> — merge, detect conflicts, insert</li>
+<li><strong>Sorting intervals by end</strong> — the greedy that keeps the most non-overlapping</li>
+<li>Boundary discipline: touching endpoints, empty inputs, the <code>{0: 1}</code> seed</li>
+</ul>
+</section><section class="sec"><h2>Pattern 1 — Prefix sum: pay once, query free</h2>
+<p><code>prefix[i]</code> = sum of the first i elements, with <code>prefix[0] = 0</code>. Then
+sum(nums[i..j]) = prefix[j+1] − prefix[i]. Anything additive works: vowel
+counts, parity counts, balance deltas. The interview-classic variant counts
+subarrays summing to k with a hash map from prefix value → times seen: a
+subarray ending at <code>i</code> sums to k iff <code>total − k</code> appeared as an earlier
+prefix, and the map tells you how many times.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Many &quot;sum/count over range [l, r]&quot; queries, static array</td>
+<td>Build prefix once; each query is O(1)</td>
+</tr>
+<tr>
+<td>&quot;Count subarrays with sum exactly k&quot; (negatives allowed)</td>
+<td>Running prefix + hash map of prior prefix counts</td>
+</tr>
+<tr>
+<td>Range property is additive (vowels, parity, balance)</td>
+<td>Binary prefix: 1 where the property holds, else 0</td>
+</tr>
+<tr>
+<td>Nested loops recomputing range totals</td>
+<td>One prefix pass kills the inner loop</td>
+</tr>
+<tr>
+<td>Tried a window but values go negative</td>
+<td>Prefix + map, not a window</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — subarray sum equals k:</strong></p>
+<pre><code>def subarray_sum_k(nums, k):
+    count = total = 0
+    seen = {0: 1}                      # empty prefix sums to 0 — seed it
+    for x in nums:
+        total += x                     # prefix sum through x
+        count += seen.get(total - k, 0)  # subarrays ending here with sum k
+        seen[total] = seen.get(total, 0) + 1
+    return count
+</code></pre>
+<p><strong>Complexity:</strong> O(n) to build, O(1) per range query, O(n) space. For the
+counting variant: O(n) time and space, and the <code>{0: 1}</code> seed is what makes
+subarrays starting at index 0 count. In fixed-width languages, ask about
+magnitudes — prefix sums overflow.</p>
+<p><strong>Drills (easy → hard):</strong> Range Sum Query — Immutable → Subarray Sum Equals
+K → Count Vowels in Substrings (batched range queries) → Contiguous Array
+(equal-count balance as prefix + first-seen map).</p>
+</section><section class="sec"><h2>Pattern 2 — Intervals: sort, then compare neighbors</h2>
+<p>The whole game is the sort key. Sort by <strong>start</strong> to merge or detect
+conflicts — after start-sorting, an interval can only collide with the block
+before it. Sort by <strong>end</strong> to <em>keep</em> the maximum number of non-overlapping
+intervals: the earliest-ending interval is always a safe first pick, because
+it frees the timeline soonest. Sorting by end when the problem says
+&quot;minimum removals&quot; is the tell of someone who drilled this.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>You see…</th>
+<th>Think…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&quot;[start, end] pairs — merge overlapping&quot;</td>
+<td>Sort by start; extend or append into an output block</td>
+</tr>
+<tr>
+<td>&quot;Can a person attend all meetings?&quot;</td>
+<td>Sort by start; any <code>curr.start &lt; prev.end</code> → no</td>
+</tr>
+<tr>
+<td>&quot;Minimum removals so none overlap&quot; / &quot;max non-overlapping&quot;</td>
+<td>Sort by END; greedy keep</td>
+</tr>
+<tr>
+<td>&quot;Insert one interval into a sorted, disjoint list&quot;</td>
+<td>Three phases: before, merge-overlaps, after</td>
+</tr>
+<tr>
+<td>&quot;Free time / common gaps across schedules&quot;</td>
+<td>Merge everything, then report gaps between blocks</td>
+</tr>
+</tbody></table></div>
+<p><strong>Template — merge intervals:</strong></p>
+<pre><code>def merge_intervals(intervals):
+    intervals.sort(key=lambda iv: iv[0])
+    merged = []
+    for start, end in intervals:
+        if not merged or start &gt; merged[-1][1]:
+            merged.append([start, end])              # disjoint: new block
+        else:
+            merged[-1][1] = max(merged[-1][1], end)  # overlap: extend
+    return merged
+</code></pre>
+<p><strong>Complexity:</strong> O(n log n) — the sort dominates; the merge pass is O(n) with
+O(n) output space. Two boundary questions to ask out loud every time: do
+touching endpoints overlap (<code>[1,4]</code> and <code>[4,7]</code>)? Does the problem want
+<code>start &gt; prev_end</code> or <code>&gt;=</code>? Half of all interval bugs live in that one
+comparison.</p>
+<p><strong>Drills (easy → hard):</strong> Can Attend Meetings → Merge Intervals →
+Non-Overlapping Intervals (sort by end) → Employee Free Time (merge across
+schedules, then take the gaps).</p>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/intervals/overview">Hello Interview&#39;s intervals chapter</a> for animated merge and greedy traces.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
+interview with me on PREFIX SUM and INTERVALS.
+
+1. Pick ONE problem that maps to these patterns at senior difficulty.
+   State it concisely: setup, input, output, one worked example, one
+   constraint worth noticing. Do not name the pattern it uses.
+2. Enforce a 30-minute timer. Warn me at 5 minutes left; stop me at zero.
+3. Ask which language I&#39;m using and hold me to it.
+4. Hints only when I explicitly ask, one rung at a time, never code:
+   (a) nudge — restate the constraint or point at a suspicious example;
+   (b) direction — name the family of approach, not the algorithm;
+   (c) structure — outline the algorithm&#39;s steps in words.
+5. Interview like a senior loop: make me restate the problem, state my
+   complexity unprompted, and trace one example before I call it done.
+6. When time is up or I say done, grade 1-5 each: correctness, complexity
+   analysis, communication, edge cases — one line of evidence per score,
+   then the single highest-leverage improvement.
+
+Start with the problem statement. No preamble.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You derive <code>prefix[j+1] − prefix[i]</code> on paper without hesitating</li>
+<li><span class="cb" aria-hidden="true"></span>The <code>{0: 1}</code> seed and why it exists is a sentence you can say</li>
+<li><span class="cb" aria-hidden="true"></span>You switch to prefix+map, not a window, the moment negatives appear</li>
+<li><span class="cb" aria-hidden="true"></span>Start-sort vs end-sort is an automatic choice, justified aloud</li>
+<li><span class="cb" aria-hidden="true"></span>You ask whether touching endpoints overlap before coding intervals</li>
+<li><span class="cb" aria-hidden="true"></span>You state O(n log n) for interval problems and attribute it to the sort</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Prefix sum</td>
+<td>Running-total array; any range aggregate becomes a subtraction</td>
+</tr>
+<tr>
+<td>Seed value</td>
+<td>The <code>{0: 1}</code> map entry standing in for the empty prefix</td>
+</tr>
+<tr>
+<td>Range query</td>
+<td>An aggregate question over <code>[l, r]</code> — what prefixes make O(1)</td>
+</tr>
+<tr>
+<td>Sort key</td>
+<td>The field intervals sort on: start for merging, end for greedy keeping</td>
+</tr>
+<tr>
+<td>Greedy</td>
+<td>Take the locally best pick (earliest end) and never reconsider</td>
+</tr>
+<tr>
+<td>Overlap predicate</td>
+<td>The comparison deciding collision — including whether touching counts</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>Blanking.</strong> Restate, then enumerate the brute force: &quot;recompute each
+range, O(n·q) — the repeated work is re-adding the same leading elements.&quot;
+Prefix sums fall straight out of that sentence.</li>
+<li><strong>Wrong pattern.</strong> A window over negatives is broken by design. If
+validity isn&#39;t monotone as the window grows, stop — prefix+map territory.</li>
+<li><strong>Off-by-one in indexing.</strong> Pick one convention — <code>prefix[0] = 0</code>, so
+<code>sum(i..j) = prefix[j+1] − prefix[i]</code> — and write it down before coding.
+Convention drift is the classic interval bug.</li>
+<li><strong>Sort key mismatch.</strong> Sorting by start for &quot;max non-overlapping&quot; fails
+silently when one long early interval blocks the rest. Keeping intervals →
+sort by end. Merging → sort by start.</li>
+<li><strong>No boundary questions.</strong> Not asking about touching endpoints or empty
+input reads as inexperience. Ask, then code.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../03-stack-and-linked-list/">Challenge 3 — Stack &amp; Linked List</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/01-two-pointers-and-sliding-window/"><span>Previous</span><strong>Two Pointers & Sliding Window</strong></a>
+    <a class="next" href="../../challenges/03-stack-and-linked-list/"><span>Next</span><strong>Stack & Linked List</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

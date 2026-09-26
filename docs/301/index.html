@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A framework, the numbers, and the pattern library — delivered out loud under a 45-minute clock, with an AI mock interviewer on every challenge.">
+<title>System Design Interview Prep — 301 — getglod learn</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../index.html#course-map">101</a>
+    <a href="../201/">201</a>
+    <a href="../301/">301</a>
+    <a href="../401/">401</a>
+    <a href="../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg"><div class="level-meta">
+    <p class="level-chips"><span class="chip">Course 301</span><span class="chip">For senior engineers</span></p>
+    <h1>System Design Interview Prep — 301</h1>
+    <p class="mission"><strong>Mission.</strong> A framework, the numbers, and the pattern library — delivered out loud under a 45-minute clock, with an AI mock interviewer on every challenge.</p>
+  </div></div>
+<div class="prose">
+<p><em>A senior-engineer track: walk into a system design interview with a framework,
+the numbers, and the pattern library — and walk out with the hire.</em></p>
+<p><strong>Who this is for:</strong> mid-level and senior engineers facing product/infrastructure
+design interviews (&quot;Design Uber&quot;, &quot;Design a rate limiter&quot;). You already know how
+to build; this course is about <em>delivering</em> under a 45-minute clock with an
+interviewer watching.</p>
+<p><strong>How it works:</strong> 12 challenges. Each one distills one skill or pattern from real
+interviews, gives you the framework and the numbers, then makes you <em>practice out
+loud</em> — every challenge has a copy-paste prompt that turns any AI chat into a
+mock interviewer. Reading is not the skill; delivering is. Say it, draw it, get
+pushed back on.</p>
+<p><strong>Source note:</strong> the curriculum follows the same arc as
+<a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a>
+— the best material in the field. Explanations here are original; use their site
+for the full-depth versions of every topic.</p>
+<section class="sec"><h2>The course map</h2>
+<ol class="levels" id="course-map">
+  <li><a href="challenges/01-the-interview-decoded/">
+    <span class="lvl-num" aria-hidden="true">01</span>
+    <span class="lvl-main"><span class="lvl-title">The Interview, Decoded</span>
+    <span class="lvl-skill">The rubric, the 45 minutes, what senior actually means</span></span>
+    <span class="lvl-time">45 min</span>
+  </a></li>
+  <li><a href="challenges/02-the-delivery-framework/">
+    <span class="lvl-num" aria-hidden="true">02</span>
+    <span class="lvl-main"><span class="lvl-title">The Delivery Framework</span>
+    <span class="lvl-skill">Requirements → entities → API → design → deep dives, on a clock</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/03-the-toolbox/">
+    <span class="lvl-num" aria-hidden="true">03</span>
+    <span class="lvl-main"><span class="lvl-title">The Toolbox</span>
+    <span class="lvl-skill">Networking, LBs, databases, caches — the pieces everything is made of</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/04-thinking-in-scale/">
+    <span class="lvl-num" aria-hidden="true">04</span>
+    <span class="lvl-main"><span class="lvl-title">Thinking in Scale</span>
+    <span class="lvl-skill">The numbers to know and back-of-envelope math that anchors decisions</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/05-scaling-reads/">
+    <span class="lvl-num" aria-hidden="true">05</span>
+    <span class="lvl-main"><span class="lvl-title">Scaling Reads</span>
+    <span class="lvl-skill">Cache hierarchies, CDNs, replicas — designed via a URL shortener</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/06-scaling-writes/">
+    <span class="lvl-num" aria-hidden="true">06</span>
+    <span class="lvl-main"><span class="lvl-title">Scaling Writes</span>
+    <span class="lvl-skill">Write-heavy systems, partitioning, log-structured storage, Kafka</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/07-real-time-updates/">
+    <span class="lvl-num" aria-hidden="true">07</span>
+    <span class="lvl-main"><span class="lvl-title">Real-Time Updates</span>
+    <span class="lvl-skill">Polling vs SSE vs WebSockets — designed via live comments</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/08-contention/">
+    <span class="lvl-num" aria-hidden="true">08</span>
+    <span class="lvl-main"><span class="lvl-title">Contention</span>
+    <span class="lvl-skill">Race conditions, locks, idempotency — designed via Ticketmaster</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/09-multi-step-processes/">
+    <span class="lvl-num" aria-hidden="true">09</span>
+    <span class="lvl-main"><span class="lvl-title">Multi-Step Processes</span>
+    <span class="lvl-skill">Distributed workflows: sagas, outboxes, exactly-once — via payments</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/10-heavy-things/">
+    <span class="lvl-num" aria-hidden="true">10</span>
+    <span class="lvl-main"><span class="lvl-title">Heavy Things</span>
+    <span class="lvl-skill">Blobs, uploads, and long-running tasks — via Dropbox and LeetCode</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/11-proximity-services/">
+    <span class="lvl-num" aria-hidden="true">11</span>
+    <span class="lvl-main"><span class="lvl-title">Proximity Services</span>
+    <span class="lvl-skill">Geospatial at scale — designed via Yelp/Uber</span></span>
+    <span class="lvl-time">60 min</span>
+  </a></li>
+  <li><a href="challenges/12-full-designs/">
+    <span class="lvl-num" aria-hidden="true">12</span>
+    <span class="lvl-main"><span class="lvl-title">Full Designs</span>
+    <span class="lvl-skill">The whole loop, timed, twice — the capstone</span></span>
+    <span class="lvl-time">2–3 hrs</span>
+  </a></li>
+</ol>
+</section><section class="sec"><h2>The Interview Rules</h2>
+<ol>
+<li><strong>The framework is the track.</strong> Never freestyle a 45-minute interview;
+Requirements → Entities → API → High-level → Deep dives, every time.</li>
+<li><strong>Out loud, always.</strong> Silent reading builds recognition; interviews test
+delivery. Every challenge ends with you talking or typing a design <em>under
+time</em>.</li>
+<li><strong>Numbers before nouns.</strong> &quot;Add a cache&quot; is noise; &quot;at 50k reads/sec with a
+90/10 split, a cache cuts DB load 10x&quot; is a senior signal.</li>
+<li><strong>Depth beats breadth.</strong> The rubric rewards one deep dive done well over six
+done shallow. Senior = fast through the basics, deliberate about depth.</li>
+<li><strong>Trade-offs are the answer.</strong> Every choice gets its cost stated. If you
+can&#39;t name the downside of your own design, the interviewer will do it for
+you — less kindly.</li>
+</ol>
+</section><section class="sec"><h2>Before you start</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>An AI chat you like, for mock interviews (any strong model works)</li>
+<li><span class="cb" aria-hidden="true"></span>A timer you will actually use (your phone; the clock is half the exam)</li>
+<li><span class="cb" aria-hidden="true"></span>A way to draw: paper, Excalidraw, whiteboard — you&#39;ll diagram every challenge</li>
+</ul>
+</section><section class="sec"><h2>FAQ</h2>
+<p><strong>I&#39;m mid-level, not senior — is this too much?</strong>
+No. Mid-level candidates pass the same interviews by covering the basics solidly.
+The course marks where senior depth begins; stop there if that&#39;s your level.</p>
+<p><strong>Why drills instead of more reading?</strong>
+Because the #1 failure mode is candidates who consumed everything and can&#39;t
+deliver. Every challenge&#39;s payoff is a timed, out-loud artifact.</p>
+<p><strong>How does this fit the rest of the campus?</strong>
+The <a href="../../201/">201 track</a> teaches you to <em>run</em> small real systems; this track
+teaches you to <em>talk about</em> systems at interview scale. They reinforce each other.</p>
+<hr>
+<p><em>Start here → <a href="challenges/01-the-interview-decoded/">Challenge 1: The Interview, Decoded</a></em></p>
+</section>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Master the read-scaling ladder — indexes first, then replicas, then caches, then CDNs — by building the canonical read-heavy system (a URL shortener) end to end, and learn the three failure modes that bite once reads are cached.">
+<title>Challenge 05: Scaling Reads — System Design Interview Prep</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">05</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 05</span><span class="chip">about 60 minutes</span></p>
+    <h1>Scaling Reads</h1>
+    <p class="mission"><strong>Mission.</strong> Master the read-scaling ladder — indexes first, then replicas, then caches, then CDNs — by building the canonical read-heavy system (a URL shortener) end to end, and learn the three failure modes that bite once reads are cached.</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 War story: the cache that arrived without a number</h2>
+<p>Two candidates, &quot;Design a URL shortener.&quot; The first aces short-code generation — counters, base62, collision math — then lets every redirect hit the database forever, and only mumbles &quot;we could add Redis&quot; when prompted, with no hit rate, no latency, no load number attached. The second produces a simpler code generator, then says: &quot;500M redirects a day is ~6k QPS average and ~600k at peak; one indexed database can&#39;t absorb peak, so Redis in front cuts origin load by the hit rate — call it 95% — and the DB only serves the long tail.&quot; The second candidate is Senior. The difference isn&#39;t knowledge; it&#39;s the reflex to quantify the read path before touching the write path, and to treat the cache as a load-reduction argument, not a buzzword.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The read-scaling ladder and the numeric triggers for each rung</li>
+<li>The full URL shortener: requirements, math, code generation, the 301/302 choice</li>
+<li>The three ways cached reads fail: hot keys, stampedes, staleness — and their fixes</li>
+<li>When NOT to cache</li>
+</ul>
+</section><section class="sec"><h2>The read-scaling ladder</h2>
+<p>Read traffic outgrows write traffic almost everywhere: per tweet read thousands of times, per product page viewed hundreds of times, ratios of 100:1 and beyond are normal. When the database strains, climb this ladder in order — each rung is cheaper than the one above it:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Rung</th>
+<th>Move</th>
+<th>Trigger</th>
+<th>The catch</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. Optimize in place</td>
+<td>Index the queried/sorted/joined columns; denormalize hot read paths; materialize expensive aggregates</td>
+<td>Any read problem, always first</td>
+<td>None worth mentioning — under-indexing kills more systems than over-indexing</td>
+</tr>
+<tr>
+<td>2. Read replicas</td>
+<td>Writes go to a primary; reads fan out to copies</td>
+<td>Well-indexed DB past ~50–100k read QPS</td>
+<td>Replication lag: a reader may see its own write late (route those reads to the primary)</td>
+</tr>
+<tr>
+<td>3. Cache</td>
+<td>Redis in front, cache-aside</td>
+<td>Hot subset of data, expensive queries, or strict latency targets</td>
+<td>Staleness, invalidation, and everything below</td>
+</tr>
+<tr>
+<td>4. CDN / edge</td>
+<td>Serve shared, public data from edge locations</td>
+<td>Globally distributed users reading shared content</td>
+<td>Only pays off for data many users share; useless for one user&#39;s private settings</td>
+</tr>
+</tbody></table></div>
+<p>Read replicas double as high availability (promote a replica if the primary dies) — replication for HA and caching for load are separate tools and you should say so. CDN caching routinely cuts origin load by 90%+ for public content and drops a 200ms cross-ocean round trip to under 10ms nearby.</p>
+</section><section class="sec"><h2>Worked example: the URL shortener</h2>
+<p>The cleanest read-heavy interview problem. Run the framework:</p>
+<p><strong>Requirements.</strong> Functional (top 3): submit a long URL, get a short one (optional custom alias, optional expiry); a short URL redirects to the original. Non-functional, quantified: redirect &lt; 100ms; availability over consistency (a stale mapping is harmless); scale to ~1B URLs and 100M DAU. The defining fact: reads dwarf writes — call it 100:1 to 1000:1.</p>
+<p><strong>The math.</strong> Redirects: 100M DAU × 5 clicks ≈ 500M/day ÷ 86,400 ≈ 6k QPS average — but traffic peaks, so design for roughly 100x spikes ≈ 600k QPS at peak. Storage: 1B rows × ~500 bytes ≈ 500GB — comfortably one instance. Conclusion before any architecture: this system is a caching problem, not a storage problem.</p>
+<p><strong>Generating the code</strong> — the classic deep dive:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>How</th>
+<th>For</th>
+<th>Against</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>URL prefix</td>
+<td>First N chars of the long URL</td>
+<td>Nothing</td>
+<td>Collides constantly — same prefix, different pages</td>
+</tr>
+<tr>
+<td>Hash + base62</td>
+<td>Hash the URL, base62-encode, take ~7–8 chars</td>
+<td>No coordination; deterministic (dedupe free)</td>
+<td>Collisions need a UNIQUE constraint plus bounded retries</td>
+</tr>
+<tr>
+<td>Counter + base62</td>
+<td>Atomic counter (Redis INCR), encode in base62</td>
+<td>Unique by construction; 62^6 ≈ 56B codes at 6 chars</td>
+<td>Central coordination point; sequential codes are guessable</td>
+</tr>
+</tbody></table></div>
+<p>Base62 (a–z, A–Z, 0–9) because URL-safe: base64&#39;s <code>+</code> and <code>/</code> don&#39;t survive URLs. The counter scales across write instances via batching — each instance grabs a block of 1,000 values, and &quot;lost&quot; values on a crash don&#39;t matter, since uniqueness, not continuity, is the requirement.</p>
+<p><strong>The redirect.</strong> GET /{code} → look up → 302 redirect. 302 (temporary) over 301 (permanent): browsers cache a 301 and stop visiting you entirely, killing expiry control and any future click analytics. With the ladder applied: Redis cache-aside on the code→URL map (mappings are immutable, so staleness is nearly free), optionally the redirect itself executed at the CDN edge for hot codes, and the database touched only for long-tail cache misses. One instance of Postgres behind that is untouchable.</p>
+</section><section class="sec"><h2>Where reads bite</h2>
+<p>Once reads are cached, three failure modes interviewers probe — each with a name and a fix:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Failure</th>
+<th>What happens</th>
+<th>The fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Hot key</strong></td>
+<td>One key (a celebrity profile) takes 500k req/s and saturates a single cache node even at a great hit rate</td>
+<td>Request coalescing (N servers = N backend requests, max); fan the key out to k identical copies and read them randomly; keep it in-process</td>
+</tr>
+<tr>
+<td><strong>Stampede</strong></td>
+<td>A popular entry expires; every concurrent request misses simultaneously and the DB eats them all at once</td>
+<td>Probabilistic early refresh (refresh odds climb as entries age); background warming for the critical few; lock-and-wait as the blunt option</td>
+</tr>
+<tr>
+<td><strong>Staleness</strong></td>
+<td>Data changed but the cache still serves yesterday&#39;s value</td>
+<td>Delete-on-write plus short TTL; or versioned keys — bump a version column in the same transaction, read <code>event:123:v43</code>, and old versions simply stop being requested</td>
+</tr>
+</tbody></table></div>
+<p>Push a level deeper on staleness: deletion-based invalidation has races (a slow reader re-caches the old value between delete and rewrite) and CDN edges make &quot;delete everywhere&quot; genuinely hard — versioned keys sidestep both by routing around stale entries instead of hunting them down. Set your TTL from the non-functional requirement: &quot;search results may be 30 seconds stale&quot; is a TTL of 30 seconds, not a vibe.</p>
+</section><section class="sec"><h2>When NOT to scale reads</h2>
+<p>Show judgment by refusing the tool: write-heavy systems (driver location pings are a write problem — Challenge 6), small scale (a single indexed database handles thousands of QPS — solve the stated problem, not the imagined one), strongly consistent data (inventory, money — you&#39;d still cache, but with aggressive invalidation and short TTLs), and real-time collaborative data (caching actively fights every-keystroke-visible). And remember the goal is load reduction, not latency cosmetics: if the DB is comfortable and you need speed, the answer might be edge placement, not a cache.</p>
+<p>Go deeper on the full Bitly breakdown and the cache failure modes at <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a>.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are my system design interviewer. Today&#39;s session is a READ-HEAVY design:
+I must not only design the system but defend its cache strategy under fire.
+
+SETUP
+Offer me one of: &quot;Design a URL shortener&quot;, &quot;Design Pastebin&quot;, or &quot;Design an
+image hosting service&quot; — or take the problem I name if it&#39;s read-heavy.
+Confirm, then run 45 minutes in real time with phase clocks (Requirements
+~5, Entities ~2, API ~5, High-Level ~10-15, Deep Dives ~10).
+
+MANDATORY DEEP DIVES — pull me into at least two of these:
+1. &quot;Reads are 100x writes. Walk a single redirect request through every layer
+   at peak, with rough numbers.&quot;
+2. &quot;Your cache entry for the hottest key just expired. What happens next?&quot;
+   (Push until I name the stampede and a fix: coalescing, early refresh,
+   warming.)
+3. &quot;The data behind a cached entry changed. When do users see the update?&quot;
+   (Push on invalidation: delete-on-write, TTLs, versioned keys, and the
+   race conditions of deletion.)
+4. &quot;CDN or no CDN? Argue both sides.&quot;
+Expect exact numbers: I should state my QPS, my assumed hit rate, and what
+the database absorbs when the cache fails.
+
+RULES
+Stay in character. If I add a cache without numbers, stop me: &quot;What problem
+does it solve, quantified?&quot; If I skip indexes before caches, point at the
+database and raise an eyebrow. Hints only on request, smallest nudge
+possible.
+
+SCORING
+After 45 minutes or &quot;end interview&quot;: score 1-4 on Problem Navigation,
+Solution Design, Technical Excellence, Communication — one quoted moment
+each. Then report: did I quantify before adding infrastructure, did I know
+all three read failure modes (hot key, stampede, staleness), and did I
+optimize the database before reaching for the cache. Assign me one drill to
+repeat.
+
+Ask me to pick a problem to start.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You can run the full URL shortener in 45 minutes with the math spoken out loud</li>
+<li><span class="cb" aria-hidden="true"></span>Your first move on any read problem is indexes, not Redis</li>
+<li><span class="cb" aria-hidden="true"></span>You can justify 302 over 301 (and know when a 301 would be fine)</li>
+<li><span class="cb" aria-hidden="true"></span>You can name hot key, stampede, and staleness with a fix for each, unprompted</li>
+<li><span class="cb" aria-hidden="true"></span>You can say &quot;we shouldn&#39;t cache this&quot; and explain why in at least one mock</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Read/write ratio</td>
+<td>Reads per write (100:1 means 100 reads for every write); drives the whole strategy</td>
+</tr>
+<tr>
+<td>Read replica</td>
+<td>A copy of the DB that serves reads; written to by the primary, async by default</td>
+</tr>
+<tr>
+<td>Replication lag</td>
+<td>The delay before a replica reflects the primary&#39;s latest writes</td>
+</tr>
+<tr>
+<td>Base62</td>
+<td>Digits 0-9, a-z, A-Z — URL-safe encoding for compact numeric IDs</td>
+</tr>
+<tr>
+<td>301 vs 302</td>
+<td>Permanent vs temporary redirect; browsers cache the permanent one</td>
+</tr>
+<tr>
+<td>Cache hit rate</td>
+<td>Fraction of reads served from cache; the number that justifies the cache</td>
+</tr>
+<tr>
+<td>Request coalescing</td>
+<td>Collapsing N identical in-flight requests into one backend fetch</td>
+</tr>
+<tr>
+<td>Versioned keys</td>
+<td>Cache key includes a version number, so updates route to a new key instead of invalidating</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>You reach for Redis before doing any math.</strong> Stop and quantify out loud: DAU × reads ÷ 86,400, peak multiple, then the cache as a hit-rate argument. If the DB survives the peak, say the cache is premature.</li>
+<li><strong>The interviewer asks &quot;what if the cache goes down?&quot; and you freeze.</strong> Answer in two layers: requests fall through to the DB (which is why the DB must survive the miss storm), and coalescing/circuit breakers keep the stampede from crushing it.</li>
+<li><strong>You claim &quot;the cache keeps data consistent.&quot;</strong> It doesn&#39;t — it trades staleness for load. Name the staleness window, tie it to a requirement, and pick invalidation or TTLs accordingly.</li>
+<li><strong>Your counter-based short codes &quot;felt random&quot; but aren&#39;t.</strong> Sequential codes are enumerable. Either accept it (short URLs are shared publicly anyway) or say you&#39;d scramble the counter with a reversible transform — don&#39;t pretend the problem away.</li>
+<li><strong>You spend 25 minutes on code generation and never draw the redirect path.</strong> The redirect is the read path — the actual interview. Timebox codegen to ~5 minutes and move.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../06-scaling-writes/">Challenge 6 — Scaling Writes</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/04-thinking-in-scale/"><span>Previous</span><strong>Thinking in Scale</strong></a>
+    <a class="next" href="../../challenges/06-scaling-writes/"><span>Next</span><strong>Scaling Writes</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Install the five-phase delivery framework — Requirements, Core Entities, API, High-Level Design, Deep Dives — with its exact timing, so you always land a complete system instead of a beautiful half-design that "ran out of time."">
+<title>Challenge 02: The Delivery Framework — System Design Interview Prep</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/style.css?v=2">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5e824f8c303e4285b5124f2aa119da17"}'></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true"></span>Intro to Vibe Coding</a>
+  <nav class="topnav">
+    <a href="../../../index.html#course-map">101</a>
+    <a href="../../../201/">201</a>
+    <a href="../../../301/">301</a>
+    <a href="../../../401/">401</a>
+    <a href="../../../cheatsheet/">Cheat sheets</a>
+  </nav>
+</header>
+<main id="main">
+<div class="level-head gridbg">
+  <div class="level-num" aria-hidden="true">02</div>
+  <div class="level-meta">
+    <p class="level-chips"><span class="chip">Challenge 02</span><span class="chip">about 60 minutes</span></p>
+    <h1>The Delivery Framework</h1>
+    <p class="mission"><strong>Mission.</strong> Install the five-phase delivery framework — Requirements, Core Entities, API, High-Level Design, Deep Dives — with its exact timing, so you always land a complete system instead of a beautiful half-design that &quot;ran out of time.&quot;</p>
+  </div>
+</div>
+<div class="prose">
+<section class="sec sec-story"><h2>😱 War story: death by deep dive, too early</h2>
+<p>A candidate gets &quot;Design a news feed.&quot; Minute 4, mid-requirements, they&#39;re already debating fanout-on-write vs fanout-on-read with themselves. Minute 20 they have the most interesting cache architecture of the day and no entities written down, no API, no working design. The interviewer&#39;s note writes itself: &quot;failed to deliver a working system&quot; — which usually shows up in feedback as the vague phrase &quot;time management.&quot; It rarely means &quot;work faster.&quot; It means &quot;focus on the right things in the right order.&quot; The framework below is that order.</p>
+</section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
+<ul>
+<li>The five phases, their budgets, and the one output each must produce</li>
+<li>How to run Requirements without wandering: top-3 functional, quantified non-functional</li>
+<li>The API step in 5 minutes flat: default REST, justify deviations</li>
+<li>When deep dives start and how to lead them like a senior candidate</li>
+</ul>
+</section><section class="sec"><h2>The clock</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Budget</th>
+<th>The one output</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. Requirements</td>
+<td>~5 min</td>
+<td>Top-3 functional + quantified non-functional requirements</td>
+</tr>
+<tr>
+<td>2. Core Entities</td>
+<td>~2 min</td>
+<td>A short bullet list of the nouns in the system</td>
+</tr>
+<tr>
+<td>3. API</td>
+<td>~5 min</td>
+<td>Endpoints that map to the functional requirements</td>
+</tr>
+<tr>
+<td>4. High-Level Design</td>
+<td>~10–15 min</td>
+<td>Boxes and arrows satisfying every endpoint, end to end</td>
+</tr>
+<tr>
+<td>5. Deep Dives</td>
+<td>~10 min</td>
+<td>1–2 bottlenecks hardened, non-functional requirements met</td>
+</tr>
+</tbody></table></div>
+<p>Structure is not what&#39;s being graded directly (it usually lands under Communication) — it&#39;s what keeps you from getting stuck and guarantees you finish. Treat it as a track to run on when nerves hit.</p>
+</section><section class="sec"><h2>Phase 1 — Requirements (~5 min)</h2>
+<p>Two lists, both short.</p>
+<p><strong>Functional requirements</strong> — &quot;Users should be able to …&quot; statements. Interview this like a conversation with a product manager: &quot;does the system need X?&quot;, &quot;what happens if Y?&quot; Then rank ruthlessly. Real systems have hundreds of features; your job is the top 3. A long list hurts you — the rest of the interview is you building what this list says, and several companies explicitly score your ability to focus.</p>
+<p><strong>Non-functional requirements</strong> — &quot;The system should …&quot; statements about qualities: availability, scale, latency, consistency, durability. Two rules:</p>
+<ul>
+<li>Quantify everything. &quot;Low latency&quot; is noise — every system wants that. &quot;Feed renders in &lt;200ms&quot; is a requirement you can design against.</li>
+<li>Pick the 3–5 that actually bind this system. A starting checklist: consistency vs availability (CAP — see Challenge 3), scale and its shape (steady or bursty? reads or writes?), latency targets for the slowest operations, durability (can a social like be lost? can a payment?), plus compliance/security if the domain demands it.</li>
+</ul>
+<p><strong>Capacity estimation: skip it — usually.</strong> Don&#39;t open with five minutes of QPS arithmetic that concludes &quot;so, a lot.&quot; Do the math when it would change the design (Challenge 4 makes you fast at this). Saying &quot;I&#39;ll estimate on demand during the design, when a number actually matters&quot; is a senior move, not a dodge.</p>
+</section><section class="sec"><h2>Phase 2 — Core Entities (~2 min)</h2>
+<p>Jot the nouns: the actors and the resources the functional requirements need. For a Twitter-like system: User, Tweet, Follow. That&#39;s it — no columns yet. You don&#39;t know what you don&#39;t know; fields get added next to the database box once the design shows you which state changes on each request. Two questions that find them fast: who acts on the system, and what things get created, read, or linked? Pick decent names while you&#39;re at it — some interviewers treat it as a naming test.</p>
+</section><section class="sec"><h2>Phase 3 — API (~5 min)</h2>
+<p>Pick the protocol in one sentence and move:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Protocol</th>
+<th>When</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>REST</strong> — resources + HTTP verbs</td>
+<td>Default. Say it and go</td>
+<td>JSON parsing overhead (rarely matters)</td>
+</tr>
+<tr>
+<td><strong>GraphQL</strong> — client shapes the response</td>
+<td>Diverse clients, fast-moving frontend needs</td>
+<td>Resolver complexity, caching gets harder</td>
+</tr>
+<tr>
+<td><strong>gRPC</strong> — binary RPC over HTTP/2</td>
+<td>Internal service-to-service, performance-critical</td>
+<td>Poor fit for public/browser-facing APIs</td>
+</tr>
+</tbody></table></div>
+<p>Then write endpoints against your core entities — plural nouns as resources, current user derived from the auth token, never trusted from the request body:</p>
+<pre><code class="language-text">POST /v1/tweets        { &quot;text&quot;: &quot;...&quot; }        -&gt; Tweet
+GET  /v1/feed                                   -&gt; Tweet[]
+POST /v1/follows       { &quot;user_id&quot;: &quot;...&quot; }     -&gt; Follow
+</code></pre>
+<p>This contract is your checklist for Phase 4. If an endpoint has no design and a box has no endpoint, one of them is wrong. (Data pipelines like crawlers get an optional &quot;data flow&quot; step here — a numbered list of processing stages. If there&#39;s no long sequence of steps, skip it.)</p>
+</section><section class="sec"><h2>Phase 4 — High-Level Design (~10–15 min)</h2>
+<p>Draw the system: clients, load balancer, services, database, and whatever else the endpoints demand. Three disciplines:</p>
+<ol>
+<li><strong>Go one endpoint at a time.</strong> Walk through how a request flows from API call to database and back, and what state changes where. This turns a scary blank canvas into a sequence.</li>
+<li><strong>Narrate while drawing.</strong> Silence is where interviews die. The diagram is a prop; the story of data flowing through it is the deliverable.</li>
+<li><strong>Park complexity.</strong> The cache you&#39;re itching to add, the queue, the shard — say &quot;I see a scaling risk here, I&#39;ll come back in deep dives,&quot; mark it, move on. Candidates who layer complexity early routinely never arrive at a working system.</li>
+</ol>
+<p>When a request reaches the database, sketch the key fields next to the box — only the ones that matter to the design. The interviewer knows a user table has an email.</p>
+</section><section class="sec"><h2>Phase 5 — Deep Dives (~10 min)</h2>
+<p>Now revisit the non-functional requirements and the parked risks. Harden the design: meet the latency target, handle the burst, fix the bottleneck, address whatever the interviewer probes. How proactive you are here is a seniority dial — mid-level candidates can wait for the interviewer to point; senior candidates identify the two most interesting problems themselves and lead.</p>
+<p>One Twitter example: &quot;scale to 100M DAU&quot; becomes a discussion of caching and sharding; &quot;feed in &lt;200ms&quot; becomes fanout-on-read vs fanout-on-write. Lead, but don&#39;t monologue — leave the interviewer room to probe. They have specific signals they still need from you, and talking over them costs you the Communication score you were busy earning.</p>
+</section><section class="sec"><h2>Lines worth stealing</h2>
+<ul>
+<li>&quot;Let me confirm scope: the three things that matter are X, Y, Z — out of scope today.&quot;</li>
+<li>&quot;I&#39;ll do estimates on demand — where a number would change the design.&quot;</li>
+<li>&quot;These are the endpoints; now I&#39;ll build up the system one endpoint at a time.&quot;</li>
+<li>&quot;I see two scaling risks here — caching and the write path. Parking both for deep dives.&quot;</li>
+<li>&quot;Deep dive one: the feed read path, since our &lt;200ms target lives there.&quot;</li>
+</ul>
+<p>Go deeper: <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a> has the full delivery framework with worked video walkthroughs.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
+<pre><code class="language-text">You are my system design interviewer at a top tech company for a 45-minute
+mock interview. Your job is to enforce the delivery framework as strictly as
+a real interviewer enforces the clock.
+
+SETUP
+1. Ask which problem I want: URL shortener, news feed, rate limiter, chat
+   app, or &quot;surprise me&quot; (you pick). Confirm before starting.
+2. Run real time. Announce each phase with its budget and hold me to it:
+   Requirements ~5 min, Core Entities ~2, API ~5, High-Level Design ~10-15,
+   Deep Dives ~10.
+
+YOUR JOB DURING EACH PHASE
+- Requirements: if my functional list exceeds ~3 items, push: &quot;Pick the top
+  3 — which actually matter?&quot; If a non-functional requirement isn&#39;t
+  quantified, ask &quot;what number?&quot;
+- Entities/API: if I exceed the budget, cut me off: &quot;Good enough — let&#39;s move.&quot;
+- High-level design: make me go one endpoint at a time and narrate how data
+  flows for each. If I reach for caches and queues early, say: &quot;Park it —
+  we&#39;ll deep dive later. Finish the happy path first.&quot;
+- Deep dives: pick the most interesting bottleneck in my design and probe:
+  &quot;This endpoint gets hammered — what happens at 100x?&quot; Ask 2-3 follow-ups
+  per dive. Do not let me dive into trivia.
+
+RULES
+- Stay in character. Never volunteer hints; give the smallest possible nudge
+  only if I ask.
+- If I&#39;m stuck more than 2 minutes, offer a fork: &quot;hint, or next section?&quot;
+- At 45 minutes, or when I say &quot;end interview&quot;, stop and score.
+
+SCORING
+Drop character. Score 1-4 on Problem Navigation, Solution Design, Technical
+Excellence, Communication — each with one quoted moment as evidence. Then
+report: which phase I ran over on, whether I delivered a working end-to-end
+system, and the one habit to drill next time.
+
+Start by asking me to pick a problem.
+</code></pre>
+</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+<ul>
+<li><span class="cb" aria-hidden="true"></span>You can recite the five phases with their time budgets from memory</li>
+<li><span class="cb" aria-hidden="true"></span>You&#39;ve delivered a full design in 45 minutes out loud, with a timer running, and finished the deep dives</li>
+<li><span class="cb" aria-hidden="true"></span>Your non-functional requirements come out quantified by reflex</li>
+<li><span class="cb" aria-hidden="true"></span>You can name what you parked and actually return to it in deep dives</li>
+<li><span class="cb" aria-hidden="true"></span>Your high-level design phase goes endpoint-by-endpoint, not vibe-by-vibe</li>
+</ul>
+</section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Functional requirement</td>
+<td>A &quot;users should be able to…&quot; feature the system must ship</td>
+</tr>
+<tr>
+<td>Non-functional requirement</td>
+<td>A quality target: latency, availability, scale, consistency — quantified or it didn&#39;t happen</td>
+</tr>
+<tr>
+<td>Core entity</td>
+<td>The nouns the system stores and exchanges; first draft of the data model</td>
+</tr>
+<tr>
+<td>Fanout</td>
+<td>Writing one post to many feeds (on-write) or assembling a feed per read (on-read)</td>
+</tr>
+<tr>
+<td>Happy path</td>
+<td>The simplest working version of a flow, before edge cases</td>
+</tr>
+<tr>
+<td>Time management</td>
+<td>The polite euphemism for &quot;didn&#39;t deliver a working system&quot;</td>
+</tr>
+<tr>
+<td>Read/write split</td>
+<td>Separating read traffic from write traffic so each scales independently</td>
+</tr>
+</tbody></table></div>
+</section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
+<ul>
+<li><strong>You&#39;re 8 minutes into requirements and still asking questions.</strong> Cap yourself: pick the best 3 you have, say them out loud, confirm with the interviewer, move. A prioritized guess beats a complete list at minute 20.</li>
+<li><strong>The high-level design is half-drawn at minute 35.</strong> Stop designing breadth. Pick the single most important endpoint, finish it end to end, and use deep dives to extend — a complete narrow system beats a complete-in-your-head wide one.</li>
+<li><strong>You parked a risk and never came back.</strong> Keep a visible margin note (&quot;deep dive: feed cache&quot;). At minute 35, read your own note out loud and start there.</li>
+<li><strong>The interviewer keeps pulling you off your track.</strong> Their probes are the interview now — follow them, but narrate how each answer updates the plan: &quot;that changes the write path, let me fold it in.&quot;</li>
+<li><strong>You realize your API can&#39;t satisfy a requirement.</strong> Say it and fix it: &quot;Actually, follow needs a delete — I&#39;ll add DELETE /follows.&quot; Self-correction on the record is Communication signal, not a mistake.</li>
+</ul>
+<div class="next-card"><p><strong>Next:</strong> <a href="../03-the-toolbox/">Challenge 3 — The Toolbox</a></p></div>
+</section>
+<nav class="pager">
+    <a class="prev" href="../../challenges/01-the-interview-decoded/"><span>Previous</span><strong>The Interview, Decoded</strong></a>
+    <a class="next" href="../../challenges/03-the-toolbox/"><span>Next</span><strong>The Toolbox</strong></a>
+  </nav>
+</div>
+</main>
+<footer class="foot">
+  <p>Intro to Vibe Coding — a course for people who have never written code, and never need to.</p>
+  <p>Questions, wins, or feedback? <a href="mailto:vildevev.business@gmail.com">vildevev.business@gmail.com</a> · or <a href="https://github.com/vildevev/intro-to-vibe-coding/discussions">post in Discussions</a></p>
+  <p>Built with vibe coding, obviously.</p>
+</footer>
+
+</body>
+</html>
