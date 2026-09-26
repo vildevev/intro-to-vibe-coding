@@ -51,20 +51,28 @@ counterexample found means DP (Challenge 10).</p>
 <ul>
 <li>The greedy shape: sort by a key, sweep with O(1) running state, decide once</li>
 <li>The <strong>exchange argument</strong> — your one-sentence proof kit for greedy choices</li>
-<li>The <strong>counterexample test</strong>: how to disprove a greedy in five numbers</li>
-<li>Running-extreme sweeps: min-so-far, max-reach, greedy resets and level boundaries</li>
+<li>The <strong>counterexample test</strong>: how to disprove a greedy in five numbers, and
+why a found counterexample routes you to DP</li>
 <li><strong>Spiral order</strong> with four shrinking bounds and two guards</li>
 <li><strong>Rotate 90°</strong> = transpose + reverse; in-place zero-marking with row/col sentinels</li>
 </ul>
-</section><section class="sec"><h2>Pattern 1 — The greedy shape: sort, sweep, decide once</h2>
-<p>Nearly every interview greedy is the same three moves: sort by some key so the
-&quot;best next choice&quot; is always at the front, sweep once carrying one or two
+</section><section class="sec"><h2>Pattern 1 — Greedy: the shape, the proof, the fork</h2>
+<p>Nearly every interview greedy is the same three moves: sort by some key so
+the &quot;best next choice&quot; is always at the front, sweep once carrying one or two
 running variables (min price so far, farthest reach, current interval end),
 and commit to each choice immediately. The running variables ARE the state —
-if you need the whole history, it isn&#39;t greedy anymore. The classic sweep
-tracks the cheapest buy so far and the best profit so far; each day,
-profit-if-sold-today is price minus that running min, and no later decision
-can change yesterday&#39;s numbers.</p>
+if you need the whole history, it isn&#39;t greedy anymore.</p>
+<p>Then defend it, before coding. The <strong>exchange argument</strong>: take any optimal
+solution, swap its first choice for yours, and show the objective can&#39;t get
+worse — repeat, and greedy is optimal. It&#39;s usually one sentence keyed to the
+sort key: &quot;sorting by earliest end time can never hurt, because any solution
+using a later-ending interval can swap in the earlier one and free up <em>more</em>
+room.&quot; No argument comes? Run the <strong>counterexample test</strong>: hand-craft five
+items that break the rule. Found one? Stop — that&#39;s a DP problem wearing a
+greedy costume; Longest Increasing Subsequence is the canonical kill. The
+litmus question: does my choice constrain the future <em>structurally</em> (options
+change shape) or only additively (a budget ticks down)? Additive-only → greedy
+plausible; structural → DP.</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -81,16 +89,16 @@ can change yesterday&#39;s numbers.</p>
 <td>Running min; best = max(price − min so far)</td>
 </tr>
 <tr>
-<td>&quot;Can you reach the end?&quot; with per-position reach</td>
+<td>&quot;Can/fewest jumps to the end&quot; with per-position reach</td>
 <td>Track max reach; stuck when <code>i &gt; max_reach</code></td>
-</tr>
-<tr>
-<td>&quot;Fewest jumps to the end&quot;</td>
-<td>Greedy on level boundaries (BFS without the queue)</td>
 </tr>
 <tr>
 <td>&quot;Start over when the tank runs dry&quot; (circular route)</td>
 <td>Greedy reset: every earlier start is dead too</td>
+</tr>
+<tr>
+<td>An early choice changes what&#39;s possible later</td>
+<td>DP (Challenge 10), not a patched greedy</td>
 </tr>
 </tbody></table></div>
 <p><strong>Template — the running-extreme sweep:</strong></p>
@@ -102,68 +110,14 @@ can change yesterday&#39;s numbers.</p>
         best = max(best, price - min_so_far)
     return best
 </code></pre>
-<p><strong>Complexity:</strong> O(n) time, O(1) space — or O(n log n) when a sort leads. The
-proof sentence for this template: &quot;for every sell day, the optimal partner is
-the cheapest earlier day, and the running min is exactly that — so one pass
-inspects every (buy, sell) pair that could win.&quot;</p>
-<p><strong>Drills (easy → hard):</strong> Best Time to Buy and Sell Stock → Assign Cookies →
-Jump Game (max-reach) → Gas Station (greedy reset).</p>
-</section><section class="sec"><h2>Pattern 2 — Prove it or drop it: greedy vs DP</h2>
-<p>A greedy claim needs one of two artifacts. The <strong>exchange argument</strong>: take any
-optimal solution, swap its first choice for yours, and show the objective can&#39;t
-get worse — repeat, and greedy is optimal. It&#39;s usually one sentence keyed to
-the sort key: &quot;sorting by earliest end time can never hurt, because any
-solution using a later-ending interval can swap in the earlier one and free up
-<em>more</em> room.&quot; The <strong>counterexample test</strong> runs when no argument comes:
-hand-craft five items that break the rule. Found one? Stop — that&#39;s a DP
-problem wearing a greedy costume; Longest Increasing Subsequence is the
-canonical kill. The litmus question: does my choice constrain the future
-<em>structurally</em> (options change shape) or only additively (a budget ticks
-down)? Additive-only → greedy plausible; structural → DP.</p>
-<div class="tw"><table>
-<thead>
-<tr>
-<th>You see…</th>
-<th>Think…</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>You can state the choice in one sentence</td>
-<td>Try the exchange argument on it</td>
-</tr>
-<tr>
-<td>Choices only consume a budget additively</td>
-<td>Greedy plausible — prove it</td>
-</tr>
-<tr>
-<td>An early choice changes what&#39;s possible later</td>
-<td>DP (Challenge 10)</td>
-</tr>
-<tr>
-<td>&quot;Can I find a small failing example?&quot; — yes</td>
-<td>Greedy is dead; don&#39;t patch it</td>
-</tr>
-</tbody></table></div>
-<p><strong>Template — the greedy-or-DP fork:</strong></p>
-<pre><code>def classify(problem):
-    # 1. State the choice in one sentence:
-    #    &quot;Always take the ___-est / smallest / earliest ___ first.&quot;
-    # 2. Pick the sort key that puts that choice at the front.
-    # 3. Exchange argument: &quot;swap any other choice in —
-    #    the objective can&#39;t improve.&quot;  Holds? Greedy it is:
-    #    one sweep, O(n log n) if sorted, O(1) extra space.
-    # 4. No argument? Hunt a counterexample on 5 hand-picked items.
-    #    Found one? Recurse the honest way: DP (Challenge 10).
-    return &quot;greedy with proof&quot; | &quot;dynamic programming&quot;
-</code></pre>
-<p><strong>Complexity:</strong> greedy wins are dramatic — O(n log n) or O(n) where DP would
-take O(n²) or worse — but only worth claiming <em>after</em> the proof. In an
-interview the order is fixed: name the choice, attempt the proof, then code.
-Coding first and defending later is how the unproven-greedy war story happens.</p>
-<p><strong>Drills (easy → hard):</strong> Non-overlapping Intervals (earliest-end exchange) →
-Partition Labels (last-occurrence boundaries) → Two City Scheduling (exchange
-argument on the cost difference) → Candy (two counter-directional sweeps).</p>
-</section><section class="sec"><h2>Pattern 3 — Matrix tricks: no data structure, just indices</h2>
+<p><strong>Complexity:</strong> O(n) time, O(1) space — or O(n log n) when a sort leads,
+which is still a dramatic win over the O(n²) DP the same problem often has.
+The proof sentence for this template: &quot;for every sell day, the optimal
+partner is the cheapest earlier day, and the running min is exactly that.&quot;</p>
+<p><strong>Drills (easy → hard):</strong> Best Time to Buy and Sell Stock → Jump Game
+(max-reach) → Non-overlapping Intervals (earliest-end exchange argument) →
+Gas Station (greedy reset).</p>
+</section><section class="sec"><h2>Pattern 2 — Matrix tricks: no data structure, just indices</h2>
 <p>Three templates cover the classic matrix round. <strong>Spiral order:</strong> four
 boundaries (<code>top, bottom, left, right</code>), peel top row → right column → bottom
 row → left column, shrinking a boundary after each peel, with two guards so a
@@ -219,10 +173,11 @@ the markers, and zero the markers themselves last.</p>
             left += 1
     return out
 </code></pre>
-<p><strong>Complexity:</strong> all three tricks are O(m·n) time; spiral uses O(1) extra space
-beyond the output, and rotate and set-zeroes are O(1) extra space outright —
-the constraint the problem statement usually makes explicit. Before saying
-&quot;done,&quot; trace a 1×n, an n×1, and a 3×3; the guards exist precisely for those.</p>
+<p><strong>Complexity:</strong> all three tricks are O(m·n) time; spiral uses O(1) extra
+space beyond the output, and rotate and set-zeroes are O(1) extra space
+outright — the constraint the problem statement usually makes explicit.
+Before saying &quot;done,&quot; trace a 1×n, an n×1, and a 3×3; the guards exist
+precisely for those.</p>
 <p><strong>Drills (easy → hard):</strong> Spiral Matrix → Rotate Image → Set Matrix Zeroes →
 Diagonal Traverse.</p>
 <p>Go deeper: <a href="https://www.hellointerview.com/learn/code/greedy/overview">Hello Interview&#39;s greedy chapter</a> — their matrices chapter lives alongside it.</p>
@@ -272,10 +227,6 @@ Start with the problem statement. No preamble.
 <td>The locally-best option, committed to without revisiting</td>
 </tr>
 <tr>
-<td>Greedy choice property</td>
-<td>Local best ⇒ global best; the thing you must prove</td>
-</tr>
-<tr>
 <td>Exchange argument</td>
 <td>Proof by swapping any alternative in and showing no improvement</td>
 </tr>
@@ -306,8 +257,8 @@ the whole algorithm; earliest-end is the one with the clean exchange
 argument.</li>
 <li><strong>Spiral double-counts the middle.</strong> On odd shapes the leftover single row
 or column gets walked twice without the two guards. Trace 3×3 and 1×5.</li>
-<li><strong>Rotated into a mirror.</strong> Clockwise is transpose + reverse each row; if you
-reversed columns instead, you produced the counter-clockwise image.</li>
+<li><strong>Rotated into a mirror.</strong> Clockwise is transpose + reverse each row; if
+you reversed columns instead, you produced the counter-clockwise image.</li>
 <li><strong>Set-zeroes destroys its own evidence.</strong> Zeroing the first row before
 scanning the interior wipes the markers you&#39;re about to read. The order is
 load-bearing: snapshot → mark → zero interior → zero markers.</li>

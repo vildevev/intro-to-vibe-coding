@@ -26,21 +26,25 @@ never seen."
 - **Memoization** (top-down): brute force first, then two lines of cache
 - **Bottom-up**: the loop version, and when it's the better default
 - The **1D → 2D jump**: grids, string pairs, and constraint dimensions
-- The **state template library** — knapsack, LIS, string-pair, grid-path
-- **Space optimization** (rolling row / last-k variables), and why DP closes the course
+- The **state template library** — knapsack, LIS, string-pair, grid-path —
+  and why DP closes the course
 
 ## Pattern 1 — The method: state, recurrence, base, order
 
-Do not write code first. Write four sentences as comments. (1) *State*: a full
-English sentence with an index in it — "`best(i)` = the maximum haul from the
-first i houses." Vague states are where all DP bugs are born. (2) *Recurrence*:
-the choices at each state, as a max/min/sum over earlier states — "house i:
-skip it (`best(i−1)`) or take it (`best(i−2) + value[i−1]`)." (3) *Base cases*:
-the smallest inputs answered directly. (4) *Fill order*: which states must
-exist before which. Then top-down is mechanical: take the brute-force
-recursion your recurrence describes and add two lines — check the memo before
-recursing, store the result before returning. Complexity becomes arithmetic:
-number of states × work per state.
+Do not write code first. Write four sentences as comments. (1) *State*: a
+full English sentence with an index in it — "`best(i)` = the maximum haul
+from the first i houses." Vague states are where all DP bugs are born.
+(2) *Recurrence*: the choices at each state, as a max/min/sum over earlier
+states — "house i: skip it (`best(i−1)`) or take it (`best(i−2) +
+value[i−1]`)." (3) *Base cases*: the smallest inputs answered directly.
+(4) *Fill order*: which states must exist before which.
+
+Then top-down is mechanical: take the brute-force recursion your recurrence
+describes and add two lines — check the memo before recursing, store the
+result before returning. Bottom-up is the same recurrence as a loop from the
+base cases: no call-stack risk, cache-friendly, and the space optimization
+("keep only the last k values") reads naturally off the loop. Interview
+default: top-down first, convert only if asked.
 
 | You see… | Think… |
 |---|---|
@@ -67,38 +71,36 @@ def solve(items):
     return dp(len(items))
 ```
 
-**Complexity:** O(n) time — n states, O(1) work each — and O(n) space for the
-memo plus the call stack. The unmemoized brute force is O(2ⁿ); quoting both
-numbers ("2ⁿ without the memo, n × O(1) with it") is the whole complexity
-story of the pattern.
+**Complexity:** number of states × work per state — the sentence that covers
+every DP problem. Here: O(n) time (n states, O(1) each) and O(n) space for
+memo plus call stack; the unmemoized brute force is O(2ⁿ). Quoting both
+numbers is the whole complexity story of the pattern.
 
 **Drills (easy → hard):** Climbing Stairs → House Robber → Coin Change (min
 over take-branches) → Longest Increasing Subsequence (state = best *ending
 exactly at* i).
 
-## Pattern 2 — Memo vs bottom-up, then the 1D → 2D jump
+## Pattern 2 — The 1D → 2D jump, and the state template library
 
-Top-down is the interview default: the brute force is easier to get right, the
-memo is two added lines, and it only computes states actually reachable.
-Convert to bottom-up when asked — or when space matters, because "replace the
-table with the last k variables" reads naturally off the loop. The real
-difficulty spike is dimensionality, and it comes from exactly three sources.
-**Grids**: `dp[i][j]` = answer for cell (i, j); the recurrence reads the
-neighbors you could have arrived from (Unique Paths: from above + from the
-left; first row and column are base cases). **String pairs**: `dp[i][j]` over
-prefixes of *both* strings — match moves diagonally, mismatch takes the min
-over the three neighbors (Edit Distance, Longest Common Subsequence).
-**Constraint dimensions**: the state needs a second coordinate to stay honest —
-(item index, capacity left) for knapsacks, (node, stops remaining) for the
+The real difficulty spike is dimensionality, and it comes from exactly three
+sources. **Grids**: `dp[i][j]` = answer for cell (i, j); the recurrence reads
+the neighbors you could have arrived from (Unique Paths: from above + from
+the left; first row and column are base cases). **String pairs**: `dp[i][j]`
+over prefixes of *both* strings — match moves diagonally, mismatch takes the
+min over the three neighbors (Edit Distance, Longest Common Subsequence).
+**Constraint dimensions**: the state needs a second coordinate to stay honest
+— (item index, capacity left) for knapsacks, (node, stops remaining) for the
 K-stops flight problem.
 
 | You see… | Think… |
 |---|---|
-| Answer for a *position* in one sequence | 1D: `dp[i]` from a window of earlier states |
+| Answer for a *position* in one sequence | 1D linear: `dp[i]` from `dp[i−1]`, `dp[i−2]` |
 | Answer for a *cell* in a grid | 2D: `dp[i][j]` from arrival neighbors |
 | Two strings in the problem | `dp[i][j]` = prefixes of both; diagonal on match |
-| Budget, capacity, or "at most k" constraint | Add that dimension to the state |
-| Recurrence reads only the previous row | Rolling row / two variables for near-O(1) space |
+| "Fewest items to total exactly x", reusable items | Unbounded knapsack: `dp[x] = 1 + min(dp[x − c])` |
+| …subject to capacity w | 0/1 knapsack: `dp[i][w]`, items outer, capacity inner |
+| "Best subsequence ending at i" | `dp[i]` over all j < i (LIS); O(n²) |
+| Paths to cell (i, j) | `dp[i][j] = up + left`; obstacles contribute 0 |
 
 **Template — 2D bottom-up over a grid:**
 
@@ -117,55 +119,22 @@ def grid_dp(rows, cols):
 ```
 
 **Complexity:** O(rows × cols) states × O(1) each = O(rows × cols) time and
-space; when the recurrence touches only the previous row, one row plus a carry
-variable does the same job — offer that unprompted, it's a favorite follow-up.
+space; when the recurrence touches only the previous row, one row plus a
+carry variable does the same job — offer that unprompted, it's a favorite
+follow-up. The knapsack shape is the same arithmetic: O(amount × coins) time,
+O(amount) space, with `dp[0] = 0` as the base and "unreachable" as infinity.
+
+**Why DP comes last:** backtracking (Challenge 8) *is* the brute force whose
+call tree you memoize — same states, repeats removed; greedy (Challenge 9)
+fails its counterexample test and hands the problem here; and the recognition
+reflexes from every earlier challenge tell you within a minute whether the
+state space is polynomial or hopeless. The senior narration is the pipeline
+itself: brute force out loud → which states repeat? → memo → bottom-up →
+squeeze space.
 
 **Drills (easy → hard):** Unique Paths → Decode Ways (counting with validity
 gates) → Word Break (state = prefix length; choices = dictionary words) →
 Edit Distance (the string-pair 2D).
-
-## Pattern 3 — The state template library — and why DP comes last
-
-Six state shapes cover nearly every interview DP. Learning them as *states* —
-not as solutions — means an unseen problem only has to match a shape, not a
-problem ID; the unbounded-knapsack template below is the workhorse. And this
-is why DP closes the course: backtracking (Challenge 8) *is* the brute force
-whose call tree you memoize — same states, repeats removed; greedy (Challenge
-9) fails its counterexample test and hands the problem here; and the
-recognition reflexes from every earlier challenge tell you within a minute
-whether the state space is polynomial or hopeless. The senior narration is the
-pipeline itself: brute force out loud → which states repeat? → memo →
-bottom-up → squeeze space.
-
-| You see… | Think… |
-|---|---|
-| Best/count for the first i items, no constraint | 1D linear: `dp[i]` from `dp[i−1]`, `dp[i−2]` |
-| …subject to capacity/budget w | Knapsack: `dp[i][w]`, items outer, capacity inner |
-| "Fewest items to total exactly x", reusable items | Unbounded knapsack: `dp[x] = 1 + min(dp[x − c])` |
-| "Best subsequence ending at i" | `dp[i]` over all j < i (LIS); O(n²) |
-| Answer over prefixes of two strings | `dp[i][j]`: match → diagonal; else min/max of neighbors |
-| Paths to cell (i, j) | `dp[i][j] = up + left`; obstacles contribute 0 |
-
-**Template — unbounded knapsack (Coin Change shape):**
-
-```
-def coin_change(coins, amount):
-    dp = [inf] * (amount + 1)        # dp[x] = fewest coins totaling x
-    dp[0] = 0                        # base: zero coins make zero
-    for x in range(1, amount + 1):   # budget outer…
-        for c in coins:              # …choices inner
-            if c <= x and dp[x - c] + 1 < dp[x]:
-                dp[x] = dp[x - c] + 1
-    return dp[amount] if dp[amount] != inf else -1
-```
-
-**Complexity:** O(amount × len(coins)) time, O(amount) space — states × work
-per state, the same arithmetic as always. Name the family out loud ("1D
-unbounded knapsack") — vocabulary for the state, not the problem, is what
-transfers to the unseen question.
-
-**Drills (easy → hard):** Coin Change → Longest Common Subsequence → Partition
-Equal Subset Sum (0/1 knapsack) → Maximal Square (min-of-three-neighbors).
 
 Go deeper: [Hello Interview's dynamic programming chapter](https://www.hellointerview.com/learn/code/dynamic-programming/overview) for worked builds from brute force to optimized.
 
@@ -222,9 +191,9 @@ Start with problem one. No preamble.
 
 ## 🆘 When it goes wrong
 
-- **A vague state.** "dp[i] is… the answer-ish thing" produces off-by-ones and
-  wrong recurrences. Write the full English sentence with the index in it; if
-  you can't, you don't have a state yet.
+- **A vague state.** "dp[i] is… the answer-ish thing" produces off-by-ones
+  and wrong recurrences. Write the full English sentence with the index in
+  it; if you can't, you don't have a state yet.
 - **Fill order violated.** Bottom-up reads states that must already exist —
   `dp[i]` depends on `dp[i−1]`, `dp[i−2]` → loop ascending. One wrong
   direction and you read zeros.
@@ -242,4 +211,4 @@ Start with problem one. No preamble.
   story. Run the four lines on THIS problem; shapes only help after the state
   is written.
 
-➡️ **Next:** [Full system design mocks — 301 Challenge 12](../../../301/challenges/12-full-designs/)
+➡️ **Next:** [Full system design mocks — 301 Challenge 12](../../301/challenges/12-full-designs/)

@@ -35,16 +35,16 @@
 </div>
 <div class="prose">
 <section class="sec sec-story"><h2>😱 The copy you didn&#39;t need</h2>
-<p>Two candidates enumerate subsets of a 25-element array. Candidate A builds each
-candidate as <code>path + [x]</code> — a fresh list at every call. Correct output, but
-thousands of throwaway lists per second, and the follow-up (&quot;walk me through
-your memory profile?&quot;) has no good answer. Candidate B keeps <em>one</em> path list,
-appends on the way down, pops on the way up, and copies only when recording a
-finished solution — then says &quot;time is output-sized anyway: 2²⁵ subsets, each
-up to 25 elements; the shared path keeps the constant down.&quot; Same outputs,
-opposite engineering. And the third failure mode is silent: skip the <code>pop()</code>
-and the path never shrinks — results come back duplicated and garbage-padded,
-a bug no two-element test input will ever catch.</p>
+<p>Two candidates enumerate subsets of a 25-element array. Candidate A builds
+each candidate as <code>path + [x]</code> — a fresh list at every call. Correct output,
+but thousands of throwaway lists per second, and the follow-up (&quot;walk me
+through your memory profile?&quot;) has no good answer. Candidate B keeps <em>one</em>
+path list, appends on the way down, pops on the way up, and copies only when
+recording a finished solution — then says &quot;time is output-sized anyway: 2²⁵
+subsets, each up to 25 elements; the shared path keeps the constant down.&quot;
+Same outputs, opposite engineering. And the third failure mode is silent:
+skip the <code>pop()</code> and the path never shrinks — results come back duplicated
+and garbage-padded, a bug no two-element test input will ever catch.</p>
 </section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
 <ul>
 <li><strong>Solution-space trees</strong> — nodes are partial solutions, edges are decisions</li>
@@ -54,15 +54,23 @@ one-line difference (record-at-entry vs used-set vs start index)</li>
 <li><strong>Pruning</strong>: validity filters before recursing, sort-then-break, mark-and-restore</li>
 <li>Complexity as output size — saying O(n·2ⁿ) with the &quot;why&quot; attached</li>
 </ul>
-</section><section class="sec"><h2>Pattern 1 — The skeleton: choose, explore, un-choose</h2>
+</section><section class="sec"><h2>Pattern 1 — The skeleton, and its three canonical shapes</h2>
 <p>Almost no backtracking problem gives you a tree; you build it as you go. Each
-recursive call is one node, each loop iteration is one edge, and the parameters
-are exactly the state needed to know which options remain. The discipline that
-holds under pressure: one shared path list; append is <em>choose</em>, the loop of
-recursive calls is <em>explore</em>, pop is <em>un-choose</em>; every recorded answer is a
-copy (<code>path[:]</code>), because the shared path keeps mutating after you record it.
-With this skeleton cold, every problem in the chapter becomes two questions:
-what are the options, and what&#39;s the base case?</p>
+recursive call is one node, each loop iteration is one edge, and the
+parameters are exactly the state needed to know which options remain. The
+discipline that holds under pressure: one shared path list; append is
+<em>choose</em>, the loop of recursive calls is <em>explore</em>, pop is <em>un-choose</em>; every
+recorded answer is a copy (<code>path[:]</code>), because the shared path keeps mutating
+after you record it.</p>
+<p>The shapes differ in exactly two decisions: <em>when to record</em> and <em>what limits
+the loop</em>. Subsets: every node is an answer, so record at entry — no base case
+beyond &quot;keep walking.&quot; Permutations: order matters and there&#39;s no natural
+&quot;later&quot; index, so the loop scans everything and a <code>used</code> set excludes what&#39;s
+already on the path. Combinations of size k: subsets&#39; start-index loop, but
+record only when <code>len(path) == k</code>. Reuse allowed (Combination Sum)? Recurse
+with <code>i</code>, not <code>i + 1</code>. Duplicates in the input? Sort first, then skip
+<code>nums[i] == nums[i-1]</code> when <code>i &gt; start</code> — that skips duplicate <em>siblings</em>
+without killing legitimate duplicate <em>depths</em>.</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -75,54 +83,6 @@ what are the options, and what&#39;s the base case?</p>
 <td>Backtracking; &quot;count/best X only&quot; is probably DP (Challenge 10)</td>
 </tr>
 <tr>
-<td>&quot;Generate every combination/ordering/arrangement&quot;</td>
-<td>DFS over the solution-space tree</td>
-</tr>
-<tr>
-<td>Constraint kills partial solutions early</td>
-<td>Prune in the loop, not inside the recursion</td>
-</tr>
-<tr>
-<td>Grid/path with &quot;no cell twice&quot;</td>
-<td>Mark-and-restore IS the choose/un-choose</td>
-</tr>
-</tbody></table></div>
-<p><strong>Template — the backtracking skeleton:</strong></p>
-<pre><code>def backtrack(path, start):
-    if is_complete(path):                # base case: record a COPY
-        results.append(path[:])
-        return
-    for option in options(path, start):
-        if not valid(option, path):      # prune BEFORE recursing
-            continue
-        path.append(option)              # choose — mutate in place
-        backtrack(path, next_start(option))
-        path.pop()                       # un-choose — exact inverse
-</code></pre>
-<p><strong>Complexity:</strong> (nodes in the solution tree) × (work per node); the recorded
-output usually dominates. State it that way — &quot;exponential because the output
-is exponential&quot; reads as understanding, whereas a bare &quot;O(2ⁿ)&quot; reads as hoping.
-Space is tree depth for the path plus the call stack, plus the output.</p>
-<p><strong>Drills (easy → hard):</strong> Letter Combinations of a Phone Number → Subsets →
-Permutations → Combination Sum.</p>
-</section><section class="sec"><h2>Pattern 2 — The three canonical shapes</h2>
-<p>Subsets, permutations, and combinations differ in exactly two decisions: <em>when
-to record</em> and <em>what limits the loop</em>. Subsets: every node is an answer, so
-record at entry — no base case beyond &quot;keep walking.&quot; Permutations: order
-matters and there&#39;s no natural &quot;later&quot; index, so the loop scans everything and
-a <code>used</code> set excludes what&#39;s already on the path. Combinations of size k:
-subsets&#39; start-index loop, but record only when <code>len(path) == k</code>. Reuse
-allowed (Combination Sum)? Recurse with <code>i</code>, not <code>i + 1</code>. Duplicates in the
-input? Sort first, then skip <code>nums[i] == nums[i-1]</code> when <code>i &gt; start</code> — that
-skips duplicate <em>siblings</em> without killing legitimate duplicate <em>depths</em>.</p>
-<div class="tw"><table>
-<thead>
-<tr>
-<th>You see…</th>
-<th>Think…</th>
-</tr>
-</thead>
-<tbody><tr>
 <td>&quot;All subsets / the power set&quot;</td>
 <td>Record at every node; loop from <code>start</code></td>
 </tr>
@@ -143,7 +103,7 @@ skips duplicate <em>siblings</em> without killing legitimate duplicate <em>depth
 <td>Sort; skip equal values at the same level</td>
 </tr>
 </tbody></table></div>
-<p><strong>Template — subsets via the start-index loop:</strong></p>
+<p><strong>Template — subsets via the start-index loop (the canonical shape):</strong></p>
 <pre><code>def subsets(nums):
     result, path = [], []
     def dfs(start):
@@ -155,13 +115,17 @@ skips duplicate <em>siblings</em> without killing legitimate duplicate <em>depth
     dfs(0)
     return result
 </code></pre>
-<p><strong>Complexity:</strong> subsets O(n·2ⁿ) — 2ⁿ subsets, each copied at O(n); permutations
-O(n·n!); combinations O(k·C(n,k)). The senior sentence: &quot;this is optimal up to
-constants because the output itself has that size&quot; — output-size bounds are
-the complexity argument interviewers actually probe here.</p>
+<p>Swap the record point and the loop bounds and the same skeleton becomes every
+other shape: record only at <code>len(path) == k</code> for combinations; drop <code>start</code>,
+loop over everything with a <code>used</code> set for permutations.</p>
+<p><strong>Complexity:</strong> subsets O(n·2ⁿ) — 2ⁿ subsets, each copied at O(n);
+permutations O(n·n!); combinations O(k·C(n,k)). The senior sentence: &quot;this is
+optimal up to constants because the output itself has that size&quot; —
+output-size bounds are the complexity argument interviewers actually probe
+here.</p>
 <p><strong>Drills (easy → hard):</strong> Subsets → Permutations → Combinations → Subsets II
 (sort + sibling-skip).</p>
-</section><section class="sec"><h2>Pattern 3 — Pruning: cut the tree before you grow it</h2>
+</section><section class="sec"><h2>Pattern 2 — Pruning: cut the tree before you grow it</h2>
 <p>The exponential tree is only the worst case; constraint checks applied at the
 loop level shrink it in practice, and naming them is the difference between
 &quot;brute force&quot; and &quot;exhaustive search with pruning.&quot; Three moves cover most
@@ -301,8 +265,8 @@ the one shared list; by the end it&#39;s dozens of copies of the final state.
 <li><strong>Wrong loop start.</strong> <code>i + 1</code> = each element once; <code>i</code> = reuse allowed; full
 loop + <code>used</code> set = permutations. Say which you picked and why — the
 interviewer is checking whether <code>i + 1</code> was a choice or a guess.</li>
-<li><strong>Pruned too late.</strong> Validating inside the recursion wastes a whole level per
-doomed path; filter in the for-loop so the branch never spawns.</li>
+<li><strong>Pruned too late.</strong> Validating inside the recursion wastes a whole level
+per doomed path; filter in the for-loop so the branch never spawns.</li>
 <li><strong>Backtracking where counting was asked.</strong> &quot;How many valid X?&quot; doesn&#39;t need
 the X&#39;s — enumerating them is exponential work a DP table (Challenge 10)
 does in polynomial time. Listen for &quot;count&quot; vs &quot;list.&quot;</li>
