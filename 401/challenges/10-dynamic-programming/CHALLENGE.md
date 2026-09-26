@@ -211,4 +211,4 @@ Start with problem one. No preamble.
   story. Run the four lines on THIS problem; shapes only help after the state
   is written.
 
-➡️ **Next:** [Full system design mocks — 301 Challenge 12](../../301/challenges/12-full-designs/)
+➡️ **Next:** [Full system design mocks — 301 Challenge 12](../../../301/challenges/12-full-designs/)
