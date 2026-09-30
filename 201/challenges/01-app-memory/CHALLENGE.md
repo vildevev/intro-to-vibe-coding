@@ -27,8 +27,8 @@ about four minutes and never operate it yourself.
 - What a **database** is: a spreadsheet that never forgets, never sleeps, and
   every visitor can write to
 - Why you **rent** a managed database (Supabase) and never build your own
-- The 101 rules, grown up: the no-peek trick for **database keys**, and where
-  server secrets live
+- The **two kinds of keys**: the badge tier (public by design) and the vault
+  tier (secret forever) — and the no-peek drill that trains you for the vault
 - The full read–write loop: form → save → list
 
 ## 📋 Before you start
@@ -54,10 +54,29 @@ dashboard. (Managed = *someone else loses sleep so you don't have to*.)
    long strings — a **URL** and an **anon key**. Your app will use both.
    Stop here and read Part B before touching them.
 
-## Part B — The no-peek trick, grown up (10 min)
+## Part B — Two kinds of keys (10 min)
 
-You already know the rule: *the AI uses secrets, never sees them.* Database
-keys are no different — and the drawer is the same old `.env`:
+Before the drawer, the honest model. Supabase — like every managed database —
+has **two tiers of credentials**, and treating them the same is how people end
+up either paranoid about nothing or careless about the wrong thing:
+
+**The badge tier — public by design.** Your project URL and the **anon key**.
+They ship to every visitor's browser — anyone can open Dev Tools and read
+them — so hiding them is security theater, not security. Think of the anon key
+as a **visitor badge**: everyone gets the same badge, and the building decides
+which doors it opens. Those door rules are called **Row Level Security (RLS)**,
+they live in the Supabase dashboard, and they're where the security actually
+comes from. (Challenge 2 is the bouncer's training day.)
+
+**The vault tier — secret forever.** The **service_role key** and the database
+**connection string** (the `postgresql://user:password@…` kind). These bypass
+every door — full admin access — and you won't use them in this course's apps.
+But know the tier exists, because the drawer rule below is *really* about this
+one.
+
+So why run the no-peek drill at all? Because you're training the reflex on the
+tier where it's merely habit, so it's automatic on the tier where it's the only
+thing standing between a stranger and your entire database. Run it:
 
 ```
 My app is about to talk to Supabase. Create entries in .env for:
@@ -68,12 +87,13 @@ copy them from my Supabase dashboard myself. Then verify the values
 are loaded without printing them.
 ```
 
-You paste the URL and key into `.env` yourself. Same drawer, bigger locks.
+You paste the URL and key into `.env` yourself. Same drawer — and now you know
+exactly which tier it's protecting.
 
-> 💡 **The anon key is *designed* to be semi-public** — it's what browsers
-> use. The real security comes from *rules* about who may read and write
-> what (Challenge 2 turns that knob). Still: keys go in the drawer, always.
-> The habit matters more than today's threat model.
+> 💡 **The one-line test for any credential:** "If this appeared on a poster,
+> what's the worst that happens?" Anon key: strangers walk through your open
+> doors — that's what the doors are *for*. Connection string: strangers own
+> the building. The tier decides the paranoia level.
 
 ## Part C — Teach the vault what to remember (10 min)
 
@@ -149,7 +169,8 @@ spend-cap rule — it applies to free tiers too.)
 - [ ] A Supabase table exists with a row you created by hand
 - [ ] Your app saves new rows from a form and lists them
 - [ ] A wish survives refresh, tab-close, and your comeback
-- [ ] Supabase keys live in `.env`, and the AI never saw them
+- [ ] You can say which Supabase credentials are public by design — and where
+      the security actually lives (the doors, not the badge)
 - [ ] You know where Supabase shows its limits
 
 ## 📚 Jargon translator
@@ -160,7 +181,7 @@ spend-cap rule — it applies to free tiers too.)
 | Table / row / column | Spreadsheet tab / one saved thing / a kind of thing you save |
 | Managed database | A database someone else runs (and loses sleep over) — you rent it |
 | Supabase | A popular managed database with a friendly dashboard; our rented vault |
-| Anon key | The semi-public key browsers use; rules decide what it's allowed to do |
+| Anon key | The public-by-design visitor badge the browser carries; the RLS door rules decide what it opens |
 | Schema | The shape of your memory: which tables and columns exist |
 | Persist / persistence | "It survives" — the property Maria's wishlist didn't have |
 
@@ -171,9 +192,10 @@ spend-cap rule — it applies to free tiers too.)
   is read first, then whether the values look complete (no stray spaces)."*
 - **Saved but not showing.** Two steps failed differently: ask the AI to
   *check* which step broke — the save or the fetch — before fixing anything.
-- **You pasted a key into chat by reflex.** Rotate: Supabase → Settings → API
-  → "Reset anon key". Then re-paste into `.env` yourself. Revoke first,
-  panic second — the rule doesn't care which service.
+- **You pasted a key into chat by reflex.** First ask: which tier? Anon key:
+  public by design — no emergency; reset it at Supabase → Settings → API for
+  tidiness. Connection string or service_role key: that's the vault tier —
+  rotate immediately. The tier decides the panic level.
 - **Supabase asks about "Row Level Security" and it sounds scary.** It's the
   vault's door policy — and it's literally Challenge 2. For now keep the
   default doors open *for practice data only*; no real names or emails yet.

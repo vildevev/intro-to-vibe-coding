@@ -83,7 +83,9 @@ Three bites, testing between each:
 ## Part C — The bouncer at the vault door (15 min)
 
 Right now "only your rows" is a promise the *app* makes — and apps can be
-lied to. A bored teenager with the anon key can talk to your database
+lied to. Challenge 1 left you holding a public badge — the anon key anyone
+can read out of your site — and promised the reason that's still safe lives
+here: a bored teenager with that anon key can talk to your database
 directly, skipping your polite app entirely. The enforcement has to live
 *in the vault*, and Supabase has it built-in: **Row Level Security (RLS)** —
 a door policy written as tiny rules.

@@ -50,8 +50,8 @@ about four minutes and never operate it yourself.</p>
 <li>What a <strong>database</strong> is: a spreadsheet that never forgets, never sleeps, and
 every visitor can write to</li>
 <li>Why you <strong>rent</strong> a managed database (Supabase) and never build your own</li>
-<li>The 101 rules, grown up: the no-peek trick for <strong>database keys</strong>, and where
-server secrets live</li>
+<li>The <strong>two kinds of keys</strong>: the badge tier (public by design) and the vault
+tier (secret forever) — and the no-peek drill that trains you for the vault</li>
 <li>The full read–write loop: form → save → list</li>
 </ul>
 </section><section class="sec sec-before"><h2>📋 Before you start</h2>
@@ -75,9 +75,25 @@ vaults come with alarms.</li>
 long strings — a <strong>URL</strong> and an <strong>anon key</strong>. Your app will use both.
 Stop here and read Part B before touching them.</li>
 </ol>
-</section><section class="sec"><h2>Part B — The no-peek trick, grown up (10 min)</h2>
-<p>You already know the rule: <em>the AI uses secrets, never sees them.</em> Database
-keys are no different — and the drawer is the same old <code>.env</code>:</p>
+</section><section class="sec"><h2>Part B — Two kinds of keys (10 min)</h2>
+<p>Before the drawer, the honest model. Supabase — like every managed database —
+has <strong>two tiers of credentials</strong>, and treating them the same is how people end
+up either paranoid about nothing or careless about the wrong thing:</p>
+<p><strong>The badge tier — public by design.</strong> Your project URL and the <strong>anon key</strong>.
+They ship to every visitor&#39;s browser — anyone can open Dev Tools and read
+them — so hiding them is security theater, not security. Think of the anon key
+as a <strong>visitor badge</strong>: everyone gets the same badge, and the building decides
+which doors it opens. Those door rules are called <strong>Row Level Security (RLS)</strong>,
+they live in the Supabase dashboard, and they&#39;re where the security actually
+comes from. (Challenge 2 is the bouncer&#39;s training day.)</p>
+<p><strong>The vault tier — secret forever.</strong> The <strong>service_role key</strong> and the database
+<strong>connection string</strong> (the <code>postgresql://user:password@…</code> kind). These bypass
+every door — full admin access — and you won&#39;t use them in this course&#39;s apps.
+But know the tier exists, because the drawer rule below is <em>really</em> about this
+one.</p>
+<p>So why run the no-peek drill at all? Because you&#39;re training the reflex on the
+tier where it&#39;s merely habit, so it&#39;s automatic on the tier where it&#39;s the only
+thing standing between a stranger and your entire database. Run it:</p>
 <pre><code>My app is about to talk to Supabase. Create entries in .env for:
 SUPABASE_URL= (empty) and SUPABASE_ANON_KEY= (empty), with comments
 explaining each. Then write the code that reads them from .env and
@@ -85,12 +101,13 @@ connects. Do NOT invent values and don&#39;t ask me to paste them — I&#39;ll
 copy them from my Supabase dashboard myself. Then verify the values
 are loaded without printing them.
 </code></pre>
-<p>You paste the URL and key into <code>.env</code> yourself. Same drawer, bigger locks.</p>
+<p>You paste the URL and key into <code>.env</code> yourself. Same drawer — and now you know
+exactly which tier it&#39;s protecting.</p>
 <blockquote>
-<p>💡 <strong>The anon key is <em>designed</em> to be semi-public</strong> — it&#39;s what browsers
-use. The real security comes from <em>rules</em> about who may read and write
-what (Challenge 2 turns that knob). Still: keys go in the drawer, always.
-The habit matters more than today&#39;s threat model.</p>
+<p>💡 <strong>The one-line test for any credential:</strong> &quot;If this appeared on a poster,
+what&#39;s the worst that happens?&quot; Anon key: strangers walk through your open
+doors — that&#39;s what the doors are <em>for</em>. Connection string: strangers own
+the building. The tier decides the paranoia level.</p>
 </blockquote>
 </section><section class="sec"><h2>Part C — Teach the vault what to remember (10 min)</h2>
 <p>A database stores <strong>tables</strong> — think spreadsheet tabs. Columns are the kinds
@@ -151,7 +168,8 @@ checking: was it saved? is the fetch right? (Don&#39;t guess — check.)&quot;</
 <li><span class="cb" aria-hidden="true"></span>A Supabase table exists with a row you created by hand</li>
 <li><span class="cb" aria-hidden="true"></span>Your app saves new rows from a form and lists them</li>
 <li><span class="cb" aria-hidden="true"></span>A wish survives refresh, tab-close, and your comeback</li>
-<li><span class="cb" aria-hidden="true"></span>Supabase keys live in <code>.env</code>, and the AI never saw them</li>
+<li><span class="cb" aria-hidden="true"></span>You can say which Supabase credentials are public by design — and where
+the security actually lives (the doors, not the badge)</li>
 <li><span class="cb" aria-hidden="true"></span>You know where Supabase shows its limits</li>
 </ul>
 </section><section class="sec sec-jargon"><h2>📚 Jargon translator</h2>
@@ -180,7 +198,7 @@ checking: was it saved? is the fetch right? (Don&#39;t guess — check.)&quot;</
 </tr>
 <tr>
 <td>Anon key</td>
-<td>The semi-public key browsers use; rules decide what it&#39;s allowed to do</td>
+<td>The public-by-design visitor badge the browser carries; the RLS door rules decide what it opens</td>
 </tr>
 <tr>
 <td>Schema</td>
@@ -198,9 +216,10 @@ the code isn&#39;t reading them. Ask: <em>&quot;The app can&#39;t connect — ch
 is read first, then whether the values look complete (no stray spaces).&quot;</em></li>
 <li><strong>Saved but not showing.</strong> Two steps failed differently: ask the AI to
 <em>check</em> which step broke — the save or the fetch — before fixing anything.</li>
-<li><strong>You pasted a key into chat by reflex.</strong> Rotate: Supabase → Settings → API
-→ &quot;Reset anon key&quot;. Then re-paste into <code>.env</code> yourself. Revoke first,
-panic second — the rule doesn&#39;t care which service.</li>
+<li><strong>You pasted a key into chat by reflex.</strong> First ask: which tier? Anon key:
+public by design — no emergency; reset it at Supabase → Settings → API for
+tidiness. Connection string or service_role key: that&#39;s the vault tier —
+rotate immediately. The tier decides the panic level.</li>
 <li><strong>Supabase asks about &quot;Row Level Security&quot; and it sounds scary.</strong> It&#39;s the
 vault&#39;s door policy — and it&#39;s literally Challenge 2. For now keep the
 default doors open <em>for practice data only</em>; no real names or emails yet.</li>
