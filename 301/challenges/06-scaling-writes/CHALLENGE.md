@@ -1,6 +1,6 @@
 # Challenge 6 — Scaling Writes
 
-**Mission:** Learn the four-strategy playbook for write-heavy systems — write-optimized storage engines, partitioning, queues with load shedding, and batching — plus Kafka's model, so a "now handle 10x writes" probe strengthens your design instead of sinking it.
+**Mission:** Scale the write path the way it actually breaks — a saturated primary, a queue that never drains, a viral hot key — so the "now handle 10x writes" probe strengthens your design instead of sinking it.
 
 **Time:** ~60 minutes
 
@@ -8,18 +8,18 @@
 
 ## 😱 War story: the queue that ate the backlog
 
-"Design a metrics ingestion system — oh, and Black Friday quadruples writes." The candidate smiles and adds a Kafka box between the API and the database, declares the problem solved, and moves on. The interviewer leans in: "The database absorbs 2k writes/sec. Traffic is 8k and staying there. What does the queue do?" Silence, then the honest answer: it grows forever, latency climbs toward the retentions horizon, and users are waiting on writes the system already told them it accepted. A queue is a buffer for short bursts, not a throughput fix — the fix is making the write path itself faster or smaller. Every technique in this challenge exists to keep that follow-up question from ending you.
+"Design a metrics ingestion system — oh, and Black Friday quadruples writes." The candidate smiles and adds a Kafka box between the API and the database, declares the problem solved, and moves on. The reviewer leans in: "The database absorbs 2k writes/sec. Traffic is 8k and staying there. What does the queue do?" Silence, then the honest answer: it grows forever, latency climbs toward the retentions horizon, and users are waiting on writes the system already told them it accepted. A queue is a buffer for short bursts, not a throughput fix — the fix is making the write path itself faster or smaller. Every technique in this challenge exists to keep that follow-up question from ending you.
 
 ## 🧰 What you'll learn
 
-- The four-strategy write-scaling playbook and the cost of each strategy
-- Why log-structured engines (Cassandra, LSM trees) write 10x faster than B-trees — and read worse
-- Kafka's model in five minutes: partitions, keys, offsets, consumer groups, durability
-- The three moments writes bite: bursts, hot keys, resharding
+- Why the four-strategy playbook is ordered as it is: each strategy answers a different way the write path dies
+- Why log-structured engines (Cassandra, LSM trees) exist: in-place updates are the reason B-trees melt on writes — and the reason they read better
+- Why Kafka's model is what it is: partitions, keys, offsets, consumer groups — and the durability each one buys
+- Why load shedding exists: the queue is a buffer for bursts, not a throughput fix
 
-## The write-scaling playbook
+## The write path, and why it breaks first
 
-Writes hit harder than reads because they mutate state: every write touches the log, the indexes, and eventually disk. When a single database tops out (~10–20k write TPS for a tuned instance — verify with math before assuming), four strategies, in combination:
+Writes hit harder than reads because they mutate state: every write touches the log, the indexes, and eventually disk. When a single database tops out (~10–20k write TPS for a tuned instance — verify with math before assuming), you have four strategies. Each one below earns its place by fixing a specific break — three breaks, three stories:
 
 | Strategy | The move | The cost you must state |
 |---|---|---|
@@ -30,9 +30,13 @@ Writes hit harder than reads because they mutate state: every write touches the 
 
 The vertical-partitioning variant is worth naming precisely: split one overloaded table by access pattern — write-once content in one store, high-frequency counter updates in another (in-memory), append-only analytics events in a third. Each store then gets the engine it deserves.
 
-## Storage engines that love writes
+## Break 1 — the primary saturates
 
-The engine choice is a write-path decision, and "Cassandra because it scales" is not the answer — the mechanism is:
+**The break, on the clock.** 8k writes/sec sustained against a database that absorbs 2k. Write p99 climbs past the SLA, log and index upkeep eat the disk, clients time out and retry into the storm. The read-scaling reflex from Challenge 5 does nothing here: replicas spread reads, but every write still lands on the one primary.
+
+**The obvious fix, and why it fails:** a bigger box. Hardware ceilings exist and they're close — 10–20k TPS is a tuned instance's number, and the next box up buys a multiplier, not a law of physics. The write path needs to get faster per write and wider across machines.
+
+**The fix: strategies 1 and 2 — engine first, then shards.** Strategy 1 is vertical + engine choice: a bigger box *and* a write-optimized engine, stripping read-only features (extra indexes, constraints, triggers). The engine choice is a write-path decision, and "Cassandra because it scales" is not the answer — the mechanism is:
 
 | | B-tree (Postgres, MySQL) | Log-structured / LSM (Cassandra, LevelDB) |
 |---|---|---|
@@ -41,11 +45,19 @@ The engine choice is a write-path decision, and "Cassandra because it scales" is
 | Read path | Fast, direct indexed lookups | May consult memtable + several files, then merge |
 | Sweet spot | Mixed workloads, transactions, consistency | Write-heavy ingestion, time-series, metrics |
 
-That's the fundamental trade in one table: append-only writes buy throughput with read amplification. Same logic in other niches: time-series databases (InfluxDB, TimescaleDB) for timestamped streams, column stores (ClickHouse) for batch analytics. Whatever you pick, say the trade, not just the name.
+That's the fundamental trade in one table: append-only writes buy throughput with read amplification. Same logic in other niches: time-series databases (InfluxDB, TimescaleDB) for timestamped streams, column stores (ClickHouse) for batch analytics. Whatever you pick, say the trade, not just the name. Strategy 2 is shard/partition: spread writes across machines on a key (horizontal) or split data by access pattern (vertical — the variant above).
 
-## Kafka in five minutes
+**The cost:** fast-write engines read slower, and shards bring hot keys, cross-shard queries, and no cross-shard transactions — which is Break 3's material.
 
-Kafka is a distributed append-only log that doubles as a message queue and an event stream — the default answer when writes need buffering, ordering, or multiple readers.
+## Break 2 — the queue that never drains
+
+**The break, on the clock.** The war story, continued: Kafka goes between the API and the database, the problem is declared solved — and the reviewer leans in: "The database absorbs 2k writes/sec. Traffic is 8k and staying there. What does the queue do?" It grows forever, latency climbs toward the retention horizon, and users are waiting on writes the system already told them it accepted. An 8k-against-2k gap is not a burst; it's the steady state, and no buffer holds a steady state.
+
+**The obvious fix, and why it fails:** "the queue absorbs the load." Buffers delay; they don't remove. If steady-state demand exceeds what drains out the far end, the backlog is unbounded and the "accepted" ack was a lie the system told its users. Scaling a database isn't instant either — the queue buys minutes, not capacity.
+
+**The fix: buffer the bursts, shed the rest (strategy 3).** A 4x Black Friday spike is a legitimate buffer job: queue it, drain it behind. The steady 8k-against-2k gap is not — that's a shedding decision: drop the writes the business can afford to lose. A driver re-sends location in 3 seconds, so yesterday's ping is expendable; keep clicks over impressions when forced to choose. Deciding *what may be dropped* is a requirements-stage decision — surface it there, not during the outage.
+
+Kafka is the default tool when writes need buffering, ordering, or multiple readers — a distributed append-only log that doubles as a message queue and an event stream:
 
 | Concept | What it is |
 |---|---|
@@ -63,22 +75,24 @@ The rules that decide designs:
 - **Delivery is at-least-once by default.** A consumer that dies after processing but before committing its offset will reprocess. Exactly-once requires idempotent producers plus transactional consumers; practical retry hygiene is a retry topic plus a dead-letter queue for the hopeless messages.
 - **Retention, not deletion.** Messages persist (default ~7 days) and any consumer group can replay from any offset — that's what makes Kafka a stream, not just a queue. Consumers pull at their own pace; a slow consumer just grows its lag, visibly.
 
-## When writes bite
+**The cost:** async semantics — "accepted" ≠ "written" — and the default delivery guarantee is at-least-once, so consumers must tolerate reprocessing unless you pay for exactly-once.
 
-Three moments where write-heavy designs actually fail, and the standard plays:
+## Break 3 — the viral key that drowns its shard
 
-- **Bursts.** A 4x spike either gets buffered (queue — fine for short bursts, fatal as a steady-state band-aid; scaling a database isn't instant either) or shed (drop writes the business can afford to lose: a driver re-sends location in 3 seconds, so yesterday's ping is expendable; keep clicks over impressions when forced to choose). Deciding *what may be dropped* is a requirements-stage decision — surface it there.
-- **Hot keys.** A viral post takes 100k likes/sec and its single shard drowns even after perfect key selection. Split it: write the count across k sub-keys (`post1Likes-0..k-1`), read them all and sum. Cost: k times the reads and k times the storage — acceptable for aggregatable data (likes, views, balances), impossible for data that must stay atomic (a user profile, which is rarely this hot anyway).
-- **Resharding.** Going from 8 shards to 16 re-maps nearly everything under naive hashing. Never take the system down for it: dual-write to old and new shards, read from the new one, backfill, then cut over. Consistent hashing makes the eventual next reshard a fraction-sized move instead of a full migration.
+**The break, on the clock.** Perfect key selection, even hashing, sharding done right — and one post goes viral at 100k likes/sec. Its key hashes to exactly one partition; that shard drowns while fifteen idle. And the fix that worked last quarter, resharding from 8 shards to 16, re-maps nearly everything under naive hashing — done live, that's an outage you scheduled yourself.
+
+**The obvious fix, and why it fails:** add more shards. Re-mapping keys doesn't move a hot key: it still hashes to exactly one partition. And taking the system down to reshard trades a write problem for an availability problem.
+
+**The fix: split the hot key, batch the aggregate, dual-write the migration.** For the viral key: write the count across k sub-keys (`post1Likes-0..k-1`), read them all and sum. Cost: k times the reads and k times the storage — acceptable for aggregatable data (likes, views, balances), impossible for data that must stay atomic (a user profile, which is rarely this hot anyway). Strategy 4 helps upstream: batching and aggregation amortize per-write overhead — 100 likes on a post = 1 counter update per window — at the price of added latency, and it's useless if traffic is too sparse to batch. On the Kafka side, the hot-partition fixes are the ones from Break 2's ordering rule, in order of preference: drop the key, salt it, or compound it. And resharding: never take the system down for it — dual-write to old and new shards, read from the new one, backfill, then cut over. Consistent hashing makes the eventual next reshard a fraction-sized move instead of a full migration.
+
+**The cost:** k copies of hot data, read-side aggregation logic, batching latency — every one a price paid so no single component ever sees the whole storm.
 
 The unifying principle: write scaling is the art of reducing throughput demanded of any single component — spread it, buffer it, shrink it, or drop it.
 
-Go deeper on Kafka internals and the Cassandra data model at [Hello Interview's system design course](https://www.hellointerview.com/learn/courses/system-design).
-
-## 🤖 Mock interview: run it
+## 🤖 Design-review drill: run it
 
 ```text
-You are my system design interviewer for a WRITE-HEAVY problem. Your goal is
+You are a senior engineer leading my design review for a WRITE-HEAVY problem. Your goal is
 to find out whether I can scale ingestion, not just draw boxes.
 
 SETUP
@@ -103,9 +117,10 @@ INJECT THESE CONSTRAINTS AND PROBES AT THE NATURAL MOMENTS
   plus a pointer message, not blobs in the log.
 
 RULES
-Stay in character. Do not accept "we'll use Kafka" without a partition key
-and a failure story attached. Hints only if I ask; smallest nudge possible.
-At 45 minutes or "end interview", stop.
+Stay in character. If I add a component without naming the break it fixes,
+stop me: "What breaks without it?" Do not accept "we'll use Kafka" without
+a partition key and a failure story attached. Hints only if I ask; smallest
+nudge possible. At 45 minutes or "end review", stop.
 
 SCORING
 Score 1-4 on Problem Navigation, Solution Design, Technical Excellence,
@@ -117,13 +132,13 @@ assign me a problem to re-run.
 Ask me to pick a problem to start.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] You can name all four write-scaling strategies with one stated cost each
 - [ ] You can explain, mechanism-level, why LSM writes beat B-trees and what it costs reads
 - [ ] You can sketch Kafka's model and derive a partition key for any given stream
 - [ ] You know at-least-once is the default and what exactly-once costs to get
-- [ ] You can catch yourself (or a mock partner) using a queue as a throughput band-aid
+- [ ] You can catch yourself (or a drill partner) using a queue as a throughput band-aid
 
 ## 📚 Jargon
 
@@ -142,11 +157,11 @@ Ask me to pick a problem to start.
 
 ## 🆘 When it goes wrong
 
-- **You proposed a queue and the interviewer asks "then what?"** Own the physics: the queue delays but never absorbs steady overload. Answer with the pairing: "buffer for bursts, and behind it either a sharded write path or load shedding."
+- **You proposed a queue and the reviewer asks "then what?"** Own the physics: the queue delays but never absorbs steady overload. Answer with the pairing: "buffer for bursts, and behind it either a sharded write path or load shedding."
 - **You picked Cassandra and can't say why it's fast.** Rebuild from the mechanism: sequential appends vs in-place updates. If you can't, downgrade to "a write-optimized engine — I'd validate with the actual workload" rather than bluffing internals.
 - **Your partition key fragments under a viral event.** Don't redesign live. Add salting for that key: "we salt only keys our per-key metrics flag as hot — readers aggregate across the salted copies."
 - **You promised exactly-once delivery casually.** Walk it back precisely: default is at-least-once; exactly-once needs idempotent producers plus transactional consumers — or design the consumer's writes to be idempotent instead, which is usually simpler.
-- **The interviewer says "writes are only 5k/sec, why Kafka?"** Concede gracefully — that fits one tuned database. Do the math out loud (Challenge 4's numbers), then justify the queue only for ordering, decoupling, or genuine bursts.
+- **The reviewer says "writes are only 5k/sec, why Kafka?"** Concede gracefully — that fits one tuned database. Do the math out loud (Challenge 4's numbers), then justify the queue only for ordering, decoupling, or genuine bursts.
 - **You shard by created_at and every write lands on one shard.** Catch it before they do: time keys route all current writes to the newest shard. Prefer hashing a stable high-cardinality key; keep time as a column, not a distribution key.
 
 ➡️ **Next:** [Challenge 7 — Real-Time Updates](../07-real-time-updates/)

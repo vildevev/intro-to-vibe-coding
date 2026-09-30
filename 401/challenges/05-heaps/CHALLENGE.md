@@ -1,6 +1,6 @@
 # Challenge 5 — Heaps
 
-**Mission:** Heaps are the interview's "track a running extreme" tool. Three shapes cover the chapter: a bounded heap for top-K, two balanced heaps for a streaming median, and a k-way heap for merging sorted streams. The structure itself is standard library — the interview is knowing which heap holds what, at what cost, and saying so.
+**Mission:** Heaps are the drill's "track a running extreme" tool. Three shapes cover the chapter: a bounded heap for top-K, two balanced heaps for a streaming median, and a k-way heap for merging sorted streams. The structure itself is standard library — the drill is knowing which heap holds what, at what cost, and saying so.
 
 **Time:** ~45 minutes
 
@@ -12,7 +12,7 @@
 sorting." Candidate A: "max-heap of size k keyed on squared distance; O(n
 log k), O(k) memory, works on a stream," and never materializes the
 distances. Candidate B computes all distances, sorts, slices — correct, but
-O(n log n) when beating O(n log n) was the assignment, and the interviewer
+O(n log n) when beating O(n log n) was the assignment, and the drill leader
 had just said so. The heap's win isn't only the log factor: it declares
 *bounded memory and streaming-friendly* out loud, which is exactly the
 systems instinct senior loops probe for.
@@ -58,7 +58,7 @@ def kth_largest(nums, k):          # min-heap keeps the k largest so far
 **Complexity:** O(n log k) time, O(k) space; `heapreplace` does the
 pop-then-push in a single sift. For reference: push and pop are O(log n),
 peek is O(1), heapify on an existing array is O(n). Those four costs,
-recited cold, are half of what interviewers check about heaps.
+recited cold, are half of what drill leaders check about heaps.
 
 **Drills (easy → hard):** Kth Largest Element in an Array → Top K Frequent
 Elements (counter + heap) → K Closest Points to Origin → Find K Closest
@@ -110,13 +110,11 @@ rebalance order feels arbitrary, trace inserting 5, 2, 8, 3 by hand once.
 list heads) → Merge k Sorted Lists → Find Median from Data Stream → Sliding
 Window Median (median + lazy deletion).
 
-Go deeper: [Hello Interview's heap chapter](https://www.hellointerview.com/learn/code/heap/overview) for animated push/pop traces.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on HEAPS: top-K problems, two-heap medians, and merge-K.
+You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on HEAPS: top-K problems, two-heap medians, and merge-K.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
    State it concisely: setup, input, output, one worked example, one
@@ -127,7 +125,7 @@ interview with me on HEAPS: top-K problems, two-heap medians, and merge-K.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -136,7 +134,7 @@ interview with me on HEAPS: top-K problems, two-heap medians, and merge-K.
 Start with the problem statement. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] You justify "k largest → min-heap" without pausing
 - [ ] The four operation costs (push/pop/peek/heapify) are reflexes
@@ -169,7 +167,7 @@ Start with the problem statement. No preamble.
 - **Forgetting to negate.** Python's `heapq` is min-only; every max-heap
   push *and* pop needs the sign flip. One missed negation produces wrong
   answers that look like logic bugs.
-- **Sort as a reflex.** If the interviewer says "beat sorting" or the data
+- **Sort as a reflex.** If the drill leader says "beat sorting" or the data
   is streaming, sorting is a reject even when correct. Lead with the heap.
 - **Tuples comparing wrong.** If a tuple's second element can't be compared
   (objects), add an integer tiebreaker before it — or the push throws

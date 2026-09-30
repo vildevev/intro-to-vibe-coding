@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Keep two users from winning the same resource at the same instant — the ladder from conditional writes through pessimistic and optimistic locking to distributed locks with TTLs, plus what to do when the whole world wants one row — by building a ticket-booking system's checkout flow.">
-<title>Challenge 08: Contention — System Design Interview Prep</title>
+<meta name="description" content="Keep two users from winning the same resource at the same instant — conditional writes, pessimistic and optimistic locking, distributed locks with TTLs, and what to do when the whole world wants one row — the only way it sticks: by breaking a ticket-booking checkout at each collision and letting each break force the next coordination tool. Every tool arrives because the previous guard stopped covering the gap, and every tool names its cost.">
+<title>Challenge 08: Contention — System Design</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,27 +30,37 @@
   <div class="level-meta">
     <p class="level-chips"><span class="chip">Challenge 08</span><span class="chip">about 60 minutes</span></p>
     <h1>Contention</h1>
-    <p class="mission"><strong>Mission.</strong> Keep two users from winning the same resource at the same instant — the ladder from conditional writes through pessimistic and optimistic locking to distributed locks with TTLs, plus what to do when the whole world wants one row — by building a ticket-booking system&#39;s checkout flow.</p>
+    <p class="mission"><strong>Mission.</strong> Keep two users from winning the same resource at the same instant — conditional writes, pessimistic and optimistic locking, distributed locks with TTLs, and what to do when the whole world wants one row — the only way it sticks: by breaking a ticket-booking checkout at each collision and letting each break force the next coordination tool. Every tool arrives because the previous guard stopped covering the gap, and every tool names its cost.</p>
   </div>
 </div>
 <div class="prose">
 <section class="sec sec-story"><h2>😱 War story: seat A15, sold twice</h2>
-<p>&quot;Design a ticketing system.&quot; The candidate&#39;s booking service reads the available count, checks it&#39;s above zero, decrements, inserts a ticket, charges the card. Clean diagram, clean flow. The interviewer then fires two &quot;buy&quot; requests at the same millisecond and the count lands at minus one: both requests read 1, both passed the check, both wrote. That&#39;s the lost update — a read-modify-write with a gap between the read and the write, and another request slipped into the gap. It is the most predictable bug in system design interviews. Candidates don&#39;t lose points for having it in their first design; they lose points for not having four named ways to close the gap and an opinion on which one fits.</p>
+<p>&quot;Design a ticketing system.&quot; The candidate&#39;s booking service reads the available count, checks it&#39;s above zero, decrements, inserts a ticket, charges the card. Clean diagram, clean flow. The reviewer then fires two &quot;buy&quot; requests at the same millisecond and the count lands at minus one: both requests read 1, both passed the check, both wrote. That&#39;s the lost update — a read-modify-write with a gap between the read and the write, and another request slipped into the gap. It is the most predictable bug in system design design reviews. Candidates don&#39;t lose points for having it in their first design; they lose points for not having four named ways to close the gap and an opinion on which one fits.</p>
 </section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
 <ul>
-<li>Race condition anatomy: read-modify-write, the lost update, and compare-and-set</li>
-<li>The coordination ladder: conditional writes, pessimistic locks, optimistic versioning, serializable isolation, distributed locks</li>
-<li>The reservation pattern: a 10-minute hold without holding a database transaction open</li>
-<li>Hot partitions: when sharding, replicas, and load balancers all stop helping</li>
+<li>Race anatomy: read-modify-write, the lost update — the gap between the read and the write is the bug</li>
+<li>Why a conditional write is the cheapest fix, and why it can&#39;t express every check — the coordination ladder exists for the checks it can&#39;t</li>
+<li>Why a 10-minute hold can&#39;t be a database transaction, and what &quot;expiry as data&quot; buys</li>
+<li>What happens when 10M users want one row: why sharding, replicas, and load balancers all stop helping — and what&#39;s left</li>
+<li>Why a retried checkout books twice, and the idempotency key that makes repeats harmless</li>
 </ul>
-</section><section class="sec"><h2>The race and the first fix</h2>
-<p>Contention is multiple requests competing for one resource at one moment. The cheapest fix is to stop checking in app code and make the write itself conditional — the database evaluates your guard atomically as part of the write:</p>
+</section><section class="sec"><h2>The system that works (until it doesn&#39;t)</h2>
+<p>Requirements: view events, search events, book tickets. The binding non-functionals: availability for browsing, absolute consistency for booking (a seat has one owner, ever), and 10M users descending on one event. Backbone: event and search services over a SQL database (read-heavy, cacheable — Challenge 5), a booking service with ACID transactions, a payment processor that reports back via webhook.</p>
+<p>Day one, the checkout reads like the business: read the available count, check it&#39;s above zero, decrement, insert the ticket, charge the card. In the demo — one user, one click, no hurry — every seat sells exactly once. What the demo never contains is contention: multiple requests competing for one resource at one moment.</p>
+</section><section class="sec"><h2>Break 1 — two fans, one seat, minus one left</h2>
+<p>The moment: two &quot;buy&quot; requests for the last seat land in the same millisecond. Both read <code>available = 1</code>, both pass the check, both write. The count lands at minus one, seat A15 has two owners, and the logs look blameless. That&#39;s the lost update — a read-modify-write with a gap between the read and the write, and another request slipped into the gap. The most predictable bug in system design design reviews.</p>
+<p><strong>The obvious fix, and why it fails:</strong> &quot;wrap it in a transaction.&quot; On default isolation the check still happens in app code before the write — two transactions can both pass the same check before either commits, and the gap survives. Writing the app code &quot;faster&quot; shrinks the window; nothing shrinks it to zero.</p>
+<p><strong>The fix: stop checking in app code — make the write itself conditional.</strong> The database evaluates your guard atomically as part of the write:</p>
 <pre><code class="language-sql">UPDATE tickets
 SET status = &#39;sold&#39;, user_id = :user
 WHERE ticket_id = :id AND status = &#39;available&#39;;
 </code></pre>
 <p>One row updated means you won; zero means somebody beat you. That&#39;s compare-and-set, and every serious store speaks it: DynamoDB ConditionExpressions, Redis <code>SET NX</code>, HTTP <code>If-Match</code>. Two disciplines travel with it. First, guard the resource people actually fight over: a counter can promise &quot;a seat exists,&quot; not &quot;seat A15 exists&quot; — two buyers can both decrement a counter and both write A15. Give every ticket its own row and aim the conditional write at the row. Second, check the affected-row count: zero rows is not an error, and if you don&#39;t check, the next statement in your transaction happily runs anyway.</p>
-</section><section class="sec"><h2>The coordination ladder</h2>
+<p><strong>The cost:</strong> a conditional write only guards predicates the row itself can express. The moment the decision needs several rows, app logic, or a hold that outlives the request, the gap reopens somewhere new.</p>
+</section><section class="sec"><h2>Break 2 — four adjacent seats and a ten-minute hold</h2>
+<p>The moment: the product ships two features the first guard can&#39;t express. A family wants four seats together — the decision needs to read several rows, reason, then write, and no WHERE clause on one row can say it. And the countdown timer arrives: a plain book-now flow means users fill in payment details and discover the seat is gone, so each seat must be held ~10 minutes while the buyer types card numbers. Everyone has met the reservation from the consumer side.</p>
+<p><strong>The obvious fix, and why it fails:</strong> hold a <code>SELECT FOR UPDATE</code> lock across the whole 10-minute checkout. Transactions are for milliseconds, not minutes: every other buyer queues behind the lock, a crashed browser leaves the lock&#39;s fate murky, and if the payment API call happens inside the lock, every buyer serializes behind a third party&#39;s latency.</p>
+<p><strong>The fix: match the tool to the shape of the check.</strong></p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -86,9 +96,7 @@ WHERE ticket_id = :id AND status = &#39;available&#39;;
 </tr>
 </tbody></table></div>
 <p>Details worth saying out loud. Optimistic: read the version, write <code>WHERE version = :seen</code>, zero rows means retry — and use a dedicated incrementing counter, because business values can change and change back without your check noticing. Pessimistic: lock the smallest scope for the shortest time, and never do slow I/O inside the lock (a payment call held open serializes every buyer behind a third party&#39;s latency). Deadlocks come from inconsistent lock ordering — sort resources by a global key before locking, and treat the database&#39;s deadlock error as retryable. Write skew is the trap none of the row tools catch: two transactions each read the other&#39;s state, both decide validly, both commit, invariant broken — that needs SERIALIZABLE or folding the invariant onto a single row a guard can protect.</p>
-</section><section class="sec"><h2>Worked example: ticket checkout</h2>
-<p>Requirements: view events, search events, book tickets. The binding non-functionals: availability for browsing, absolute consistency for booking (a seat has one owner, ever), and 10M users descending on one event. Backbone: event and search services over a SQL database (read-heavy, cacheable — Challenge 5), a booking service with ACID transactions, a payment processor that reports back via webhook.</p>
-<p>Then the UX hole: a plain book-now flow means users fill in payment details and discover the seat is gone. Everyone has met the fix from the consumer side — the countdown timer. The reservation. Three ways to build it:</p>
+<p>For the reservation itself, three ways to build it:</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -113,12 +121,20 @@ WHERE ticket_id = :id AND status = &#39;available&#39;;
 <td>Great: a lapsed hold reads as free inside the query itself; correctness needs no cleanup job</td>
 </tr>
 </tbody></table></div>
-<p>The Redis variant: <code>SET ticket:A15 :userId NX EX 600</code> is atomic and self-expiring, any web server can see it, and the database stays the final authority — if the lock double-grants (a holder stalls past TTL), the losing database write fails and an automatic refund follows. One subtlety interviewers love: the seat map must show held seats as taken. A Redis set of locked IDs leaks ghosts (set members don&#39;t expire when the lock keys do); a sorted set scored by expiry time fixes it — filter scores still in the future.</p>
-</section><section class="sec"><h2>When everyone wants one row</h2>
-<p>The Taylor Swift drop: millions of users, one seat map, one moment. Sharding splits load across keys — there&#39;s one key. Replicas spread reads — the fight is writes. Load balancers spread servers that all queue on the same row. The honest ladder: first ask whether the requirement can bend (likes and follows can be eventually consistent; ten identical items can be ten separate contests), then queue-based serialization — route all requests for that resource through a single worker, converting contention into ordering and capping throughput at one worker&#39;s pace, which beats a collapsed system. For the user-facing layer, a virtual waiting room meters admission out of a sorted queue so the seat map never sees the stampede.</p>
-<p>Go deeper on the full ticketmaster-class breakdown and the online-auction variant at <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a>.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are my system design interviewer. This session is a CONTENTION-heavy
+<p>The Redis variant: <code>SET ticket:A15 :userId NX EX 600</code> is atomic and self-expiring, any web server can see it, and the database stays the final authority — if the lock double-grants (a holder stalls past TTL), the losing database write fails and an automatic refund follows. One subtlety reviewers love: the seat map must show held seats as taken. A Redis set of locked IDs leaks ghosts (set members don&#39;t expire when the lock keys do); a sorted set scored by expiry time fixes it — filter scores still in the future.</p>
+<p><strong>The cost:</strong> a TTL reservation can double-grant when a holder stalls past expiry. That&#39;s why the database stays the final authority — the lock is a UX reservation; the database&#39;s version check or row lock is what makes double-booking impossible. Say both.</p>
+</section><section class="sec"><h2>Break 3 — 10M users, one seat map, one moment</h2>
+<p>The moment: the on-sale. 10:00:00, ten million users hit one event. Every booking request queues on the same rows, the seat map times out, and social media declares the sale broken before the first ticket confirms.</p>
+<p><strong>The obvious fix, and why it fails:</strong> scale out. Sharding splits load across keys — there&#39;s one key. Replicas spread reads — the fight is writes. Load balancers spread servers that all queue on the same row. Your usual knobs don&#39;t apply, because the contention is concentrated on a single resource by definition.</p>
+<p><strong>The fix: sequence the crowd instead of fighting it.</strong> The honest ladder: first ask whether the requirement can bend (likes and follows can be eventually consistent; ten identical items can be ten separate contests), then queue-based serialization — route all requests for that resource through a single worker, converting contention into ordering and capping throughput at one worker&#39;s pace, which beats a collapsed system. For the user-facing layer, a virtual waiting room meters admission out of a sorted queue so the seat map never sees the stampede.</p>
+<p><strong>The cost:</strong> throughput is capped by design — the queue is honest about what one row can absorb, and the waiting room trades seconds of admission delay for the sale surviving at all.</p>
+</section><section class="sec"><h2>Break 4 — the retry that books twice</h2>
+<p>The moment: a checkout request times out at the client mid-payment. The client SDK retries; the impatient user double-clicks. Two booking requests for one logical purchase — and the first charge already went through. Two seats, two charges, one buyer.</p>
+<p><strong>The obvious fix, and why it fails:</strong> &quot;check whether this booking already exists, then charge.&quot; That&#39;s check-then-act again — Break 1&#39;s gap, now spanning client, server, and a payment network: two retries can both look, both find nothing, and both book. Retrying &quot;carefully&quot; is not a mechanism.</p>
+<p><strong>The fix: idempotency keys.</strong> The client sends a key per logical operation; the server stores it and returns the original result on repeats. The check-then-act still has a crack — record <code>IN_PROGRESS</code> before the side effect and <code>COMPLETED</code> after, and route the ambiguous middle to reconciliation rather than blind retry. (Challenge 9 owns this deep dive; here, know the shape: the webhook that reports payment results is a re-delivery machine, and your booking side must treat repeats as replays, not new purchases.)</p>
+<p><strong>The cost:</strong> every mutating endpoint grows a key, a store, and an in-progress state — and the ambiguous middle is a permanent reconciliation surface.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Design-review drill: run it</h2>
+<pre><code class="language-text">You are a senior engineer leading my design review. This session is a CONTENTION-heavy
 design: the core difficulty must be many clients racing for the same
 resources, and I must defend my coordination choices under fire.
 
@@ -145,13 +161,15 @@ MANDATORY DEEP DIVES — pull me into at least two:
 5. If I lock multiple rows: &quot;Two transfers lock A then B; two others lock
    B then A. What happens?&quot; (Expect ordered locking and deadlock-retry.)
 RULES
-Stay in character. If I reach for a distributed lock when a conditional
-write would do, stop me: &quot;What gap does this lock close that the database
-couldn&#39;t?&quot; If I never state what two concurrent winners looks like, make
-me trace it. Hints only on request, smallest nudge possible.
+Stay in character. If I add a component without naming the break it
+fixes, stop me: &quot;What breaks without it?&quot; If I reach for a distributed
+lock when a conditional write would do, stop me: &quot;What gap does this
+lock close that the database couldn&#39;t?&quot; If I never state what two
+concurrent winners looks like, make me trace it. Hints only on request,
+smallest nudge possible.
 
 SCORING
-After 45 minutes or &quot;end interview&quot;: score 1-4 on Problem Navigation,
+After 45 minutes or &quot;end review&quot;: score 1-4 on Problem Navigation,
 Solution Design, Technical Excellence, Communication — one quoted moment
 each. Then report: did I guard the contended resource itself (not a
 counter), did I match the tool to the contention level, and did I state
@@ -159,7 +177,7 @@ what happens to the loser of every race. Assign me one drill to repeat.
 
 Ask me to pick a problem to start.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>You can trace a lost update out loud, close it with a conditional write, and check the affected-row count</li>
 <li><span class="cb" aria-hidden="true"></span>You pick pessimistic vs optimistic from one fact: how often writers actually collide</li>

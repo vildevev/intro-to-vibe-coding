@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Systematic enumeration: a DFS over an implicit solution-space tree, where every call chooses an option, explores what that choice makes possible, and un-chooses it on the way out. Backtracking is exponential by nature — the interview grades three things: how fast you draw the tree, whether you mutate one shared path instead of copying at every step, and whether you prune branches that provably cannot succeed.">
-<title>Challenge 08: Backtracking — Coding Interview Patterns</title>
+<meta name="description" content="Systematic enumeration: a DFS over an implicit solution-space tree, where every call chooses an option, explores what that choice makes possible, and un-chooses it on the way out. Backtracking is exponential by nature — the drill grades three things: how fast you draw the tree, whether you mutate one shared path instead of copying at every step, and whether you prune branches that provably cannot succeed.">
+<title>Challenge 08: Backtracking — Coding Patterns</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +30,7 @@
   <div class="level-meta">
     <p class="level-chips"><span class="chip">Challenge 08</span><span class="chip">about 60 minutes</span></p>
     <h1>Backtracking</h1>
-    <p class="mission"><strong>Mission.</strong> Systematic enumeration: a DFS over an implicit <em>solution-space tree</em>, where every call chooses an option, explores what that choice makes possible, and un-chooses it on the way out. Backtracking is exponential by nature — the interview grades three things: how fast you draw the tree, whether you mutate one shared path instead of copying at every step, and whether you prune branches that provably cannot succeed.</p>
+    <p class="mission"><strong>Mission.</strong> Systematic enumeration: a DFS over an implicit <em>solution-space tree</em>, where every call chooses an option, explores what that choice makes possible, and un-chooses it on the way out. Backtracking is exponential by nature — the drill grades three things: how fast you draw the tree, whether you mutate one shared path instead of copying at every step, and whether you prune branches that provably cannot succeed.</p>
   </div>
 </div>
 <div class="prose">
@@ -121,7 +121,7 @@ loop over everything with a <code>used</code> set for permutations.</p>
 <p><strong>Complexity:</strong> subsets O(n·2ⁿ) — 2ⁿ subsets, each copied at O(n);
 permutations O(n·n!); combinations O(k·C(n,k)). The senior sentence: &quot;this is
 optimal up to constants because the output itself has that size&quot; —
-output-size bounds are the complexity argument interviewers actually probe
+output-size bounds are the complexity argument drill leaders actually probe
 here.</p>
 <p><strong>Drills (easy → hard):</strong> Subsets → Permutations → Combinations → Subsets II
 (sort + sibling-skip).</p>
@@ -184,10 +184,9 @@ restore turns &quot;no reuse on this path&quot; into &quot;no reuse ever,&quot; 
 rejects valid answers.</p>
 <p><strong>Drills (easy → hard):</strong> Word Search → Generate Parentheses (two filter
 rules) → Combination Sum (sort + break + reuse) → N-Queens (diagonal sets).</p>
-<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/backtracking/overview">Hello Interview&#39;s backtracking chapter</a> for animated solution-space trees.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on BACKTRACKING: subsets, permutations, combinations,
+</section><section class="sec sec-prompts"><h2>🤖 Coding drill: run it</h2>
+<pre><code class="language-text">You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on BACKTRACKING: subsets, permutations, combinations,
 constrained generation, and grid word search.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
@@ -199,7 +198,7 @@ constrained generation, and grid word search.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm&#39;s steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted (attribute the exponent to the output size), and
    trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
@@ -208,7 +207,7 @@ constrained generation, and grid word search.
 
 Start with the problem statement. No preamble.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>You sketch two levels of the solution-space tree before writing code</li>
 <li><span class="cb" aria-hidden="true"></span>One shared path + pop; <code>path[:]</code> copies appear only when recording</li>
@@ -264,7 +263,7 @@ the one shared list; by the end it&#39;s dozens of copies of the final state.
 <code>path[:]</code>, every time.</li>
 <li><strong>Wrong loop start.</strong> <code>i + 1</code> = each element once; <code>i</code> = reuse allowed; full
 loop + <code>used</code> set = permutations. Say which you picked and why — the
-interviewer is checking whether <code>i + 1</code> was a choice or a guess.</li>
+drill leader is checking whether <code>i + 1</code> was a choice or a guess.</li>
 <li><strong>Pruned too late.</strong> Validating inside the recursion wastes a whole level
 per doomed path; filter in the for-loop so the branch never spawns.</li>
 <li><strong>Backtracking where counting was asked.</strong> &quot;How many valid X?&quot; doesn&#39;t need

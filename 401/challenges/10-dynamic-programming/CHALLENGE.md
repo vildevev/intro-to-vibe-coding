@@ -10,7 +10,7 @@
 
 Candidate A has grinded every classic DP problem on every list that exists —
 Coin Change, House Robber, all of them, solutions memorized cold. Then the
-interviewer asks something one degree off the canon, and A freezes: there's no
+drill leader asks something one degree off the canon, and A freezes: there's no
 remembered solution to recall, and A never learned to *build* one. Meanwhile
 Candidate B, who has done a fraction of the problems, writes four comment
 lines in the first five minutes: "state: `best(i)` = answer for the first i
@@ -43,7 +43,7 @@ Then top-down is mechanical: take the brute-force recursion your recurrence
 describes and add two lines — check the memo before recursing, store the
 result before returning. Bottom-up is the same recurrence as a loop from the
 base cases: no call-stack risk, cache-friendly, and the space optimization
-("keep only the last k values") reads naturally off the loop. Interview
+("keep only the last k values") reads naturally off the loop. Drill
 default: top-down first, convert only if asked.
 
 | You see… | Think… |
@@ -136,13 +136,11 @@ squeeze space.
 gates) → Word Break (state = prefix length; choices = dictionary words) →
 Edit Distance (the string-pair 2D).
 
-Go deeper: [Hello Interview's dynamic programming chapter](https://www.hellointerview.com/learn/code/dynamic-programming/overview) for worked builds from brute force to optimized.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run a DP capstone
-mock: TWO back-to-back dynamic programming problems, back to back, no break.
+You are a staff engineer running a timed coding drill at a top tech company. Run a DP capstone
+drill: TWO back-to-back dynamic programming problems, back to back, no break.
 
 1. Pick problem ONE at senior difficulty on an unseen-feeling DP variant
    (mix 1D, 2D, knapsack, or string-pair across the two problems).
@@ -155,7 +153,7 @@ mock: TWO back-to-back dynamic programming problems, back to back, no break.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. GRADE PATTERN-RECOGNITION SPEED explicitly: time from problem
    statement to a correct state definition, in minutes, for each problem.
@@ -167,7 +165,7 @@ mock: TWO back-to-back dynamic programming problems, back to back, no break.
 Start with problem one. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] State / recurrence / base / order exist as four comment lines before code
 - [ ] "#states × work per state" is your default complexity sentence
@@ -211,4 +209,4 @@ Start with problem one. No preamble.
   story. Run the four lines on THIS problem; shapes only help after the state
   is written.
 
-➡️ **Next:** [Full system design mocks — 301 Challenge 12](../../../301/challenges/12-full-designs/)
+➡️ **Next:** [Full system design drills — 301 Challenge 12](../../../301/challenges/12-full-designs/)

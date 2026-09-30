@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Two rounds where the data structure is the algorithm. Stacks handle nested and order-reversing problems — and the monotonic stack is the highest-leverage medium-tier trick there is. Linked lists test pure pointer surgery: fast/slow, in-place reversal, and the dummy node that deletes special cases from your code.">
-<title>Challenge 03: Stack & Linked List — Coding Interview Patterns</title>
+<title>Challenge 03: Stack & Linked List — Coding Patterns</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,7 +57,7 @@ non-empty stack at the end means unclosed business. <em>Monotonic:</em> keep a
 stack of &quot;elements still waiting for their answer,&quot; sorted; when a new
 element answers the top&#39;s question, pop and record. Each element enters and
 leaves the stack once — that&#39;s the amortized O(n) argument, and it&#39;s the
-sentence interviewers want to hear.</p>
+sentence drill leaders want to hear.</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -159,10 +159,9 @@ O(1)-space palindrome <em>mutates the input</em> — you&#39;d re-reverse to res
 in production code. Flagging that trade-off unprompted is a senior signal.</p>
 <p><strong>Drills (easy → hard):</strong> Linked List Cycle → Remove Nth Node From End of
 List → Reorder List (all three moves at once) → Reverse Nodes in k-Group.</p>
-<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/stack/monotonic-stack">Hello Interview&#39;s monotonic-stack chapter</a> for animated pop sequences.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on STACKS (including monotonic stacks) and LINKED LISTS.
+</section><section class="sec sec-prompts"><h2>🤖 Coding drill: run it</h2>
+<pre><code class="language-text">You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on STACKS (including monotonic stacks) and LINKED LISTS.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
    State it concisely: setup, input, output, one worked example, one
@@ -173,7 +172,7 @@ interview with me on STACKS (including monotonic stacks) and LINKED LISTS.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm&#39;s steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -181,7 +180,7 @@ interview with me on STACKS (including monotonic stacks) and LINKED LISTS.
 
 Start with the problem statement. No preamble.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>You can deliver the push-once-pop-once amortized O(n) argument</li>
 <li><span class="cb" aria-hidden="true"></span>Next-greater vs next-smaller vs previous-greater is one comparison flip each</li>

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Add live push to any design — choosing among polling, long-polling, SSE, and WebSockets by trade-off rather than reflex, then solving the second hop of getting each event from its source to every connected client — by building live comments on a video stream, end to end.">
-<title>Challenge 07: Real-Time Updates — System Design Interview Prep</title>
+<meta name="description" content="Add live push to any design — polling, long-polling, SSE, WebSockets, and the second hop that routes each event from its source to every connected client — the only way it sticks: by breaking live comments on a video stream at each hop and letting the break force the next move. Start from the cheapest mechanism that meets the latency bar; every escalation happens because a named break demands it, and every escalation names its cost.">
+<title>Challenge 07: Real-Time Updates — System Design</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +30,7 @@
   <div class="level-meta">
     <p class="level-chips"><span class="chip">Challenge 07</span><span class="chip">about 60 minutes</span></p>
     <h1>Real-Time Updates</h1>
-    <p class="mission"><strong>Mission.</strong> Add live push to any design — choosing among polling, long-polling, SSE, and WebSockets by trade-off rather than reflex, then solving the second hop of getting each event from its source to every connected client — by building live comments on a video stream, end to end.</p>
+    <p class="mission"><strong>Mission.</strong> Add live push to any design — polling, long-polling, SSE, WebSockets, and the second hop that routes each event from its source to every connected client — the only way it sticks: by breaking live comments on a video stream at each hop and letting the break force the next move. Start from the cheapest mechanism that meets the latency bar; every escalation happens because a named break demands it, and every escalation names its cost.</p>
   </div>
 </div>
 <div class="prose">
@@ -38,12 +38,23 @@
 <p>&quot;Design live comments for a streaming platform.&quot; The candidate hears &quot;real-time,&quot; draws a WebSocket between every client and the comment service, and stops. The design dies on two follow-ups. First: &quot;most viewers never type a comment — why pay for a two-way channel to deliver a one-way message?&quot; Second: &quot;your comment lands on server 3, its viewers sit on servers 1 through 40 — now what?&quot; Real-time designs lose points less on protocol trivia than on that second question: fan-out, routing each event to whichever servers hold the connections. This challenge builds both hops deliberately, starting from the cheapest mechanism that meets the latency bar.</p>
 </section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
 <ul>
-<li>The delivery ladder: polling, long-polling, SSE, WebSockets — and the one table that picks between them</li>
-<li>The two-hop model: client↔server transport vs source→server propagation</li>
-<li>Fan-out at scale: pub/sub with connection co-location vs a dispatcher</li>
-<li>Reconnections, catch-up, and what breaks when one stream goes mega-viral</li>
+<li>Why polling has a ceiling: latency equals the interval and the cost lands on empty answers — the delivery ladder exists because each rung hits that ceiling with a name</li>
+<li>Why the WebSocket reflex loses points: the read/write ratio picks the protocol, not the word &quot;real-time&quot;</li>
+<li>Why client delivery is only half the design: the second hop — source to the servers holding the connections — is where real-time designs actually die</li>
+<li>What happens when one stream goes mega-viral, and how a dropped connection loses comments: sampling, snapshots, and catch-up</li>
 </ul>
-</section><section class="sec"><h2>The delivery ladder</h2>
+</section><section class="sec"><h2>The system that works (until it doesn&#39;t)</h2>
+<p>Requirements: viewers post comments on live streams; new comments appear within ~200ms (humans read ~200ms as &quot;instant&quot; — that&#39;s the non-functional number); comments from before you joined can be scrolled (infinite scroll). Scale: millions of concurrent streams, thousands of comments/second on hot ones. Availability over consistency — a comment arriving a beat late is fine.</p>
+<p>Entities: User, Stream, Comment. API:</p>
+<pre><code class="language-text">POST /comments/:streamId   { &quot;message&quot;: &quot;...&quot; }        # userId from the auth header
+GET  /comments/:streamId?cursor={lastId}&amp;limit=20      # history + infinite scroll
+</code></pre>
+<p>The history requirement quietly decides your pagination. Offset pages (<code>?offset=40</code>) break on a fast feed: rows shift as comments arrive, so you re-read or skip them, and the database counts through the offset every request. Cursor pages (&quot;20 comments before ID X&quot;) are stable under inserts and hit an index. State that contrast in one breath and move on — the breaks are all in the push path.</p>
+<p>Day one: clients poll the GET every few seconds; the comment service validates, persists to a key-value store, done. It works — on streams nobody watches.</p>
+</section><section class="sec"><h2>Break 1 — the chat is a minute behind the video</h2>
+<p>The moment: launch week, and the support channel fills with the same ticket — comments appear 30+ seconds after the words are spoken on stream. The graph: every viewer polls <code>GET /comments</code> every 5 seconds. One million concurrent viewers polling at 5s is 200k QPS, and almost every response says &quot;nothing new.&quot;</p>
+<p><strong>The obvious fix, and why it fails:</strong> poll faster. Meeting 200ms means asking &quot;anything new?&quot; five times a second per viewer — 5M QPS, 99%+ of them empty answers, all fanned onto the same comment store that a trickle of writes would have touched. And the best case is still latency equal to the interval: polling doesn&#39;t scale toward real-time; its cost grows exactly as its staleness shrinks.</p>
+<p><strong>The fix: push — and the ladder that picks the mechanism.</strong></p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -69,7 +80,7 @@
 <td>SSE</td>
 <td>one HTTP response that never ends; server writes chunks</td>
 <td>one-way only; some proxies buffer streams; long-lived requests are awkward to monitor</td>
-<td>read-heavy live feeds — the interview default</td>
+<td>read-heavy live feeds — the review default</td>
 </tr>
 <tr>
 <td>WebSockets</td>
@@ -79,18 +90,12 @@
 </tr>
 </tbody></table></div>
 <p>Ground rules worth saying out loud. Humans read ~200ms as &quot;instant&quot; — that&#39;s the number your non-functional requirement should carry. Start at polling unless a number says otherwise; proposing it first is a senior move, not a dodge. Escalate only when the traffic shape demands it: SSE for read-dominated feeds (send writes over ordinary POST), WebSockets only when clients write as often as they read. WebRTC — peer-to-peer, signaling servers, NAT traversal — is for audio/video, name it and move on.</p>
-</section><section class="sec"><h2>Worked example: live comments on a video</h2>
-<p>Requirements: viewers post comments; new comments appear within ~200ms; comments from before you joined can be scrolled (infinite scroll). Scale: millions of concurrent streams, thousands of comments/second on hot ones. Availability over consistency — a comment arriving a beat late is fine.</p>
-<p>Entities: User, Stream, Comment. API:</p>
-<pre><code class="language-text">POST /comments/:streamId   { &quot;message&quot;: &quot;...&quot; }        # userId from the auth header
-GET  /comments/:streamId?cursor={lastId}&amp;limit=20      # history + infinite scroll
-</code></pre>
-<p>The history requirement quietly decides your pagination. Offset pages (<code>?offset=40</code>) break on a fast feed: rows shift as comments arrive, so you re-read or skip them, and the database counts through the offset every request. Cursor pages (&quot;20 comments before ID X&quot;) are stable under inserts and hit an index. State that contrast in one breath and move on — the interview is in the push path.</p>
-<p>Write path: comment service validates, persists to a key-value store, done. Now the deep dives.</p>
-</section><section class="sec"><h2>Deep dive 1: pushing to viewers</h2>
-<p>Polling can&#39;t meet 200ms without absurd frequency — meeting it means asking &quot;anything new?&quot; 20x per second, almost always for no. So push. For this traffic shape the choice writes itself: every viewer reads, a tiny fraction write, so per-viewer two-way sockets buy nothing. SSE delivers push over plain HTTP; comment creation stays a boring POST. Capacity math: a tuned server holds on the order of 100k concurrent connections (memory, CPU, and file descriptors give out long before any hard limit — the &quot;65,535 connections&quot; figure is a myth about port numbers, not connections per port). Millions of viewers means horizontal scaling, which surfaces the real problem.</p>
-</section><section class="sec"><h2>Deep dive 2: the second hop</h2>
-<p>Viewers of one stream scatter across servers. A comment hitting server A must reach viewers attached to B, C, D. Three shapes:</p>
+<p>For this traffic shape the choice writes itself: every viewer reads, a tiny fraction write, so per-viewer two-way sockets buy nothing. SSE delivers push over plain HTTP; comment creation stays a boring POST. Capacity math: a tuned server holds on the order of 100k concurrent connections (memory, CPU, and file descriptors give out long before any hard limit — the &quot;65,535 connections&quot; figure is a myth about port numbers, not connections per port). Millions of viewers means horizontal scaling — which surfaces the next break.</p>
+<p><strong>The cost:</strong> you traded empty requests for open ones. Long-lived connections are stateful: deploys sever them, some proxies buffer streams, and they&#39;re awkward to monitor. And push only reaches clients already attached to the right server — where the comment originates is still unsolved.</p>
+</section><section class="sec"><h2>Break 2 — one comment, forty servers</h2>
+<p>The moment: a viewer posts; viewers attached to the same server see it instantly, everyone else sees it on refresh — or never. Trace it: the POST landed on server A; this stream&#39;s SSE connections sit spread across servers 1–40; server A doesn&#39;t know any of them exist. Client delivery was hop one. Hop two — source to the connection holders — has no path yet.</p>
+<p><strong>The obvious fix, and why it fails:</strong> broadcast pub/sub — every realtime server subscribes to every comment channel. Works in the demo, dies at total-traffic scale: every server processes every comment for every stream, so wasted compute grows with the whole platform&#39;s traffic, not the traffic you&#39;re serving.</p>
+<p><strong>The fix: partition, co-locate, or dispatch.</strong></p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -116,13 +121,19 @@ GET  /comments/:streamId?cursor={lastId}&amp;limit=20      # history + infinite 
 </tr>
 </tbody></table></div>
 <p>Separate the realtime messaging servers from the write path — connection handling scales differently than persistence. One line on technology choice scores: Redis pub/sub handles dynamic subscriptions well and its fire-and-forget delivery is acceptable because comments are persisted anyway and catch-up covers gaps; Kafka&#39;s partition model fights user-driven subscribe/unsubscribe.</p>
-</section><section class="sec"><h2>Deep dive 3: mega-streams</h2>
-<p>When one stream runs thousands of comments per second, per-message delivery stops being the point — nobody can read at that rate; the audience is absorbing the crowd, not the comments. Two escalations. First, sample: an adaptive rate delivers each viewer a roughly constant trickle regardless of true velocity (weight followed users and high-reaction comments upward). Second, flip the delivery model: keep a ring buffer of the last ~100 comments server-side, snapshot it to the CDN every second, and have clients poll the snapshot and animate the new arrivals — a 1–2s delay nobody perceives, riding infrastructure built for exactly this. Optimistic local echo preserves read-your-own-write. Add hysteresis to the threshold so a stream hovering near the cutoff doesn&#39;t flap between modes.</p>
-</section><section class="sec"><h2>Deep dive 4: reconnections</h2>
-<p>Mobile networks drop; apps background. SSE ships Last-Event-ID: on reconnect the client sends the last event it saw and the server replays the gap. Production needs more than the header: bound the replay (five minutes, not an hour), let the client track its own position and fetch catch-up over HTTP, dedupe when the live stream and the catch-up response overlap, and disconnect proactively on backgrounding (mobile OSes throttle you anyway). Replay demands shared state — recent comments in a cache so any server can serve any reconnect.</p>
-<p>Go deeper on the full live-comments walkthrough plus the WhatsApp and Google Docs variants at <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a>.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are my system design interviewer. This session is a REAL-TIME design:
+<p><strong>The cost:</strong> subscription and routing state must track reality as viewers come and go — a stale mapping silently drops events. And when one stream concentrates all of it, even this shape buckles.</p>
+</section><section class="sec"><h2>Break 3 — 500k viewers on one stream</h2>
+<p>The moment: a mega-viral stream. 500k concurrent viewers, thousands of comments per second. Per-message fan-out now means each comment is delivered up to 500k times: message volume × connection count — a load that melts every server you add, for a product nobody could use even if it survived, because nobody reads at thousands of comments per second. The audience is absorbing the crowd, not the comments.</p>
+<p><strong>The obvious fix, and why it fails:</strong> more realtime servers behind the same delivery model. The bottleneck isn&#39;t server count; it&#39;s the promise itself. Scaling the plumbing to a rate no human reads at is spend without a product.</p>
+<p><strong>The fix: stop promising per-message delivery.</strong> Two escalations. First, sample: an adaptive rate delivers each viewer a roughly constant trickle regardless of true velocity (weight followed users and high-reaction comments upward). Second, flip the delivery model: keep a ring buffer of the last ~100 comments server-side, snapshot it to the CDN every second, and have clients poll the snapshot and animate the new arrivals — a 1–2s delay nobody perceives, riding infrastructure built for exactly this. Optimistic local echo preserves read-your-own-write. Add hysteresis to the threshold so a stream hovering near the cutoff doesn&#39;t flap between modes.</p>
+<p><strong>The cost:</strong> real-time stops being a guarantee and becomes a product decision — sampled content, 1–2s latency. Say it as a decision, with the number, not as an apology.</p>
+</section><section class="sec"><h2>Break 4 — the subway: thirty seconds of silence</h2>
+<p>The moment: a viewer loses signal in a tunnel. The SSE connection drops with everything they missed, and on resurfacing they see either a dead feed — nothing since they left — or, with naive replay, an hour of backlog and duplicates stacked on the live stream.</p>
+<p><strong>The obvious fix, and why it fails:</strong> &quot;the client reconnects, so nothing is lost.&quot; Reconnection restores the pipe, not the content — anything pushed while disconnected is gone. And replaying unboundedly floods both the client and the server that must hold the history.</p>
+<p><strong>The fix: resume with an ID, a bound, and dedupe.</strong> SSE ships Last-Event-ID: on reconnect the client sends the last event it saw and the server replays the gap. Production needs more than the header: bound the replay (five minutes, not an hour), let the client track its own position and fetch catch-up over HTTP, dedupe when the live stream and the catch-up response overlap, and disconnect proactively on backgrounding (mobile OSes throttle you anyway).</p>
+<p><strong>The cost:</strong> replay demands shared state — recent comments in a cache so any server can serve any reconnect — and the replay bound is a product choice about how much history &quot;live&quot; includes.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Design-review drill: run it</h2>
+<pre><code class="language-text">You are a senior engineer leading my design review. This session is a REAL-TIME design:
 the problem must hinge on pushing live updates to many clients.
 
 SETUP
@@ -149,13 +160,15 @@ Hold me to my own numbers: if I claim &quot;real-time&quot;, make me state the
 millisecond target and design to it.
 
 RULES
-Stay in character. If I reach for WebSockets without justification, stop
-me: &quot;Who writes, and how often?&quot; If I solve client delivery but never
-address source-to-server propagation, ask where the event originates.
-Hints only on request, smallest nudge possible.
+Stay in character. If I add a component without naming the break it
+fixes, stop me: &quot;What breaks without it?&quot; If I reach for WebSockets
+without justification, stop me: &quot;Who writes, and how often?&quot; If I solve
+client delivery but never address source-to-server propagation, ask
+where the event originates. Hints only on request, smallest nudge
+possible.
 
 SCORING
-After 45 minutes or &quot;end interview&quot;: score 1-4 on Problem Navigation,
+After 45 minutes or &quot;end review&quot;: score 1-4 on Problem Navigation,
 Solution Design, Technical Excellence, Communication — one quoted moment
 each. Then report: did I pick the cheapest mechanism meeting the latency
 bar, did I solve the second hop unprompted, and did I name a mega-scale
@@ -163,7 +176,7 @@ or reconnection consequence on my own. Assign me one drill to repeat.
 
 Ask me to pick a problem to start.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>You can justify SSE vs WebSockets from the read/write ratio in two sentences</li>
 <li><span class="cb" aria-hidden="true"></span>Your default is polling until a number says otherwise — and you can give that number</li>

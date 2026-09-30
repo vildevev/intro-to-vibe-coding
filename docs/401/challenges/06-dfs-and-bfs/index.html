@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="The two traversals behind roughly half of all tree and graph questions. DFS commits to one path and backs out; BFS sweeps outward one distance-layer at a time. The graded skill is the first-minute decision — "shortest path" or "level anything" means BFS, nearly everything else means DFS — followed by a clean template with the right state: a return value, a passed-down parameter, or a visited set.">
-<title>Challenge 06: DFS & BFS — Coding Interview Patterns</title>
+<title>Challenge 06: DFS & BFS — Coding Patterns</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -188,10 +188,9 @@ cols) on a grid. Have the one-sentence proof ready (&quot;first arrival is short
 because levels complete in order&quot;); it&#39;s the favorite follow-up.</p>
 <p><strong>Drills (easy → hard):</strong> Binary Tree Level Order Traversal → Binary Tree
 Right Side View → Rotting Oranges (multi-source) → Word Ladder.</p>
-<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/depth-first-search/overview">Hello Interview&#39;s DFS chapter</a> — their BFS chapter continues from it with animated traversals of both.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on DFS and BFS: binary trees, grids, connected components,
+</section><section class="sec sec-prompts"><h2>🤖 Coding drill: run it</h2>
+<pre><code class="language-text">You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on DFS and BFS: binary trees, grids, connected components,
 level-order traversal, and shortest paths in unweighted graphs.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
@@ -203,7 +202,7 @@ level-order traversal, and shortest paths in unweighted graphs.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm&#39;s steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -211,7 +210,7 @@ level-order traversal, and shortest paths in unweighted graphs.
 
 Start with the problem statement. No preamble.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>&quot;What does each call return?&quot; is your first question on any tree problem</li>
 <li><span class="cb" aria-hidden="true"></span>You choose DFS vs BFS in under 60 seconds and say the reason out loud</li>

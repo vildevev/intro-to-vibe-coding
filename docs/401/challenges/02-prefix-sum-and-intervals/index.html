@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Two patterns about ranges. Prefix sum converts "aggregate over nums[i..j]" into one subtraction — and, with a hash map, counts subarrays by their sum. Intervals convert scheduling chaos into sort-then-compare-neighbors. Shared instinct: preprocess so every query or comparison is O(1).">
-<title>Challenge 02: Prefix Sum & Intervals — Coding Interview Patterns</title>
+<title>Challenge 02: Prefix Sum & Intervals — Coding Patterns</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,7 +54,7 @@ finished with tests traced; B never got a working answer.</p>
 </section><section class="sec"><h2>Pattern 1 — Prefix sum: pay once, query free</h2>
 <p><code>prefix[i]</code> = sum of the first i elements, with <code>prefix[0] = 0</code>. Then
 sum(nums[i..j]) = prefix[j+1] − prefix[i]. Anything additive works: vowel
-counts, parity counts, balance deltas. The interview-classic variant counts
+counts, parity counts, balance deltas. The drill-classic variant counts
 subarrays summing to k with a hash map from prefix value → times seen: a
 subarray ending at <code>i</code> sums to k iff <code>total − k</code> appeared as an earlier
 prefix, and the map tells you how many times.</p>
@@ -157,10 +157,9 @@ comparison.</p>
 <p><strong>Drills (easy → hard):</strong> Can Attend Meetings → Merge Intervals →
 Non-Overlapping Intervals (sort by end) → Employee Free Time (merge across
 schedules, then take the gaps).</p>
-<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/intervals/overview">Hello Interview&#39;s intervals chapter</a> for animated merge and greedy traces.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on PREFIX SUM and INTERVALS.
+</section><section class="sec sec-prompts"><h2>🤖 Coding drill: run it</h2>
+<pre><code class="language-text">You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on PREFIX SUM and INTERVALS.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
    State it concisely: setup, input, output, one worked example, one
@@ -171,7 +170,7 @@ interview with me on PREFIX SUM and INTERVALS.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm&#39;s steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -179,7 +178,7 @@ interview with me on PREFIX SUM and INTERVALS.
 
 Start with the problem statement. No preamble.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>You derive <code>prefix[j+1] − prefix[i]</code> on paper without hesitating</li>
 <li><span class="cb" aria-hidden="true"></span>The <code>{0: 1}</code> seed and why it exists is a sentence you can say</li>

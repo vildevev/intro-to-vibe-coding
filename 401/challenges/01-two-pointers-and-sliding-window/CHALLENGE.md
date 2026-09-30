@@ -15,7 +15,7 @@ arguing whether the shrink loop is amortized constant. Candidate B starts a
 nested loop generating subarrays, stays silent for ten minutes, and offers
 "maybe there's a smarter way" at minute 18. Identical knowledge, opposite
 outcomes: A narrated a pattern and its complexity; B narrated a CPU burning.
-The interviewer can only grade what's spoken.
+The drill leader can only grade what's spoken.
 
 ## 🧰 What you'll learn
 
@@ -62,7 +62,7 @@ def two_pointer(nums):                 # sorted, or sort first
 **Complexity:** O(n) after an optional O(n log n) sort, O(1) space. The
 correctness argument is always one sentence: "moving this pointer can only
 discard pairs that were already worse." Practice saying it — that sentence is
-what interviewers probe.
+what drill leaders probe.
 
 **Drills (easy → hard):** Two Sum II (sorted input) → Valid Palindrome →
 3Sum (sort, fix, dedupe) → Trapping Rain Water (process the side with the
@@ -109,13 +109,11 @@ difficulty: Character Replacement needs `max_freq`; no-repeats can jump
 Without Repeating Characters → Longest Repeating Character Replacement
 (`k + max_freq >= len(window)`) → Minimum Window Substring.
 
-Go deeper: [Hello Interview's sliding-window chapter](https://www.hellointerview.com/learn/code/sliding-window/overview) for animated traces of both variants.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on TWO POINTERS and SLIDING WINDOW.
+You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on TWO POINTERS and SLIDING WINDOW.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
    State it concisely: setup, input, output, one worked example, one
@@ -126,7 +124,7 @@ interview with me on TWO POINTERS and SLIDING WINDOW.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -135,14 +133,14 @@ interview with me on TWO POINTERS and SLIDING WINDOW.
 Start with the problem statement. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] You state the elimination argument for converging pointers in one sentence
 - [ ] Fixed vs variable window — you choose in seconds and say why out loud
 - [ ] The variable-window skeleton is on paper from memory in under 2 minutes
 - [ ] You explain the amortized O(1) shrink loop without being asked
 - [ ] 3Sum duplicate-skipping works on the first try
-- [ ] You volunteer "O(n) time, O(k) space" before the interviewer asks
+- [ ] You volunteer "O(n) time, O(k) space" before the drill leader asks
 
 ## 📚 Jargon
 

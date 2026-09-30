@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Two patterns that turn O(n²) scans into O(n) passes: converging pointers that eliminate candidates provably, and a sliding window whose state is updated incrementally instead of recomputed. Both are recognizable in the first 60 seconds of a problem — and at senior level, that recognition is the signal being graded.">
-<title>Challenge 01: Two Pointers & Sliding Window — Coding Interview Patterns</title>
+<title>Challenge 01: Two Pointers & Sliding Window — Coding Patterns</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,7 +42,7 @@ arguing whether the shrink loop is amortized constant. Candidate B starts a
 nested loop generating subarrays, stays silent for ten minutes, and offers
 &quot;maybe there&#39;s a smarter way&quot; at minute 18. Identical knowledge, opposite
 outcomes: A narrated a pattern and its complexity; B narrated a CPU burning.
-The interviewer can only grade what&#39;s spoken.</p>
+The drill leader can only grade what&#39;s spoken.</p>
 </section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
 <ul>
 <li><strong>Converging pointers</strong> — sorted pairs, palindromes, and the &quot;move the
@@ -103,7 +103,7 @@ pointers carving regions with an invariant (Move Zeroes, Sort Colors).</p>
 <p><strong>Complexity:</strong> O(n) after an optional O(n log n) sort, O(1) space. The
 correctness argument is always one sentence: &quot;moving this pointer can only
 discard pairs that were already worse.&quot; Practice saying it — that sentence is
-what interviewers probe.</p>
+what drill leaders probe.</p>
 <p><strong>Drills (easy → hard):</strong> Two Sum II (sorted input) → Valid Palindrome →
 3Sum (sort, fix, dedupe) → Trapping Rain Water (process the side with the
 smaller running max).</p>
@@ -161,10 +161,9 @@ difficulty: Character Replacement needs <code>max_freq</code>; no-repeats can ju
 <p><strong>Drills (easy → hard):</strong> Maximum Sum Subarray of Size K → Longest Substring
 Without Repeating Characters → Longest Repeating Character Replacement
 (<code>k + max_freq &gt;= len(window)</code>) → Minimum Window Substring.</p>
-<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/sliding-window/overview">Hello Interview&#39;s sliding-window chapter</a> for animated traces of both variants.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on TWO POINTERS and SLIDING WINDOW.
+</section><section class="sec sec-prompts"><h2>🤖 Coding drill: run it</h2>
+<pre><code class="language-text">You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on TWO POINTERS and SLIDING WINDOW.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
    State it concisely: setup, input, output, one worked example, one
@@ -175,7 +174,7 @@ interview with me on TWO POINTERS and SLIDING WINDOW.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm&#39;s steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -183,14 +182,14 @@ interview with me on TWO POINTERS and SLIDING WINDOW.
 
 Start with the problem statement. No preamble.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>You state the elimination argument for converging pointers in one sentence</li>
 <li><span class="cb" aria-hidden="true"></span>Fixed vs variable window — you choose in seconds and say why out loud</li>
 <li><span class="cb" aria-hidden="true"></span>The variable-window skeleton is on paper from memory in under 2 minutes</li>
 <li><span class="cb" aria-hidden="true"></span>You explain the amortized O(1) shrink loop without being asked</li>
 <li><span class="cb" aria-hidden="true"></span>3Sum duplicate-skipping works on the first try</li>
-<li><span class="cb" aria-hidden="true"></span>You volunteer &quot;O(n) time, O(k) space&quot; before the interviewer asks</li>
+<li><span class="cb" aria-hidden="true"></span>You volunteer &quot;O(n) time, O(k) space&quot; before the drill leader asks</li>
 </ul>
 </section><section class="sec sec-jargon"><h2>📚 Jargon</h2>
 <div class="tw"><table>

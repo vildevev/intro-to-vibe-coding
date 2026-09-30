@@ -32,7 +32,7 @@ non-empty stack at the end means unclosed business. *Monotonic:* keep a
 stack of "elements still waiting for their answer," sorted; when a new
 element answers the top's question, pop and record. Each element enters and
 leaves the stack once — that's the amortized O(n) argument, and it's the
-sentence interviewers want to hear.
+sentence drill leaders want to hear.
 
 | You see… | Think… |
 |---|---|
@@ -107,13 +107,11 @@ in production code. Flagging that trade-off unprompted is a senior signal.
 **Drills (easy → hard):** Linked List Cycle → Remove Nth Node From End of
 List → Reorder List (all three moves at once) → Reverse Nodes in k-Group.
 
-Go deeper: [Hello Interview's monotonic-stack chapter](https://www.hellointerview.com/learn/code/stack/monotonic-stack) for animated pop sequences.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on STACKS (including monotonic stacks) and LINKED LISTS.
+You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on STACKS (including monotonic stacks) and LINKED LISTS.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
    State it concisely: setup, input, output, one worked example, one
@@ -124,7 +122,7 @@ interview with me on STACKS (including monotonic stacks) and LINKED LISTS.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -133,7 +131,7 @@ interview with me on STACKS (including monotonic stacks) and LINKED LISTS.
 Start with the problem statement. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] You can deliver the push-once-pop-once amortized O(n) argument
 - [ ] Next-greater vs next-smaller vs previous-greater is one comparison flip each

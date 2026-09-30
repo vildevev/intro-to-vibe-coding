@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Install the five-phase delivery framework — Requirements, Core Entities, API, High-Level Design, Deep Dives — with its exact timing, so you always land a complete system instead of a beautiful half-design that "ran out of time."">
-<title>Challenge 02: The Delivery Framework — System Design Interview Prep</title>
+<meta name="description" content="Install the five-phase delivery framework by watching the four ways 45 minutes dies — each phase budget exists because a candidate died without it — so you always land a complete system instead of a beautiful half-design that "ran out of time."">
+<title>Challenge 02: The Delivery Framework — System Design</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,20 +30,20 @@
   <div class="level-meta">
     <p class="level-chips"><span class="chip">Challenge 02</span><span class="chip">about 60 minutes</span></p>
     <h1>The Delivery Framework</h1>
-    <p class="mission"><strong>Mission.</strong> Install the five-phase delivery framework — Requirements, Core Entities, API, High-Level Design, Deep Dives — with its exact timing, so you always land a complete system instead of a beautiful half-design that &quot;ran out of time.&quot;</p>
+    <p class="mission"><strong>Mission.</strong> Install the five-phase delivery framework by watching the four ways 45 minutes dies — each phase budget exists because a candidate died without it — so you always land a complete system instead of a beautiful half-design that &quot;ran out of time.&quot;</p>
   </div>
 </div>
 <div class="prose">
 <section class="sec sec-story"><h2>😱 War story: death by deep dive, too early</h2>
-<p>A candidate gets &quot;Design a news feed.&quot; Minute 4, mid-requirements, they&#39;re already debating fanout-on-write vs fanout-on-read with themselves. Minute 20 they have the most interesting cache architecture of the day and no entities written down, no API, no working design. The interviewer&#39;s note writes itself: &quot;failed to deliver a working system&quot; — which usually shows up in feedback as the vague phrase &quot;time management.&quot; It rarely means &quot;work faster.&quot; It means &quot;focus on the right things in the right order.&quot; The framework below is that order.</p>
+<p>A candidate gets &quot;Design a news feed.&quot; Minute 4, mid-requirements, they&#39;re already debating fanout-on-write vs fanout-on-read with themselves. Minute 20 they have the most interesting cache architecture of the day and no entities written down, no API, no working design. The reviewer&#39;s note writes itself: &quot;failed to deliver a working system&quot; — which usually shows up in feedback as the vague phrase &quot;time management.&quot; It rarely means &quot;work faster.&quot; It means &quot;focus on the right things in the right order.&quot; The framework below is that order.</p>
 </section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
 <ul>
-<li>The five phases, their budgets, and the one output each must produce</li>
-<li>How to run Requirements without wandering: top-3 functional, quantified non-functional</li>
-<li>The API step in 5 minutes flat: default REST, justify deviations</li>
-<li>When deep dives start and how to lead them like a senior candidate</li>
+<li>Why each phase&#39;s budget is what it is: the specific death it prevents, named on the clock</li>
+<li>Why Requirements must close in 5 minutes: the wandering list that never ships</li>
+<li>Why the API step is 5 minutes flat: the contract that turns Phase 4 from a blank canvas into a checklist</li>
+<li>Why deep dives wait for minute 35: parked complexity, returned to on purpose — and the seniority dial of who leads them</li>
 </ul>
-</section><section class="sec"><h2>The clock</h2>
+</section><section class="sec"><h2>The clock — and the four ways it kills you</h2>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -78,20 +78,16 @@
 <td>1–2 bottlenecks hardened, non-functional requirements met</td>
 </tr>
 </tbody></table></div>
-<p>Structure is not what&#39;s being graded directly (it usually lands under Communication) — it&#39;s what keeps you from getting stuck and guarantees you finish. Treat it as a track to run on when nerves hit.</p>
-</section><section class="sec"><h2>Phase 1 — Requirements (~5 min)</h2>
-<p>Two lists, both short.</p>
-<p><strong>Functional requirements</strong> — &quot;Users should be able to …&quot; statements. Interview this like a conversation with a product manager: &quot;does the system need X?&quot;, &quot;what happens if Y?&quot; Then rank ruthlessly. Real systems have hundreds of features; your job is the top 3. A long list hurts you — the rest of the interview is you building what this list says, and several companies explicitly score your ability to focus.</p>
-<p><strong>Non-functional requirements</strong> — &quot;The system should …&quot; statements about qualities: availability, scale, latency, consistency, durability. Two rules:</p>
-<ul>
-<li>Quantify everything. &quot;Low latency&quot; is noise — every system wants that. &quot;Feed renders in &lt;200ms&quot; is a requirement you can design against.</li>
-<li>Pick the 3–5 that actually bind this system. A starting checklist: consistency vs availability (CAP — see Challenge 3), scale and its shape (steady or bursty? reads or writes?), latency targets for the slowest operations, durability (can a social like be lost? can a payment?), plus compliance/security if the domain demands it.</li>
-</ul>
-<p><strong>Capacity estimation: skip it — usually.</strong> Don&#39;t open with five minutes of QPS arithmetic that concludes &quot;so, a lot.&quot; Do the math when it would change the design (Challenge 4 makes you fast at this). Saying &quot;I&#39;ll estimate on demand during the design, when a number actually matters&quot; is a senior move, not a dodge.</p>
-</section><section class="sec"><h2>Phase 2 — Core Entities (~2 min)</h2>
-<p>Jot the nouns: the actors and the resources the functional requirements need. For a Twitter-like system: User, Tweet, Follow. That&#39;s it — no columns yet. You don&#39;t know what you don&#39;t know; fields get added next to the database box once the design shows you which state changes on each request. Two questions that find them fast: who acts on the system, and what things get created, read, or linked? Pick decent names while you&#39;re at it — some interviewers treat it as a naming test.</p>
-</section><section class="sec"><h2>Phase 3 — API (~5 min)</h2>
-<p>Pick the protocol in one sentence and move:</p>
+<p>Structure is not what&#39;s being graded directly (it usually lands under Communication) — it&#39;s what keeps you from getting stuck and guarantees you finish. Treat it as a track to run on when nerves hit. Each budget below is the answer to a specific way the 45 minutes dies.</p>
+</section><section class="sec"><h2>Break 1 — minute 8, requirements never close</h2>
+<p><strong>The break, on the clock.</strong> Minute 8: still asking questions. The functional list is 12 items and growing, nothing is ranked, and the reviewer has watched four of them go by. Every minute here is stolen from the only phases that produce a system.</p>
+<p><strong>The obvious fix, and why it fails:</strong> gather everything first — &quot;I&#39;ll just be complete.&quot; Completeness is the trap: real systems have hundreds of features, a long list hurts you (several companies explicitly score your ability to focus), and the rest of the review is you building whatever this list says. There is no finish line on &quot;complete.&quot;</p>
+<p><strong>The fix: two short lists, then close the phase out loud.</strong> Functional requirements — &quot;Users should be able to …&quot; statements — reviewed like a conversation with a product manager (&quot;does the system need X?&quot;, &quot;what happens if Y?&quot;), then ranked ruthlessly to the top 3. Non-functional requirements — &quot;The system should …&quot; qualities: availability, scale, latency, consistency, durability — under two rules. Quantify everything: &quot;low latency&quot; is noise (every system wants that); &quot;feed renders in &lt;200ms&quot; is a requirement you can design against. And pick the 3–5 that actually bind this system — a starting checklist: consistency vs availability (CAP — see Challenge 3), scale and its shape (steady or bursty? reads or writes?), latency targets for the slowest operations, durability (can a social like be lost? can a payment?), plus compliance/security if the domain demands it. Capacity estimation: skip it — usually. Don&#39;t open with five minutes of QPS arithmetic that concludes &quot;so, a lot.&quot; Do the math when it would change the design (Challenge 4 makes you fast at this): &quot;I&#39;ll estimate on demand, when a number actually matters&quot; is a senior move, not a dodge.</p>
+<p><strong>The cost:</strong> a top-3 pick might miss the feature the reviewer had in mind. A prioritized, confirmed guess beats a complete list at minute 20 — and you can amend it on the record when a probe changes the picture.</p>
+</section><section class="sec"><h2>Break 2 — minute 20, no entities on the board</h2>
+<p><strong>The break, on the clock.</strong> The war-story candidate lives here: minute 20, the most interesting cache architecture of the day — and no nouns written down, no endpoints, nothing to build against. Complexity without a skeleton has nowhere to attach, so none of it composes.</p>
+<p><strong>The obvious fix, and why it fails:</strong> jump straight to the interesting part — the fanout debate, the cache design. That is exactly how minute 20 happens. Without entities and an API there is no checklist; every design decision floats free and the reviewer can&#39;t see the system taking shape.</p>
+<p><strong>The fix: 2 minutes of nouns, 5 minutes of contract.</strong> Core entities: jot the actors and the resources the functional requirements need — for a Twitter-like system, User, Tweet, Follow. That&#39;s it, no columns yet; you don&#39;t know what you don&#39;t know, and fields get added next to the database box once the design shows you which state changes on each request. Two questions that find them fast: who acts on the system, and what things get created, read, or linked? Pick decent names while you&#39;re at it — some reviewers treat it as a naming test. Then the API: pick the protocol in one sentence and move.</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -121,19 +117,18 @@
 GET  /v1/feed                                   -&gt; Tweet[]
 POST /v1/follows       { &quot;user_id&quot;: &quot;...&quot; }     -&gt; Follow
 </code></pre>
-<p>This contract is your checklist for Phase 4. If an endpoint has no design and a box has no endpoint, one of them is wrong. (Data pipelines like crawlers get an optional &quot;data flow&quot; step here — a numbered list of processing stages. If there&#39;s no long sequence of steps, skip it.)</p>
-</section><section class="sec"><h2>Phase 4 — High-Level Design (~10–15 min)</h2>
-<p>Draw the system: clients, load balancer, services, database, and whatever else the endpoints demand. Three disciplines:</p>
-<ol>
-<li><strong>Go one endpoint at a time.</strong> Walk through how a request flows from API call to database and back, and what state changes where. This turns a scary blank canvas into a sequence.</li>
-<li><strong>Narrate while drawing.</strong> Silence is where interviews die. The diagram is a prop; the story of data flowing through it is the deliverable.</li>
-<li><strong>Park complexity.</strong> The cache you&#39;re itching to add, the queue, the shard — say &quot;I see a scaling risk here, I&#39;ll come back in deep dives,&quot; mark it, move on. Candidates who layer complexity early routinely never arrive at a working system.</li>
-</ol>
-<p>When a request reaches the database, sketch the key fields next to the box — only the ones that matter to the design. The interviewer knows a user table has an email.</p>
-</section><section class="sec"><h2>Phase 5 — Deep Dives (~10 min)</h2>
-<p>Now revisit the non-functional requirements and the parked risks. Harden the design: meet the latency target, handle the burst, fix the bottleneck, address whatever the interviewer probes. How proactive you are here is a seniority dial — mid-level candidates can wait for the interviewer to point; senior candidates identify the two most interesting problems themselves and lead.</p>
-<p>One Twitter example: &quot;scale to 100M DAU&quot; becomes a discussion of caching and sharding; &quot;feed in &lt;200ms&quot; becomes fanout-on-read vs fanout-on-write. Lead, but don&#39;t monologue — leave the interviewer room to probe. They have specific signals they still need from you, and talking over them costs you the Communication score you were busy earning.</p>
-</section><section class="sec"><h2>Lines worth stealing</h2>
+<p>This contract is your checklist for Phase 4: if an endpoint has no design and a box has no endpoint, one of them is wrong. (Data pipelines like crawlers get an optional &quot;data flow&quot; step here — a numbered list of processing stages. If there&#39;s no long sequence of steps, skip it.)</p>
+<p><strong>The cost:</strong> 7 minutes on entities and API feels slow while the design begs to be drawn. It&#39;s the cheapest insurance in the review — Phase 4 runs on it.</p>
+</section><section class="sec"><h2>Break 3 — minute 35, half a beautiful system</h2>
+<p><strong>The break, on the clock.</strong> Minute 35: the high-level design is half-drawn and still widening — six boxes for the read path, nothing connecting the write path, drawn mostly in silence. The note writes itself: &quot;failed to deliver a working system,&quot; published in feedback as the vague phrase &quot;time management.&quot; It rarely means &quot;work faster.&quot; It means &quot;focus on the right things in the right order.&quot;</p>
+<p><strong>The obvious fix, and why it fails:</strong> start with the interesting parts — the cache, the queue, the shard — and layer them in as you go. Candidates who layer complexity early routinely never arrive at a working system; the war story is this break wearing a different hat.</p>
+<p><strong>The fix: one endpoint at a time, narrated, complexity parked.</strong> Draw the system — clients, load balancer, services, database, and whatever else the endpoints demand — then walk through how a request flows from API call to database and back, and what state changes where: this turns a scary blank canvas into a sequence. Narrate while drawing; silence is where design reviews die — the diagram is a prop, the story of data flowing through it is the deliverable. Park the complexity you&#39;re itching to add: &quot;I see a scaling risk here, I&#39;ll come back in deep dives&quot; — mark it, move on. When a request reaches the database, sketch the key fields next to the box — only the ones that matter to the design; the reviewer knows a user table has an email.</p>
+<p><strong>The cost:</strong> a parked risk sits on the board looking like debt. It&#39;s scheduled debt — you owe the return in Phase 5, and the visible margin note is how you pay it.</p>
+</section><section class="sec"><h2>Break 4 — the deep dive that eats the review</h2>
+<p><strong>The break, on the clock.</strong> Two versions. The eager one: deep dives start at minute 4, mid-requirements — the war story. The polite one: deep dives arrive on schedule at minute 35 and the candidate leads by monologuing, talking over the probes. The Communication score they were busy earning burns while they talk — the reviewer has specific signals they still need from you, and talking over them costs exactly that.</p>
+<p><strong>The obvious fix, and why it fails:</strong> dive deep and stay deep — show everything you know, uninterrupted. It converts your best scoring phase into your worst: monologue blocks the probes, and the probes are where Collaboration and adjustment get evidenced.</p>
+<p><strong>The fix: revisit the parked risks, then lead like a senior.</strong> Now the non-functional requirements get met: meet the latency target, handle the burst, fix the bottleneck, address whatever the reviewer probes. One Twitter example: &quot;scale to 100M DAU&quot; becomes a discussion of caching and sharding; &quot;feed in &lt;200ms&quot; becomes fanout-on-read vs fanout-on-write. How proactive you are here is the seniority dial — mid-level candidates can wait for the reviewer to point; senior candidates identify the two most interesting problems themselves and lead. Lead, but don&#39;t monologue: leave room to probe.</p>
+<p>Lines worth stealing:</p>
 <ul>
 <li>&quot;Let me confirm scope: the three things that matter are X, Y, Z — out of scope today.&quot;</li>
 <li>&quot;I&#39;ll do estimates on demand — where a number would change the design.&quot;</li>
@@ -141,11 +136,11 @@ POST /v1/follows       { &quot;user_id&quot;: &quot;...&quot; }     -&gt; Follow
 <li>&quot;I see two scaling risks here — caching and the write path. Parking both for deep dives.&quot;</li>
 <li>&quot;Deep dive one: the feed read path, since our &lt;200ms target lives there.&quot;</li>
 </ul>
-<p>Go deeper: <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a> has the full delivery framework with worked video walkthroughs.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are my system design interviewer at a top tech company for a 45-minute
-mock interview. Your job is to enforce the delivery framework as strictly as
-a real interviewer enforces the clock.
+<p><strong>The cost:</strong> leading means choosing — your deep dive might not be the reviewer&#39;s favorite risk. Leading a defensible choice still fills the Navigation and Solution Design boxes; waiting to be assigned one fills none.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Design-review drill: run it</h2>
+<pre><code class="language-text">You are a senior engineer leading my design review at a top tech company for a 45-minute
+design-review drill. Your job is to enforce the delivery framework as strictly as
+a real reviewer enforces the clock.
 
 SETUP
 1. Ask which problem I want: URL shortener, news feed, rate limiter, chat
@@ -169,8 +164,10 @@ YOUR JOB DURING EACH PHASE
 RULES
 - Stay in character. Never volunteer hints; give the smallest possible nudge
   only if I ask.
+- If I add design detail without naming the phase it belongs to, stop me:
+  &quot;What phase are you in?&quot;
 - If I&#39;m stuck more than 2 minutes, offer a fork: &quot;hint, or next section?&quot;
-- At 45 minutes, or when I say &quot;end interview&quot;, stop and score.
+- At 45 minutes, or when I say &quot;end review&quot;, stop and score.
 
 SCORING
 Drop character. Score 1-4 on Problem Navigation, Solution Design, Technical
@@ -180,7 +177,7 @@ system, and the one habit to drill next time.
 
 Start by asking me to pick a problem.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>You can recite the five phases with their time budgets from memory</li>
 <li><span class="cb" aria-hidden="true"></span>You&#39;ve delivered a full design in 45 minutes out loud, with a timer running, and finished the deep dives</li>
@@ -227,16 +224,16 @@ Start by asking me to pick a problem.
 </tbody></table></div>
 </section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
 <ul>
-<li><strong>You&#39;re 8 minutes into requirements and still asking questions.</strong> Cap yourself: pick the best 3 you have, say them out loud, confirm with the interviewer, move. A prioritized guess beats a complete list at minute 20.</li>
+<li><strong>You&#39;re 8 minutes into requirements and still asking questions.</strong> Cap yourself: pick the best 3 you have, say them out loud, confirm with the reviewer, move. A prioritized guess beats a complete list at minute 20.</li>
 <li><strong>The high-level design is half-drawn at minute 35.</strong> Stop designing breadth. Pick the single most important endpoint, finish it end to end, and use deep dives to extend — a complete narrow system beats a complete-in-your-head wide one.</li>
 <li><strong>You parked a risk and never came back.</strong> Keep a visible margin note (&quot;deep dive: feed cache&quot;). At minute 35, read your own note out loud and start there.</li>
-<li><strong>The interviewer keeps pulling you off your track.</strong> Their probes are the interview now — follow them, but narrate how each answer updates the plan: &quot;that changes the write path, let me fold it in.&quot;</li>
+<li><strong>The reviewer keeps pulling you off your track.</strong> Their probes are the review now — follow them, but narrate how each answer updates the plan: &quot;that changes the write path, let me fold it in.&quot;</li>
 <li><strong>You realize your API can&#39;t satisfy a requirement.</strong> Say it and fix it: &quot;Actually, follow needs a delete — I&#39;ll add DELETE /follows.&quot; Self-correction on the record is Communication signal, not a mistake.</li>
 </ul>
 <div class="next-card"><p><strong>Next:</strong> <a href="../03-the-toolbox/">Challenge 3 — The Toolbox</a></p></div>
 </section>
 <nav class="pager">
-    <a class="prev" href="../../challenges/01-the-interview-decoded/"><span>Previous</span><strong>The Interview, Decoded</strong></a>
+    <a class="prev" href="../../challenges/01-the-design-review-decoded/"><span>Previous</span><strong>The Design Review, Decoded</strong></a>
     <a class="next" href="../../challenges/03-the-toolbox/"><span>Next</span><strong>The Toolbox</strong></a>
   </nav>
 </div>

@@ -16,7 +16,7 @@ Kahn's algorithm, O(V + E)." The harder half of that answer was the modeling:
 naming nodes, naming edges, letting a standard algorithm fall out. The next
 trap is subtler — in a bus-routes question the natural node is the *route*,
 not the *stop*, and the candidate who models stops builds a graph twice as
-hard to search. Interviewers weight the modeling sentences more than the code
+hard to search. Drill leaders weight the modeling sentences more than the code
 that follows, because the code is a template and the model is a decision.
 
 ## 🧰 What you'll learn
@@ -137,13 +137,11 @@ back up removing nodes that are neither word-ends nor parents. Drills (easy →
 hard): Implement Trie (Prefix Tree) → Design Add and Search Words Data
 Structure (the wildcard) → Search Suggestions System → Word Search II.
 
-Go deeper: [Hello Interview's graphs chapter](https://www.hellointerview.com/learn/code/graphs/overview) — their trie chapter follows the same format.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on GRAPHS and TRIES: modeling graphs from raw input,
+You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on GRAPHS and TRIES: modeling graphs from raw input,
 topological sort, shortest-path algorithm selection, and prefix trees.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
@@ -155,7 +153,7 @@ topological sort, shortest-path algorithm selection, and prefix trees.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
    Push one follow-up on my graph modeling choice: what are the nodes,
    what are the edges, and why.
@@ -166,7 +164,7 @@ topological sort, shortest-path algorithm selection, and prefix trees.
 Start with the problem statement. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] "Let me define the graph: nodes are…, edges are…" precedes your code
 - [ ] Kahn's algorithm is on paper from memory, cycle test included

@@ -111,13 +111,11 @@ two lines aloud is worth more than the binary search itself.
 Packages Within D Days (min weight) → Split Array Largest Sum (the template,
 verbatim) → Kth Smallest Element in a Sorted Matrix (count-based feasibility).
 
-Go deeper: [Hello Interview's binary-search chapter](https://www.hellointerview.com/learn/code/binary-search/overview) for rotated-array and search-on-answer walkthroughs.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on BINARY SEARCH, including search-on-answer problems
+You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on BINARY SEARCH, including search-on-answer problems
 where the input is not sorted but a feasibility predicate is monotone.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
@@ -129,7 +127,7 @@ where the input is not sorted but a feasibility predicate is monotone.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -138,7 +136,7 @@ where the input is not sorted but a feasibility predicate is monotone.
 Start with the problem statement. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] You keep the two loop shapes separate and can say when each applies
 - [ ] You state the invariant ("left of lo false, right of hi true") before coding

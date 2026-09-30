@@ -140,13 +140,11 @@ because levels complete in order"); it's the favorite follow-up.
 **Drills (easy → hard):** Binary Tree Level Order Traversal → Binary Tree
 Right Side View → Rotting Oranges (multi-source) → Word Ladder.
 
-Go deeper: [Hello Interview's DFS chapter](https://www.hellointerview.com/learn/code/depth-first-search/overview) — their BFS chapter continues from it with animated traversals of both.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on DFS and BFS: binary trees, grids, connected components,
+You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on DFS and BFS: binary trees, grids, connected components,
 level-order traversal, and shortest paths in unweighted graphs.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
@@ -158,7 +156,7 @@ level-order traversal, and shortest paths in unweighted graphs.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -167,7 +165,7 @@ level-order traversal, and shortest paths in unweighted graphs.
 Start with the problem statement. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] "What does each call return?" is your first question on any tree problem
 - [ ] You choose DFS vs BFS in under 60 seconds and say the reason out loud

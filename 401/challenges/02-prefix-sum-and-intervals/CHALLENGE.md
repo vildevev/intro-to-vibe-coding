@@ -29,7 +29,7 @@ finished with tests traced; B never got a working answer.
 
 `prefix[i]` = sum of the first i elements, with `prefix[0] = 0`. Then
 sum(nums[i..j]) = prefix[j+1] − prefix[i]. Anything additive works: vowel
-counts, parity counts, balance deltas. The interview-classic variant counts
+counts, parity counts, balance deltas. The drill-classic variant counts
 subarrays summing to k with a hash map from prefix value → times seen: a
 subarray ending at `i` sums to k iff `total − k` appeared as an earlier
 prefix, and the map tells you how many times.
@@ -105,13 +105,11 @@ comparison.
 Non-Overlapping Intervals (sort by end) → Employee Free Time (merge across
 schedules, then take the gaps).
 
-Go deeper: [Hello Interview's intervals chapter](https://www.hellointerview.com/learn/code/intervals/overview) for animated merge and greedy traces.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on PREFIX SUM and INTERVALS.
+You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on PREFIX SUM and INTERVALS.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
    State it concisely: setup, input, output, one worked example, one
@@ -122,7 +120,7 @@ interview with me on PREFIX SUM and INTERVALS.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
    analysis, communication, edge cases — one line of evidence per score,
@@ -131,7 +129,7 @@ interview with me on PREFIX SUM and INTERVALS.
 Start with the problem statement. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] You derive `prefix[j+1] − prefix[i]` on paper without hesitating
 - [ ] The `{0: 1}` seed and why it exists is a sentence you can say

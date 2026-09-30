@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Two skills with one theme: build the structure before you search it. Graph questions rarely hand you a graph — you model one (adjacency list, indegrees, edges between routes), then apply the algorithm the problem selects: topological sort for dependencies, BFS/Dijkstra for shortest paths, Union-Find for live connectivity. Tries are the same instinct for strings: pay once for shared prefixes, and every later word/prefix query becomes an O(L) walk.">
-<title>Challenge 07: Graphs & Tries — Coding Interview Patterns</title>
+<title>Challenge 07: Graphs & Tries — Coding Patterns</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,7 +43,7 @@ Kahn&#39;s algorithm, O(V + E).&quot; The harder half of that answer was the mod
 naming nodes, naming edges, letting a standard algorithm fall out. The next
 trap is subtler — in a bus-routes question the natural node is the <em>route</em>,
 not the <em>stop</em>, and the candidate who models stops builds a graph twice as
-hard to search. Interviewers weight the modeling sentences more than the code
+hard to search. Drill leaders weight the modeling sentences more than the code
 that follows, because the code is a template and the model is a decision.</p>
 </section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
 <ul>
@@ -190,10 +190,9 @@ character gets a node. Deletion is the bonus round: unmark <code>is_end</code>, 
 back up removing nodes that are neither word-ends nor parents. Drills (easy →
 hard): Implement Trie (Prefix Tree) → Design Add and Search Words Data
 Structure (the wildcard) → Search Suggestions System → Word Search II.</p>
-<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/graphs/overview">Hello Interview&#39;s graphs chapter</a> — their trie chapter follows the same format.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on GRAPHS and TRIES: modeling graphs from raw input,
+</section><section class="sec sec-prompts"><h2>🤖 Coding drill: run it</h2>
+<pre><code class="language-text">You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on GRAPHS and TRIES: modeling graphs from raw input,
 topological sort, shortest-path algorithm selection, and prefix trees.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
@@ -205,7 +204,7 @@ topological sort, shortest-path algorithm selection, and prefix trees.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm&#39;s steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
    Push one follow-up on my graph modeling choice: what are the nodes,
    what are the edges, and why.
@@ -215,7 +214,7 @@ topological sort, shortest-path algorithm selection, and prefix trees.
 
 Start with the problem statement. No preamble.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>&quot;Let me define the graph: nodes are…, edges are…&quot; precedes your code</li>
 <li><span class="cb" aria-hidden="true"></span>Kahn&#39;s algorithm is on paper from memory, cycle test included</li>

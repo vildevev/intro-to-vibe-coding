@@ -10,7 +10,7 @@
 
 "Longest increasing subsequence — you can just walk it, right? Extend whenever
 the next number is bigger." Candidate A's greedy works on the sample input,
-and then the interviewer writes five numbers where the best subsequence starts
+and then the drill leader writes five numbers where the best subsequence starts
 with a *smaller* value than A's opening pick — and A's answer collapses. Asked
 to defend the approach, A has nothing: no argument, no counterexample test,
 just a gut feeling that survived one example. Candidate B opens differently:
@@ -32,7 +32,7 @@ counterexample found means DP (Challenge 10).
 
 ## Pattern 1 — Greedy: the shape, the proof, the fork
 
-Nearly every interview greedy is the same three moves: sort by some key so
+Nearly every drill greedy is the same three moves: sort by some key so
 the "best next choice" is always at the front, sweep once carrying one or two
 running variables (min price so far, farthest reach, current interval end),
 and commit to each choice immediately. The running variables ARE the state —
@@ -129,13 +129,11 @@ precisely for those.
 **Drills (easy → hard):** Spiral Matrix → Rotate Image → Set Matrix Zeroes →
 Diagonal Traverse.
 
-Go deeper: [Hello Interview's greedy chapter](https://www.hellointerview.com/learn/code/greedy/overview) — their matrices chapter lives alongside it.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on GREEDY ALGORITHMS and MATRIX manipulation: exchange
+You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on GREEDY ALGORITHMS and MATRIX manipulation: exchange
 arguments, greedy resets, in-place matrix transforms.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
@@ -147,7 +145,7 @@ arguments, greedy resets, in-place matrix transforms.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
    If I propose a greedy, demand my proof or my counterexample test
    before accepting it.
@@ -158,7 +156,7 @@ arguments, greedy resets, in-place matrix transforms.
 Start with the problem statement. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] Every greedy claim arrives with an exchange argument or a counterexample
 - [ ] "Counterexample found" instantly routes you to DP, not to patching

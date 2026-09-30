@@ -1,6 +1,6 @@
 # Challenge 8 — Backtracking
 
-**Mission:** Systematic enumeration: a DFS over an implicit *solution-space tree*, where every call chooses an option, explores what that choice makes possible, and un-chooses it on the way out. Backtracking is exponential by nature — the interview grades three things: how fast you draw the tree, whether you mutate one shared path instead of copying at every step, and whether you prune branches that provably cannot succeed.
+**Mission:** Systematic enumeration: a DFS over an implicit *solution-space tree*, where every call chooses an option, explores what that choice makes possible, and un-chooses it on the way out. Backtracking is exponential by nature — the drill grades three things: how fast you draw the tree, whether you mutate one shared path instead of copying at every step, and whether you prune branches that provably cannot succeed.
 
 **Time:** ~60 minutes
 
@@ -79,7 +79,7 @@ loop over everything with a `used` set for permutations.
 **Complexity:** subsets O(n·2ⁿ) — 2ⁿ subsets, each copied at O(n);
 permutations O(n·n!); combinations O(k·C(n,k)). The senior sentence: "this is
 optimal up to constants because the output itself has that size" —
-output-size bounds are the complexity argument interviewers actually probe
+output-size bounds are the complexity argument drill leaders actually probe
 here.
 
 **Drills (easy → hard):** Subsets → Permutations → Combinations → Subsets II
@@ -134,13 +134,11 @@ rejects valid answers.
 **Drills (easy → hard):** Word Search → Generate Parentheses (two filter
 rules) → Combination Sum (sort + break + reuse) → N-Queens (diagonal sets).
 
-Go deeper: [Hello Interview's backtracking chapter](https://www.hellointerview.com/learn/code/backtracking/overview) for animated solution-space trees.
-
-## 🤖 Mock interview: run it
+## 🤖 Coding drill: run it
 
 ```text
-You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on BACKTRACKING: subsets, permutations, combinations,
+You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on BACKTRACKING: subsets, permutations, combinations,
 constrained generation, and grid word search.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
@@ -152,7 +150,7 @@ constrained generation, and grid word search.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm's steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted (attribute the exponent to the output size), and
    trace one example before I call it done.
 6. When time is up or I say done, grade 1-5 each: correctness, complexity
@@ -162,7 +160,7 @@ constrained generation, and grid word search.
 Start with the problem statement. No preamble.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] You sketch two levels of the solution-space tree before writing code
 - [ ] One shared path + pop; `path[:]` copies appear only when recording
@@ -193,7 +191,7 @@ Start with the problem statement. No preamble.
   `path[:]`, every time.
 - **Wrong loop start.** `i + 1` = each element once; `i` = reuse allowed; full
   loop + `used` set = permutations. Say which you picked and why — the
-  interviewer is checking whether `i + 1` was a choice or a guess.
+  drill leader is checking whether `i + 1` was a choice or a guess.
 - **Pruned too late.** Validating inside the recursion wastes a whole level
   per doomed path; filter in the for-loop so the branch never spawns.
 - **Backtracking where counting was asked.** "How many valid X?" doesn't need

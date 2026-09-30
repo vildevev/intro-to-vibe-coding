@@ -1,6 +1,6 @@
 # Challenge 11 — Proximity Services
 
-**Mission:** Index the physical world — why latitude/longitude defeats ordinary indexes, the two families of geospatial indexes (spatial trees vs encoded cells), and how nearby search and driver matching survive 100M users and millions of location writes per second — by building a review app and a ride-hailing app.
+**Mission:** Index the physical world by breaking it twice: first with the innocent-looking query that full-scans a perfectly indexed table, then with the write firehose that melts the index you just chose. The two families of geospatial structure exist because of those two breaks — and the second system (Uber) is the first (Yelp) inverted.
 
 **Time:** ~60 minutes
 
@@ -8,48 +8,63 @@
 
 ## 😱 War story: the composite index that wasn't
 
-"Find restaurants within 2km." The candidate adds a composite B-tree index on `(latitude, longitude)` and predicts victory. The interviewer runs `EXPLAIN`: full table scan. A B-tree sorts one dimension at a time — index latitude alone and a "range query" returns a horizontal strip of the planet thousands of kilometers tall; the composite only breaks ties on longitude among equal latitudes. Neither understands that two points are close. The general lesson is the shape every good answer takes: a spatial structure narrows the world to a small candidate set, then exact distance math on those candidates picks the winners. Candidates who say "use PostGIS" without articulating those two moves don't get credit for the word.
+"Find restaurants within 2km." The candidate adds a composite B-tree index on `(latitude, longitude)` and predicts victory. The reviewer runs `EXPLAIN`: full table scan. A B-tree sorts one dimension at a time — index latitude alone and a "range query" returns a horizontal strip of the planet thousands of kilometers tall; the composite only breaks ties on longitude among equal latitudes. Neither understands that two points are close. The general lesson is the shape every good answer takes: a spatial structure narrows the world to a small candidate set, then exact distance math on those candidates picks the winners. Candidates who say "use PostGIS" without articulating those two moves don't get credit for the word.
 
 ## 🧰 What you'll learn
 
-- Why 2D proximity breaks 1D indexes — and the universal index-then-post-filter shape
-- The two families: spatial trees (quadtree, k-d/BKD, R-tree) vs encoded cells (geohash, S2, H3)
+- Why 2D proximity breaks 1D indexes — the break that defines the whole challenge
+- The two families (spatial trees vs encoded cells) as answers to two different breaks: search over static shapes vs writes over moving points
 - Yelp: one query, three index types; ratings without races; one-review-per-user as a database constraint
 - Uber: location updates as a write firehose, matching as a ring lookup, and reusing Challenges 7–9
 
-## The two families
+## Break 1 — "restaurants within 2km" full-scans a table with an index on everything
+
+The system that works at 100 rows and dies at 10M: Yelp-scale — 100M daily users, 10M businesses — and the flagship query is `WHERE lat BETWEEN ... AND lng BETWEEN ...`. With the composite B-tree above, `EXPLAIN` says full table scan, p99 blows past any latency budget, and the database does the work of computing distance to every business on Earth per search.
+
+**The obvious fix, and why it fails:** "fine — index both columns separately / use a better composite order." Same wall, different arrangement: any 1D ordering of 2D data slices the world into strips or shards that don't understand *closeness in two dimensions*. The insight being tested is exactly this failure, so say it before naming any structure.
+
+**The fix: narrow, then post-filter — the shape every proximity answer takes.** Some structure collapses 2D space into things ordinary indexes handle, returning a small *candidate set*; exact distance math (Haversine) on those candidates picks the winners. Two families of structures, and the choice is a data-shape decision:
 
 | Family | Structures | Data it loves | The cost |
 |---|---|---|---|
-| Spatial trees | quadtree (recursive quadrants), k-d/BKD (median splits packed into disk pages), R-tree (nested bounding rectangles) | geometry — polygons, roads, delivery zones, containment questions | pricier writes, and you need a spatial extension (PostGIS, Elasticsearch's geo fields) |
-| Encoded cells | geohash (grid string with shared prefixes), S2 (equal-ish cells on a sphere), H3 (hexagons) | points that move constantly — drivers, couriers, users | points only; every query needs a neighbor ring plus post-filter |
+| Spatial trees | quadtree (recursive quadrants), k-d/BKD (median splits packed into disk pages), R-tree (nested bounding rectangles) | geometry — polygons, roads, delivery zones, containment questions | pricier writes; needs a spatial extension (PostGIS, Elasticsearch geo fields) |
+| Encoded cells | geohash (grid string with shared prefixes), S2 (equal-ish cells on a sphere), H3 (hexagons) | points that move constantly | points only; every query needs a neighbor ring plus post-filter |
 
-Interview-level facts to carry. Geohash interleaves lat/long into a string where shared prefix ≈ nearby — 5 characters ≈ 5km, 9 ≈ 5m — so `WHERE geohash LIKE 'dr5ru%'` is a plain B-tree prefix scan on any database. The boundary trap: two points a meter apart can land in different cells with different prefixes — so always query your cell plus its eight neighbors, then post-filter by exact distance. S2 fixes geohash's flat-map distortion (cells of roughly equal area anywhere on the globe). H3's hexagons give six equidistant neighbors, which makes ring and heatmap math clean — snap each driver to a cell and match by looking up a list of cell IDs, a plain integer index query. Choosing: shapes and containment → a tree; moving points → cells, because a driver's move becomes one cheap integer update and the pattern scales to millions of writes per second.
+The review-level workhorse is the encoded cell: geohash interleaves lat/long into a string where shared prefix ≈ nearby — 5 characters ≈ 5km, 9 ≈ 5m — so `WHERE geohash LIKE 'dr5ru%'` is a plain B-tree prefix scan on any database.
 
-## Worked example 1: Yelp
+**The cost, and the trap inside it:** cells are a grid, and grids have edges — two restaurants a meter apart can land in cells with different prefixes, so a single-cell query silently loses them. Every encoded-cell system pays the same tax: query your cell **plus its eight neighbors**, then post-filter. Forget the ring and your search "works" while quietly returning wrong answers — the worst kind of bug to find in production and the easiest one to catch in an review if you walk a boundary example aloud.
 
-Requirements: search by name + location + category; view a business and its reviews; leave a review. Scale: 100M daily users, 10M businesses.
+## Break 2 — Yelp: three searches wearing one query box
 
-Search is three index problems wearing one query: location (geospatial), name keywords (inverted/full-text), category (plain B-tree). Elasticsearch answers all three; the price is a second datastore to keep in sync — CDC from the primary database. The alternative that scores staff points at this data size (~10GB of businesses): Postgres with PostGIS for spatial and a trigram index for text — no sync problem, and no second system to operate. Either way, order the filters to shrink the search space fastest: distance first (it's the most restrictive), then keywords and category on the survivors.
+With the spatial problem solved, the real Yelp query breaks anyway: "tacos, Mission, open now" is *location + name keywords + category + rating sort* — four index problems in one request, and no single structure serves all of them.
 
-Two constraint deep dives:
+**The obvious fix, and why it fails:** three separate indexes queried and merged in the app. You've built a slow cross-join in application code and re-invented search infrastructure badly.
 
-- **Average rating without races.** Don't aggregate per search — store `(num_reviews, avg_rating)` and update synchronously per review with a running formula. But two concurrent reviews race and one overwrites the other: guard the business row with a version check (optimistic concurrency, Challenge 8); the loser recalculates and retries. The senior flourish is refusing the queue: reviews trail reads by ~1000:1 — about one write per second — a database barely notices, so no message queue is needed.
+**The fix: a search engine that owns the query — or the discipline not to need one.** Elasticsearch answers all three natively (geospatial fields, inverted index for text, B-tree-style filters); the cost is a second datastore to keep in sync — CDC from the primary database. The staff-level alternative at this data size (~10GB of businesses): Postgres with PostGIS for spatial and a trigram index for text — no sync problem, no second system to operate. Either way, order the filters to shrink the search space fastest: distance first (most restrictive), then keywords and category on the survivors.
+
+Then the quiet breaks — small failures that don't graph but sink designs, each answered at the persistence layer:
+
+- **Average rating without races.** Don't aggregate per search — store `(num_reviews, avg_rating)` and update per review with a running formula. But two concurrent reviews race and one overwrites the other: guard the row with a version check (optimistic concurrency — Challenge 8); the loser recalculates and retries. The senior flourish is refusing the queue: reviews trail reads ~1000:1 — about one write per second — a database barely notices, so no message queue is needed.
 - **One review per user per business.** Application-level checks race and backfills won't honor them. A unique constraint on `(user_id, business_id)` makes the violation impossible at the persistence layer; handle the error gracefully.
-- **Neighborhoods.** "Pizza in the Mission" is not a radius — neighborhoods are polygons. Map location names to polygons (public boundary datasets), or precompute each business's containing location names at write time and index them as plain keywords.
+- **Neighborhoods are polygons.** "Pizza in the Mission" is not a radius — map location names to polygons (public boundary datasets), or precompute each business's containing neighborhoods at write time and index them as plain keywords.
 
-## Worked example 2: Uber
+## Break 3 — Uber: the index you chose melts under the write firehose
 
-The emphasis inverts: writes are the firehose. A million drivers pinging every few seconds is a location-update stream that would crush a spatial tree's rebalancing — exactly why moving points get encoded cells. Each update is a single-key write into a Redis geoset or an indexed cell column. Matching: a rider request computes the rider's cell plus surrounding rings, looks up drivers in those cells, post-filters by real distance and rating, then offers the ride. What if two riders target the same driver? That's Challenge 8's reservation pattern with a ~10-second TTL. The ride itself — request, accept, pickup, complete, with a human in the loop — is Challenge 9's workflow. And streaming driver locations back to riders is Challenge 7's push problem. Name the reuse out loud: "this is the reservation pattern from contention" is worth more than a new box on the diagram.
+Now invert the system. A million drivers, each pinging location every few seconds, is a stream of millions of writes per second — and if you put those moving points in a spatial tree, the constant rebalancing burns the write path: the tree that loved Yelp's static restaurants is exactly wrong for Uber's drivers. (Design Uber like Yelp and this is the review's verdict: right structure, wrong system.)
 
-Go deeper on the full Yelp and Uber breakdowns — plus the spatial-index deep dive — at [Hello Interview's system design course](https://www.hellointerview.com/learn/courses/system-design).
+**The fix: encoded cells, all the way down.** A driver's move becomes one cheap single-key write — a Redis geoset update or an indexed cell column — no rebalancing, linear under the firehose. Matching: a rider request computes the rider's cell plus surrounding rings, looks up drivers in those cells, post-filters by real distance and rating, then offers the ride. What if two riders target the same driver? That's Challenge 8's reservation pattern with a ~10-second TTL. The ride itself — request, accept, pickup, complete, with a human in the loop — is Challenge 9's workflow. Streaming driver locations back to riders is Challenge 7's push problem. Name the reuse out loud: "this is the reservation pattern from contention" is worth more than a new box on the diagram.
 
-## 🤖 Mock interview: run it
+**The cost:** cells trade global structure for local cheapness — cell IDs answer "who's near this cell" beautifully and "draw me this delivery zone" not at all. Static shapes still belong in a tree; most real systems (Uber included) carry both. The senior sentence: *match the structure family to the data shape, and say which parts of the system each one owns.*
+
+## 🤖 Design-review drill: run it
 
 ```text
-You are my system design interviewer. This session is a PROXIMITY design:
+You are a senior engineer leading my design review. This session is a PROXIMITY design:
 the problem must hinge on "find things near me" or on locations that move
-— search-style, matching-style, or both.
+— search-style, matching-style, or both. Your style is failure-first:
+every time I add a component, ask "what break does that fix?" — and if I
+name a technique without the break, make me explain the failure it
+prevents first.
 
 SETUP
 Offer one of: "Design Yelp (nearby search + reviews)", "Design Uber
@@ -83,7 +98,7 @@ return exact answers with no post-filter step, make me walk one query end
 to end. Hints only on request, smallest nudge possible.
 
 SCORING
-After 45 minutes or "end interview": score 1-4 on Problem Navigation,
+After 45 minutes or "end review": score 1-4 on Problem Navigation,
 Solution Design, Technical Excellence, Communication — one quoted moment
 each. Then report: did I explain why ordinary indexes fail on 2D data,
 did I do index-then-post-filter on every query, and did I match the index
@@ -93,12 +108,12 @@ to repeat.
 Ask me to pick a problem to start.
 ```
 
-## ✅ Interview-ready when
+## ✅ You own it when
 
 - [ ] You can explain in two sentences why a B-tree on lat/long full-scans
 - [ ] Every proximity answer you give has the two moves: narrow to candidates, then post-filter by exact distance
 - [ ] You can describe geohash's prefix trick, its boundary trap, and the 3×3 neighbor fix
-- [ ] You can pick the family from the data shape: polygons → tree, moving points → cells
+- [ ] You can pick the family from the data shape: polygons → tree, moving points → cells — and say why putting drivers in a tree melts the write path
 - [ ] You reach for Challenges 7–9's patterns (push, reservations, workflows) inside the geo design and say so
 
 ## 📚 Jargon

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Two short, sharp topics. Greedy algorithms make one locally-optimal choice and never reconsider — legitimate only when provable, and the proof is either a one-sentence exchange argument or a counterexample that sends you to DP. Matrix problems are the opposite of data-structure-heavy: pure index manipulation — spiral bounds, transpose-plus-reverse rotations, in-place markers — where the difficulty is off-by-ones, not ideas.">
-<title>Challenge 09: Greedy & Matrices — Coding Interview Patterns</title>
+<title>Challenge 09: Greedy & Matrices — Coding Patterns</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +37,7 @@
 <section class="sec sec-story"><h2>😱 Greedy, unproven</h2>
 <p>&quot;Longest increasing subsequence — you can just walk it, right? Extend whenever
 the next number is bigger.&quot; Candidate A&#39;s greedy works on the sample input,
-and then the interviewer writes five numbers where the best subsequence starts
+and then the drill leader writes five numbers where the best subsequence starts
 with a <em>smaller</em> value than A&#39;s opening pick — and A&#39;s answer collapses. Asked
 to defend the approach, A has nothing: no argument, no counterexample test,
 just a gut feeling that survived one example. Candidate B opens differently:
@@ -57,7 +57,7 @@ why a found counterexample routes you to DP</li>
 <li><strong>Rotate 90°</strong> = transpose + reverse; in-place zero-marking with row/col sentinels</li>
 </ul>
 </section><section class="sec"><h2>Pattern 1 — Greedy: the shape, the proof, the fork</h2>
-<p>Nearly every interview greedy is the same three moves: sort by some key so
+<p>Nearly every drill greedy is the same three moves: sort by some key so
 the &quot;best next choice&quot; is always at the front, sweep once carrying one or two
 running variables (min price so far, farthest reach, current interval end),
 and commit to each choice immediately. The running variables ARE the state —
@@ -180,10 +180,9 @@ Before saying &quot;done,&quot; trace a 1×n, an n×1, and a 3×3; the guards ex
 precisely for those.</p>
 <p><strong>Drills (easy → hard):</strong> Spiral Matrix → Rotate Image → Set Matrix Zeroes →
 Diagonal Traverse.</p>
-<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/greedy/overview">Hello Interview&#39;s greedy chapter</a> — their matrices chapter lives alongside it.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run one mock
-interview with me on GREEDY ALGORITHMS and MATRIX manipulation: exchange
+</section><section class="sec sec-prompts"><h2>🤖 Coding drill: run it</h2>
+<pre><code class="language-text">You are a staff engineer running a timed coding drill at a top tech company. Run one drill
+drill with me on GREEDY ALGORITHMS and MATRIX manipulation: exchange
 arguments, greedy resets, in-place matrix transforms.
 
 1. Pick ONE problem that maps to these patterns at senior difficulty.
@@ -195,7 +194,7 @@ arguments, greedy resets, in-place matrix transforms.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm&#39;s steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
    If I propose a greedy, demand my proof or my counterexample test
    before accepting it.
@@ -205,7 +204,7 @@ arguments, greedy resets, in-place matrix transforms.
 
 Start with the problem statement. No preamble.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>Every greedy claim arrives with an exchange argument or a counterexample</li>
 <li><span class="cb" aria-hidden="true"></span>&quot;Counterexample found&quot; instantly routes you to DP, not to patching</li>

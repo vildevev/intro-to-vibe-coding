@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Move big bytes and long jobs without dragging them through your API — blob storage with presigned URLs, multipart/resumable uploads, and the async job pattern of accept, queue, workers, status polling — by building a file-storage upload path and a code-judging submission pipeline.">
-<title>Challenge 10: Heavy Things — System Design Interview Prep</title>
+<meta name="description" content="Move big bytes and long jobs without dragging them through your API — blob storage with presigned URLs, multipart/resumable uploads, and the async job pattern of accept, queue, workers, status polling — the only way it sticks: by breaking a file-storage service and a code-judging platform at each heavy thing and letting each break force the pattern. Both halves share one rule the breaks will prove: take the heavy thing off the request path.">
+<title>Challenge 10: Heavy Things — System Design</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,29 +30,40 @@
   <div class="level-meta">
     <p class="level-chips"><span class="chip">Challenge 10</span><span class="chip">about 60 minutes</span></p>
     <h1>Heavy Things</h1>
-    <p class="mission"><strong>Mission.</strong> Move big bytes and long jobs without dragging them through your API — blob storage with presigned URLs, multipart/resumable uploads, and the async job pattern of accept, queue, workers, status polling — by building a file-storage upload path and a code-judging submission pipeline.</p>
+    <p class="mission"><strong>Mission.</strong> Move big bytes and long jobs without dragging them through your API — blob storage with presigned URLs, multipart/resumable uploads, and the async job pattern of accept, queue, workers, status polling — the only way it sticks: by breaking a file-storage service and a code-judging platform at each heavy thing and letting each break force the pattern. Both halves share one rule the breaks will prove: take the heavy thing off the request path.</p>
   </div>
 </div>
 <div class="prose">
 <section class="sec sec-story"><h2>😱 War story: the 50GB POST</h2>
-<p>A file-storage design where upload flows client → API server → blob storage in a single POST. The interviewer does the math out loud: &quot;50GB at 100Mbps is over an hour of transfer. The connection drops at 99% — now what? And did you know most API gateways cap request bodies at 10MB, so this request never even arrives?&quot; The candidate also just turned every app server into a dumb pipe for terabytes of passthrough bytes. Both halves of this challenge — things too big to move and things too slow to finish — have one shape: take the heavy thing off the request path. Candidates who keep the bytes or the seconds inline fail on follow-ups they could have led themselves.</p>
+<p>A file-storage design where upload flows client → API server → blob storage in a single POST. The reviewer does the math out loud: &quot;50GB at 100Mbps is over an hour of transfer. The connection drops at 99% — now what? And did you know most API gateways cap request bodies at 10MB, so this request never even arrives?&quot; The candidate also just turned every app server into a dumb pipe for terabytes of passthrough bytes. Both halves of this challenge — things too big to move and things too slow to finish — have one shape: take the heavy thing off the request path. Candidates who keep the bytes or the seconds inline fail on follow-ups they could have led themselves.</p>
 </section><section class="sec sec-learn"><h2>🧰 What you&#39;ll learn</h2>
 <ul>
-<li>Blob storage vs databases, and presigned URLs that let your servers stop touching bytes</li>
-<li>Multipart uploads: chunking, resumability, trust-but-verify</li>
-<li>The async job pattern: queue, worker pool, job status — and its failure modes</li>
-<li>Isolation for user-submitted code, plus the math that justifies all of it</li>
+<li>Why the upload POST through your server dies twice — once at the gateway, once at your bandwidth bill — and what presigned URLs remove from the data path</li>
+<li>Why a one-POST upload restarts from zero, and how multipart shrinks the unit of failure until a 50GB transfer is resumable</li>
+<li>Why a 30-second job breaks the request/response contract, and the async pattern that replaces it — plus the five failure modes the pattern ships with</li>
+<li>Why user-submitted code needs isolation, and the math that justifies the queue</li>
 </ul>
-</section><section class="sec"><h2>Pattern 1: heavy bytes</h2>
-<p>Rule of thumb: anything over ~10MB that you don&#39;t run SQL queries against belongs in blob storage (S3/GCS/Azure), with only metadata in the database. Databases are optimized for structured queries, not gigabyte rows — backups, replication, and query plans all suffer.</p>
-<p><strong>Presigned URLs — the server becomes a ticket booth.</strong> Instead of receiving the file, your API validates the request and signs a URL granting upload to one specific key for a limited time (with constraints like size ranges baked into the signature). The client PUTs bytes directly to blob storage; your fleet never sees them. Signing is local computation — no network call to the store. Downloads mirror it: a presigned GET, usually a CDN-signed URL so global users fetch from an edge. The consequence you must name: metadata and bytes now succeed independently — write the metadata row as <code>uploading</code>, and flip it on the store&#39;s event notification when the object lands.</p>
-<p><strong>Big files → multipart.</strong> One POST dies on timeouts, gateway limits, and restart-from-zero. The fix: the client chunks the file (5–10MB pieces), gets a presigned URL per part, uploads parts — in parallel, with progress for free — and a completion call assembles them into one object. Resume means tracking which parts landed (the store&#39;s part-listing API or your metadata) and re-sending only the missing ones. Two disciplines: verify server-side (client PATCHes progress; you confirm ETags against the store before calling the upload complete — never trust the client&#39;s bookkeeping alone), and fingerprint the content (a hash) so &quot;have I uploaded this before?&quot; survives renames and enables dedupe. Assembled objects download normally, with HTTP Range requests for parallel or resumed fetch.</p>
-</section><section class="sec"><h2>Pattern 2: heavy time</h2>
-<p>When work takes more than a few seconds — transcoding, reports, running code — a synchronous request collides with gateway timeouts, wastes a web server, and gives the user a spinner and no feedback. Split the request in two:</p>
+</section><section class="sec"><h2>The system that works (until it doesn&#39;t)</h2>
+<p>A file-storage service: upload a file, download it, share a link. The obvious build: client POSTs the file to your API server, which streams it into blob storage and writes a metadata row. Demo with a 2MB PDF: flawless. One rule to bank for later: anything over ~10MB that you don&#39;t run SQL queries against belongs in blob storage (S3/GCS/Azure), with only metadata in the database — databases are optimized for structured queries, not gigabyte rows; backups, replication, and query plans all suffer. The break doesn&#39;t wait for cleverness. It waits for someone&#39;s vacation video.</p>
+</section><section class="sec"><h2>Break 1 — the 50GB POST</h2>
+<p>The moment: uploads get real. 5–50GB files at 100Mbps are over an hour of transfer. The app servers saturate — every one is now a dumb pipe for terabytes of passthrough bytes, a bandwidth bill with a CPU attached. Most of these requests never even arrive: the gateway caps request bodies at 10MB. And when the connection drops at 99%, the answer to &quot;now what?&quot; is: restart from zero.</p>
+<p><strong>The obvious fix, and why it fails:</strong> raise the gateway limit, buy bigger servers, stream more efficiently. None of it changes the shape: your fleet sits in the data path, so every byte costs you twice — once in, once out — and the transfer still dies atomically. The server adds nothing to this transfer; it&#39;s a toll booth on a highway it doesn&#39;t own.</p>
+<p><strong>The fix: presigned URLs — the server becomes a ticket booth.</strong> Instead of receiving the file, your API validates the request and signs a URL granting upload to one specific key for a limited time (with constraints like size ranges baked into the signature). The client PUTs bytes directly to blob storage; your fleet never sees them. Signing is local computation — no network call to the store. Downloads mirror it: a presigned GET, usually a CDN-signed URL so global users fetch from an edge.</p>
+<p><strong>The cost:</strong> metadata and bytes now succeed independently — a client can land the object and die before writing the row, or vice versa. Manage it explicitly: write the metadata row as <code>uploading</code>, and flip it on the store&#39;s event notification when the object lands.</p>
+</section><section class="sec"><h2>Break 2 — the connection drops at 99%</h2>
+<p>The moment: presigned URLs moved the bytes, but a 50GB upload is still one PUT — an hour of exposure where a sneeze at minute 59 means restart from zero. The support ticket reads: &quot;I have uploaded this video four times.&quot;</p>
+<p><strong>The obvious fix, and why it fails:</strong> retry the whole PUT on failure. One hour of exposure per attempt is unacceptable, and retrying doesn&#39;t shrink it — the unit of failure is the entire file.</p>
+<p><strong>The fix: multipart — shrink the unit of failure.</strong> The client chunks the file (5–10MB pieces), gets a presigned URL per part, uploads parts — in parallel, with progress for free — and a completion call assembles them into one object. Resume means tracking which parts landed (the store&#39;s part-listing API or your metadata) and re-sending only the missing ones. Two disciplines: verify server-side (client PATCHes progress; you confirm ETags against the store before calling the upload complete — never trust the client&#39;s bookkeeping alone), and fingerprint the content (a hash) so &quot;have I uploaded this before?&quot; survives renames and enables dedupe. Assembled objects download normally, with HTTP Range requests for parallel or resumed fetch.</p>
+<p><strong>The cost:</strong> part bookkeeping — client-side tracking, server-side verification, a completion protocol. And chunking is a client-side operation: chunked on the server, it still receives the whole file first.</p>
+</section><section class="sec"><h2>Break 3 — the 30-second submission</h2>
+<p>The moment: same platform family, different heavy thing — a code judge. Submit code, get a verdict. Judging takes ~30 seconds, so the HTTP request holds the whole time: the gateway times out at 30, the web server sits blocked, and the user ends on a 504 with no way to know whether their submission is still being judged. Scale math makes it structural, not tunable: 10k concurrent submissions against ~100 test cases each is CPU-bound work that no single machine absorbs.</p>
+<p><strong>The obvious fix, and why it fails:</strong> more web servers and a longer timeout. Adding request handlers to CPU-bound work buys queueing, not throughput, and the timeout exists because holding connections for minutes is how load balancers and clients die. The seconds are the problem, not the server count.</p>
+<p><strong>The fix: split the request in two.</strong></p>
 <pre><code class="language-text">POST /jobs  → 202 { &quot;jobId&quot;: &quot;...&quot; }          # milliseconds
 GET  /jobs/:id  → pending | running | done { result }
 </code></pre>
-<p>Validate, persist a job record, enqueue, return the ID. Workers pull jobs, do the work on hardware suited to it (GPUs for video, CPU for code), and update status; the client polls the status endpoint — once per second is fine and needs no WebSocket — or gets notified on completion. Web servers stay fast, workers scale independently, and a crashed worker&#39;s job goes back to the queue. The cost: eventual consistency, status-tracking infrastructure, and four new failure modes you should volunteer:</p>
+<p>Validate, persist a job record, enqueue, return the ID. Workers pull jobs, do the work on hardware suited to it (GPUs for video, CPU for code), and update status; the client polls the status endpoint — once per second is fine and needs no WebSocket — or gets notified on completion. Web servers stay fast, workers scale independently (autoscale on queue depth, not CPU), a crashed worker&#39;s job goes back to the queue, and the queue between API and containers doubles as a buffer with retries for free.</p>
+<p><strong>The cost:</strong> eventual consistency plus status-tracking infrastructure — and the failure modes below are now your code to own. Volunteer them before the reviewer asks:</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -81,12 +92,14 @@ GET  /jobs/:id  → pending | running | done { result }
 <td>separate queues (or chunk big jobs), or short requests wait behind a 5-hour one</td>
 </tr>
 </tbody></table></div>
-</section><section class="sec"><h2>Worked example: code judge</h2>
-<p>Submit code, get a verdict in ~5s — and the code is hostile. Execution options, in one line each: run it in your API server (never — one infinite loop takes down the fleet), a VM (safe, heavy, slow to start), a container (fast start, shared kernel — so harden it), or serverless (auto-scaling, but cold starts and execution limits). Container hardening as a single spoken sentence: read-only filesystem, CPU and memory caps, a hard timeout (which doubles as your SLA), no network, restricted system calls.</p>
-<p>Scale math justifies the queue: 10k concurrent submissions against ~100 test cases each is CPU-bound work that no single machine absorbs — queue between API and containers (buffer plus free retries), autoscale containers on queue depth. Leaderboard: don&#39;t re-aggregate per poll — update a Redis sorted set per accepted submission and answer top-N reads from it; clients poll every few seconds. Note the judgment call out loud: push-based live updates would be overkill at this freshness bar, and saying so is the senior signal.</p>
-<p>Go deeper on the full Dropbox and code-judge breakdowns — plus the video-pipeline variant — at <a href="https://www.hellointerview.com/learn/courses/system-design">Hello Interview&#39;s system design course</a>.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are my system design interviewer. This session is a HEAVY-WORKLOAD
+</section><section class="sec"><h2>Break 4 — the infinite loop that takes down the fleet</h2>
+<p>The moment: the judge goes live and someone submits <code>while(true);</code>. Then a fork bomb. The verdict pipeline melts — and so does anything sharing the machine with it. The code is hostile by definition; you invited strangers to run programs on your hardware.</p>
+<p><strong>The obvious fix, and why it fails:</strong> run submissions in-process with a code-level timeout. One infinite loop takes down the fleet, and an in-process timeout can&#39;t protect against memory exhaustion, forks, or whatever else the submission touches that your process shares.</p>
+<p><strong>The fix: isolation, sized to the threat.</strong> Execution options, in one line each: run it in your API server (never — one infinite loop takes down the fleet), a VM (safe, heavy, slow to start), a container (fast start, shared kernel — so harden it), or serverless (auto-scaling, but cold starts and execution limits). Container hardening as a single spoken sentence: read-only filesystem, CPU and memory caps, a hard timeout (which doubles as your SLA), no network, restricted system calls.</p>
+<p>And one last consumer of the pipeline: the leaderboard re-aggregates on every poll and melts under verdict traffic. Don&#39;t re-aggregate per poll — update a Redis sorted set per accepted submission and answer top-N reads from it; clients poll every few seconds. Note the judgment call out loud: push-based live updates would be overkill at this freshness bar, and saying so is the senior signal.</p>
+<p><strong>The cost:</strong> containers share a kernel — hardening is mandatory, not optional, and the hard timeout that protects the fleet is also the SLA you&#39;ve promised users.</p>
+</section><section class="sec sec-prompts"><h2>🤖 Design-review drill: run it</h2>
+<pre><code class="language-text">You are a senior engineer leading my design review. This session is a HEAVY-WORKLOAD
 design: the problem must hinge on moving big files or running work that
 outlasts an HTTP request — either is fine; pick whichever my first answer
 suggests I&#39;m weaker on.
@@ -118,12 +131,13 @@ MANDATORY DEEP DIVES — pull me into at least two:
    read-only FS, no network, CPU/memory limits, hard timeout.)
 RULES
 Stay in character. If bytes flow through my app servers, stop me: &quot;What
-is the server adding to this transfer?&quot; If I queue a job but can&#39;t say
-how the client learns it finished, make me close the loop. Hints only on
-request, smallest nudge possible.
+is the server adding to this transfer?&quot; If I add a component without
+naming the break it fixes, stop me: &quot;What breaks without it?&quot; If I queue
+a job but can&#39;t say how the client learns it finished, make me close the
+loop. Hints only on request, smallest nudge possible.
 
 SCORING
-After 45 minutes or &quot;end interview&quot;: score 1-4 on Problem Navigation,
+After 45 minutes or &quot;end review&quot;: score 1-4 on Problem Navigation,
 Solution Design, Technical Excellence, Communication — one quoted moment
 each. Then report: did I keep heavy things off the request path (both
 bytes and seconds), did I handle the two-sides-of-one-upload consistency
@@ -132,7 +146,7 @@ one drill to repeat.
 
 Ask me to pick a problem to start.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>Your reflex on files over ~10MB is blob storage plus presigned URLs, stated with the ticket-booth framing</li>
 <li><span class="cb" aria-hidden="true"></span>You can do the upload-duration math out loud and use it to justify chunking</li>
@@ -195,7 +209,7 @@ Ask me to pick a problem to start.
 </tbody></table></div>
 </section><section class="sec sec-help"><h2>🆘 When it goes wrong</h2>
 <ul>
-<li><strong>Bytes flow through your app servers.</strong> Uploads and downloads both double-hop and your fleet becomes a bandwidth bill. Presigned URLs move the data path to storage and CDN — say so before the interviewer asks.</li>
+<li><strong>Bytes flow through your app servers.</strong> Uploads and downloads both double-hop and your fleet becomes a bandwidth bill. Presigned URLs move the data path to storage and CDN — say so before the reviewer asks.</li>
 <li><strong>You chunk on the server.</strong> Chunking only helps if the client does it — server-side chunking still receives the whole file first. It&#39;s a client-side operation.</li>
 <li><strong>The client&#39;s progress report is your source of truth.</strong> A malicious or buggy client marks parts uploaded that aren&#39;t. Trust but verify against the store&#39;s part listing before declaring completion.</li>
 <li><strong>You return 202 and stop designing.</strong> How does the client learn the outcome? Status endpoint, polling cadence, what the statuses are — close the loop or the design is half a conversation.</li>

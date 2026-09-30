@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="The capstone. DP is not a collection of memorized solutions — it's a method with four steps written before any code: define the state as an English sentence, derive the recurrence from the choices it implies, pin the base cases, then implement top-down (memo) or bottom-up (table). Every pattern before this one funnels here: backtracking's call tree is DP's brute force, greedy's counterexamples route here, and the complexity instincts from nine challenges tell you whether the state count is survivable.">
-<title>Challenge 10: Dynamic Programming — Coding Interview Patterns</title>
+<title>Challenge 10: Dynamic Programming — Coding Patterns</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%23237A50'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%23FFE86B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +37,7 @@
 <section class="sec sec-story"><h2>😱 Two hundred problems, no method</h2>
 <p>Candidate A has grinded every classic DP problem on every list that exists —
 Coin Change, House Robber, all of them, solutions memorized cold. Then the
-interviewer asks something one degree off the canon, and A freezes: there&#39;s no
+drill leader asks something one degree off the canon, and A freezes: there&#39;s no
 remembered solution to recall, and A never learned to <em>build</em> one. Meanwhile
 Candidate B, who has done a fraction of the problems, writes four comment
 lines in the first five minutes: &quot;state: <code>best(i)</code> = answer for the first i
@@ -66,7 +66,7 @@ states — &quot;house i: skip it (<code>best(i−1)</code>) or take it (<code>b
 describes and add two lines — check the memo before recursing, store the
 result before returning. Bottom-up is the same recurrence as a loop from the
 base cases: no call-stack risk, cache-friendly, and the space optimization
-(&quot;keep only the last k values&quot;) reads naturally off the loop. Interview
+(&quot;keep only the last k values&quot;) reads naturally off the loop. Drill
 default: top-down first, convert only if asked.</p>
 <div class="tw"><table>
 <thead>
@@ -191,10 +191,9 @@ squeeze space.</p>
 <p><strong>Drills (easy → hard):</strong> Unique Paths → Decode Ways (counting with validity
 gates) → Word Break (state = prefix length; choices = dictionary words) →
 Edit Distance (the string-pair 2D).</p>
-<p>Go deeper: <a href="https://www.hellointerview.com/learn/code/dynamic-programming/overview">Hello Interview&#39;s dynamic programming chapter</a> for worked builds from brute force to optimized.</p>
-</section><section class="sec sec-prompts"><h2>🤖 Mock interview: run it</h2>
-<pre><code class="language-text">You are a senior coding interviewer at a top tech company. Run a DP capstone
-mock: TWO back-to-back dynamic programming problems, back to back, no break.
+</section><section class="sec sec-prompts"><h2>🤖 Coding drill: run it</h2>
+<pre><code class="language-text">You are a staff engineer running a timed coding drill at a top tech company. Run a DP capstone
+drill: TWO back-to-back dynamic programming problems, back to back, no break.
 
 1. Pick problem ONE at senior difficulty on an unseen-feeling DP variant
    (mix 1D, 2D, knapsack, or string-pair across the two problems).
@@ -207,7 +206,7 @@ mock: TWO back-to-back dynamic programming problems, back to back, no break.
    (a) nudge — restate the constraint or point at a suspicious example;
    (b) direction — name the family of approach, not the algorithm;
    (c) structure — outline the algorithm&#39;s steps in words.
-5. Interview like a senior loop: make me restate the problem, state my
+5. Drill like a senior loop: make me restate the problem, state my
    complexity unprompted, and trace one example before I call it done.
 6. GRADE PATTERN-RECOGNITION SPEED explicitly: time from problem
    statement to a correct state definition, in minutes, for each problem.
@@ -218,7 +217,7 @@ mock: TWO back-to-back dynamic programming problems, back to back, no break.
 
 Start with problem one. No preamble.
 </code></pre>
-</section><section class="sec sec-pass"><h2>✅ Interview-ready when</h2>
+</section><section class="sec sec-pass"><h2>✅ You own it when</h2>
 <ul>
 <li><span class="cb" aria-hidden="true"></span>State / recurrence / base / order exist as four comment lines before code</li>
 <li><span class="cb" aria-hidden="true"></span>&quot;#states × work per state&quot; is your default complexity sentence</li>
@@ -290,7 +289,7 @@ Change, so the answer is probably—&quot; is the trap of this challenge&#39;s w
 story. Run the four lines on THIS problem; shapes only help after the state
 is written.</li>
 </ul>
-<div class="next-card"><p><strong>Next:</strong> <a href="../../../301/challenges/12-full-designs/">Full system design mocks — 301 Challenge 12</a></p></div>
+<div class="next-card"><p><strong>Next:</strong> <a href="../../../301/challenges/12-full-designs/">Full system design drills — 301 Challenge 12</a></p></div>
 </section>
 <nav class="pager">
     <a class="prev" href="../../challenges/09-greedy-and-matrices/"><span>Previous</span><strong>Greedy & Matrices</strong></a>
